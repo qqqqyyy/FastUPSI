@@ -1,0 +1,12 @@
+# Bazel generated symlinks
+bazel-*
+# Mac files
+.DS_Store
+
+# key files
+*.ekey
+*.epub
+*.pkey
+*.csv
+*.tree
+*.etree
