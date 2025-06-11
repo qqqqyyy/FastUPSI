@@ -1,8 +1,8 @@
 #pragma once
 
-#include "upsi/crypto/context.h"
-#include "upsi/crypto/ec_group.h"
-#include "upsi/crypto_tree.h"
+// #include "upsi/crypto/context.h"
+// #include "upsi/crypto/ec_group.h"
+// #include "upsi/crypto_tree.h"
 #include "upsi/network/connection.h"
 #include "upsi/network/message_sink.h"
 #include "upsi/params.h"
@@ -56,57 +56,6 @@ class Client : public ProtocolRole {
 
         // method called at the end of the protocol
         virtual void PrintResult() = 0;
-};
-
-// handles the tree
-template<typename P, typename E>
-class HasTree {
-    protected:
-        // used for various crypto operations
-        Context* ctx_;
-        ECGroup* group;
-
-    public:
-        // our plaintext tree & their encrypted tree
-        CryptoTree<P> my_tree;
-        CryptoTree<E> other_tree;
-
-        HasTree(PSIParams* params) :
-            my_tree(params->stash_size, params->node_size),
-            other_tree(params->stash_size, params->node_size)
-        {
-            this->ctx_ = params->ctx;
-
-            auto group = new ECGroup(ECGroup::Create(CURVE_ID, ctx_).value());
-            this->group = group;
-
-            // if specified, load initial trees in from file
-            if (params->ImportTrees()) {
-                std::cout << "[HasTree] reading in " << params->my_tree_fn;
-                std::cout << " and " << params->other_tree_fn << std::endl;
-                auto plaintext = ProtoUtils::ReadProtoFromFile<PlaintextTree>(
-                    params->my_tree_fn
-                );
-                if (!plaintext.ok()) {
-                    throw std::runtime_error("[HasTree] error reading PlaintextTree");
-                }
-                Status load = this->my_tree.Deserialize(plaintext.value(), this->ctx_, this->group);
-                if (!load.ok()) {
-                    std::cerr << load << std::endl;
-                    throw std::runtime_error("[HasTree] error loading my tree");
-                }
-
-                auto encrypted = ProtoUtils::ReadProtoFromFile<EncryptedTree>(params->other_tree_fn);
-                if (!encrypted.ok()) {
-                    throw std::runtime_error("[HasTree] error reading EncryptedTree");
-                }
-                load = this->other_tree.Deserialize(encrypted.value(), this->ctx_, this->group);
-                if (!load.ok()) {
-                    std::cerr << load << std::endl;
-                    throw std::runtime_error("[HasTree] error loading other tree");
-                }
-            }
-        }
 };
 
 }  // namespace upsi

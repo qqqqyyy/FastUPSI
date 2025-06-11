@@ -19,8 +19,8 @@
 #include "include/grpcpp/server_builder.h"
 #include "include/grpcpp/server_context.h"
 #include "include/grpcpp/support/status.h"
-#include "upsi/original/party_one.h"
-#include "upsi/original/party_zero.h"
+#include "upsi/tree/party_one.h"
+#include "upsi/tree/party_zero.h"
 #include "upsi/network/connection.h"
 #include "upsi/roles.h"
 #include "upsi/network/service.h"
@@ -31,39 +31,45 @@
 #include "upsi/utils.h"
 
 using namespace upsi;
-using namespace upsi::original;
+using namespace upsi::tree;
 
 ABSL_FLAG(int, party, 1, "which party to run");
 ABSL_FLAG(std::string, port, "0.0.0.0:10501", "listening port");
 ABSL_FLAG(std::string, data_dir, "data/", "name of directory for dataset files");
 ABSL_FLAG(std::string, out_dir, "out/", "name of directory for setup files");
-ABSL_FLAG(upsi::Functionality, func, upsi::Functionality::SUM, "desired protocol functionality");
+ABSL_FLAG(upsi::Functionality, func, upsi::Functionality::PSI, "desired protocol functionality");
 ABSL_FLAG(int, days, 10, "total days the protocol will run for");
 
 ABSL_FLAG(bool, trees, true, "use initial trees stored on disk");
 
 Status RunPartyZero() {
-    Context context;
+    // Context context;
 
-    PSIParams params(
-        true, &context,
-        absl::GetFlag(FLAGS_out_dir) + "p0/elgamal.pub",
-        absl::GetFlag(FLAGS_out_dir) + "p1/elgamal.pub",
-        absl::GetFlag(FLAGS_out_dir) + "p0/elgamal.key",
-        absl::GetFlag(FLAGS_days)
-    );
+    // PSIParams params(
+    //     true, &context,
+    //     absl::GetFlag(FLAGS_out_dir) + "p0/elgamal.pub",
+    //     absl::GetFlag(FLAGS_out_dir) + "p1/elgamal.pub",
+    //     absl::GetFlag(FLAGS_out_dir) + "p0/elgamal.key",
+    //     absl::GetFlag(FLAGS_days)
+    // );
 
-    if (absl::GetFlag(FLAGS_trees)) {
-        params.my_tree_fn = absl::GetFlag(FLAGS_data_dir) + "p0/encrypted.tree";
-        params.oprf_fn = absl::GetFlag(FLAGS_data_dir) + "p0/elements.ec";
-    }
+    // if (absl::GetFlag(FLAGS_trees)) {
+    //     params.my_tree_fn = absl::GetFlag(FLAGS_data_dir) + "p0/encrypted.tree";
+    //     params.oprf_fn = absl::GetFlag(FLAGS_data_dir) + "p0/elements.ec";
+    // }
 
-    // read in dataset
-    auto dataset = ReadDailyDatasets(
-        &context, absl::GetFlag(FLAGS_data_dir) + "p0/", absl::GetFlag(FLAGS_days)
-    );
+    // // read in dataset
+    // auto dataset = ReadDailyDatasets(
+    //     &context, absl::GetFlag(FLAGS_data_dir) + "p0/", absl::GetFlag(FLAGS_days)
+    // );
+
+    PSIParams params(absl::GetFlag(FLAGS_days));
+    std::vector<Dataset> dataset;
+    dataset.resize(params.total_days);
 
     std::shared_ptr<PartyZero> party_zero = std::make_shared<PartyZero>(&params, dataset);
+
+    std::cout << "Party Zero\n";
 
     // setup connection
     UPSIService service(party_zero);
@@ -103,26 +109,33 @@ Status RunPartyZero() {
 }
 
 Status RunPartyOne() {
-    Context context;
+    // Context context;
 
-    PSIParams params(
-        true, &context,
-        absl::GetFlag(FLAGS_out_dir) + "p1/elgamal.pub",
-        absl::GetFlag(FLAGS_out_dir) + "p0/elgamal.pub",
-        absl::GetFlag(FLAGS_out_dir) + "p1/elgamal.key",
-        absl::GetFlag(FLAGS_days)
-    );
+    // PSIParams params(
+    //     true, &context,
+    //     absl::GetFlag(FLAGS_out_dir) + "p1/elgamal.pub",
+    //     absl::GetFlag(FLAGS_out_dir) + "p0/elgamal.pub",
+    //     absl::GetFlag(FLAGS_out_dir) + "p1/elgamal.key",
+    //     absl::GetFlag(FLAGS_days)
+    // );
 
-    if (absl::GetFlag(FLAGS_trees)) {
-        params.my_tree_fn = absl::GetFlag(FLAGS_data_dir) + "p1/plaintext.tree";
-    }
+    // if (absl::GetFlag(FLAGS_trees)) {
+    //     params.my_tree_fn = absl::GetFlag(FLAGS_data_dir) + "p1/plaintext.tree";
+    // }
 
-    // read in dataset
-    auto dataset = ReadDailyDatasets(
-        &context, absl::GetFlag(FLAGS_data_dir) + "p1/", absl::GetFlag(FLAGS_days)
-    );
+    // // read in dataset
+    // auto dataset = ReadDailyDatasets(
+    //     &context, absl::GetFlag(FLAGS_data_dir) + "p1/", absl::GetFlag(FLAGS_days)
+    // );
+
+
+    PSIParams params(absl::GetFlag(FLAGS_days));
+    std::vector<Dataset> dataset;
+    dataset.resize(params.total_days);
 
     std::unique_ptr<PartyOne> party_one = std::make_unique<PartyOne>(&params, std::move(dataset));
+
+    std::cerr << "Party One\n";
 
     ::grpc::ChannelArguments args;
     args.SetInt(GRPC_ARG_MAX_RECEIVE_MESSAGE_LENGTH, 1024 * 1024 * 1024);

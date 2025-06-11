@@ -24,7 +24,7 @@ class Dataset {
         std::vector<std::string> elements;
         std::vector<int64_t> values;
 
-        Dataset(Context* ctx) : ctx(ctx) { }
+        Dataset(Context* ctx = nullptr) : ctx(ctx) { }
 
         Dataset(
             Context* ctx, const std::vector<std::string>& elements

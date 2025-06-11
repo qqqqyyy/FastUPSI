@@ -41,6 +41,7 @@ cc_library(
         ":upsi_proto",
         "//upsi:roles",
         "//upsi/util:status_includes",
+        "//upsi/util:proto_util",
         "@com_github_grpc_grpc//:grpc",
         "@com_github_grpc_grpc//:grpc++",
         "@com_google_absl//absl/base",

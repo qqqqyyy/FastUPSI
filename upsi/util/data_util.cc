@@ -395,13 +395,7 @@ std::tuple<
     // shared elements
     for (; i < total_size / 3; i++) {
         std::string element = GetRandomSetElement();
-        if (func == Functionality::CA) {
-            p0_universe[element] = 1;
-        } else if (func == Functionality::SUM) {
-            p0_universe[element] = ctx->GenerateRandBetween(
-                ctx->One(), max_value_bn
-            ).ToIntValue().value();
-        } else if (func == Functionality::PSI) {
+        if (func == Functionality::PSI) {
             p0_universe[element] = stoll(element);
         } else {
             throw std::runtime_error("[DataUtil] incorrect functionality provided");
@@ -411,13 +405,7 @@ std::tuple<
 
     // different elements
     for (; i < total_size; i++) {
-        if (func == Functionality::CA) {
-            p0_universe[GetRandomSetElement()] = 1;
-        } else if (func == Functionality::SUM) {
-            p0_universe[GetRandomSetElement()] = ctx->GenerateRandBetween(
-                ctx->One(), max_value_bn
-            ).ToIntValue().value();
-        } else if (func == Functionality::PSI) {
+        if (func == Functionality::PSI) {
         	std::string element = GetRandomSetElement();
             p0_universe[element] = stoll(element);
         } else {
