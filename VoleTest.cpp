@@ -1,5 +1,5 @@
-#include "libOTe/VOLE/Silent/SilentVoleSender.h"
-#include "libOTe/VOLE/Silent/SilentVoleReceiver.h"
+#include "libOTe/Vole/Silent/SilentVoleSender.h"
+#include "libOTe/Vole/Silent/SilentVoleReceiver.h"
 // #include "libOTe/Tools/CoeffCtx.h"
 #include <thread>
 using namespace oc;

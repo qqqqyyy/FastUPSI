@@ -1,5 +1,6 @@
-#include "libOTe/VOLE/Silent/SilentVoleSender.h"
+#include "libOTe/Vole/Silent/SilentVoleSender.h"
 #include "coproto/Socket/AsioSocket.h"
+#include <fstream>
 
 using namespace oc;
 
@@ -8,6 +9,9 @@ const u64 n = k + 128;
 const u64 q = 1 << 10;
 using VecF = typename CoeffCtxGF128::template Vec<block>;
 CoeffCtxGF128 ctx;
+
+const bool DEBUG = false;
+
 
 task<> send() {
     auto chl = cp::asioConnect("localhost:5001", true);
@@ -23,6 +27,13 @@ task<> send() {
     block delta = prng.get();
     co_await sender.silentSend(delta, b, prng, chl);
 
+    std::ofstream file("sender.txt", std::ios::binary);
+    if(DEBUG) {
+        for (int j = 0; j < n; ++j)
+            file.write(reinterpret_cast<const char*>(&b[j]), sizeof(block));
+        file.write(reinterpret_cast<const char*>(&delta), sizeof(block));
+    }
+
     VecF subB;
     for (u64 i = 1; i < q; ++i) {
         auto count = sender.baseCount();
@@ -32,8 +43,16 @@ task<> send() {
         std::vector<std::array<block, 2>> msg2;
         sender.setBaseCors(msg2, subB);
         if(!sender.hasBaseCors()) throw std::runtime_error("base correlations not set");
+
+        // b.clear(); b.resize(n);
+        for (int j = 0; j < n; ++j) b[j] = block(2, 0);
         sender.silentSend(delta, b, prng, chl);
-        // co_await chl.flush();
+
+        if(DEBUG && i % 16 == 0) {
+            for (int j = 0; j < n; ++j)
+                file.write(reinterpret_cast<const char*>(&b[j]), sizeof(block));
+            file.write(reinterpret_cast<const char*>(&delta), sizeof(block));
+        }
     }
 
     co_await chl.flush();
