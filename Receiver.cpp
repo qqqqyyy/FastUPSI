@@ -63,8 +63,8 @@ task<> receive() {
 	    receiver.setBaseCors(choices, msg, subA, subC);
         if(!receiver.hasBaseCors()) throw std::runtime_error("base correlations not set");
 
-        for (int j = 0; j < n; ++j) a[j] = c[j] = block(0, 0);
-        receiver.silentReceive(c, a, prng, chl);
+        // for (int j = 0; j < n; ++j) a[j] = c[j] = block(0, 0);
+        co_await receiver.silentReceive(c, a, prng, chl);
         if(DEBUG && i % 16 == 0) {
             for (int j = 0; j < n; ++j)
                 file.write(reinterpret_cast<const char*>(&a[j]), sizeof(block));

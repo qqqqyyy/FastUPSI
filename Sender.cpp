@@ -45,8 +45,8 @@ task<> send() {
         if(!sender.hasBaseCors()) throw std::runtime_error("base correlations not set");
 
         // b.clear(); b.resize(n);
-        for (int j = 0; j < n; ++j) b[j] = block(2, 0);
-        sender.silentSend(delta, b, prng, chl);
+        // for (int j = 0; j < n; ++j) b[j] = block(2, 0);
+        co_await sender.silentSend(delta, b, prng, chl);
 
         if(DEBUG && i % 16 == 0) {
             for (int j = 0; j < n; ++j)
