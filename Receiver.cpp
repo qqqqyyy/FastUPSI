@@ -6,7 +6,7 @@
 using namespace oc;
 
 const u64 k = 1 << 14;
-const u64 n = k + 0;
+const u64 n = k;
 const u64 q = 1 << 10;
 using VecF = typename CoeffCtxGF128::template Vec<block>;
 CoeffCtxGF128 ctx;
@@ -36,12 +36,9 @@ task<> receive() {
     // receiver.mMultType = MultType::ExConv7x24;
     // receiver.mMultType = MultType::BlkAcc3x8;
 
-    auto start = std::chrono::high_resolution_clock::now();
 
     PRNG prng(CCBlock);
     VecF a(n), c(n);
-
-    co_await receiver.silentReceive(c, a, prng, chl);
         
     std::ofstream file("receiver.txt", std::ios::binary);
     if(DEBUG) {
@@ -51,31 +48,22 @@ task<> receive() {
             file.write(reinterpret_cast<const char*>(&c[j]), sizeof(block));
     }
 
-    VecF subA, subC;
-        auto count = receiver.baseCount();
-        int t = count.mBaseVoleCount;
-        subA.resize(t);
-        subC.resize(t);
-        ctx.copy(a.begin(), a.begin() + t, subA.begin());
-        ctx.copy(c.begin(), c.begin() + t, subC.begin());
-        BitVector choices = receiver.sampleBaseChoiceBits(prng);
-        std::vector<block> msg;
 
-    for (u64 i = 1; i < q; ++i) {
-        // auto count = receiver.baseCount();
-        // int t = count.mBaseVoleCount;
-        // subA.resize(t);
-        // subC.resize(t);
-        // ctx.copy(a.begin(), a.begin() + t, subA.begin());
-        // ctx.copy(c.begin(), c.begin() + t, subC.begin());
-        // BitVector choices = receiver.sampleBaseChoiceBits(prng);
-        // std::vector<block> msg;
-	    receiver.setBaseCors(choices, msg, subA, subC);
-        if(!receiver.hasBaseCors()) throw std::runtime_error("base correlations not set");
+    Timer timer;
+    timer.setTimePoint("start");
 
-        // for (int j = 0; j < n; ++j) a[j] = c[j] = block(0, 0);
+    for (u64 i = 0; i < q; ++i) {
+        if(i) {
+            auto count = receiver.baseCount();
+            int t = count.mBaseVoleCount;
+            span<block> subA(a.subspan(0, t));
+            span<block> subC(c.subspan(0, t));
+            receiver.setBaseCors({}, {}, subA, subC);
+            // if(!receiver.hasBaseCors()) throw std::runtime_error("base correlations not set");
+        }
+
         co_await receiver.silentReceive(c, a, prng, chl);
-        // co_await chl.flush();
+
         if(DEBUG && i % 16 == 0) {
             for (int j = 0; j < n; ++j)
                 file.write(reinterpret_cast<const char*>(&a[j]), sizeof(block));
@@ -87,9 +75,8 @@ task<> receive() {
     co_await chl.flush();
     co_await chl.close();
 
-    auto end = std::chrono::high_resolution_clock::now(); 
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    std::cout << "Time elapsed: " << duration.count() << " ms" << std::endl;
+    timer.setTimePoint("end");
+    std::cout << timer << std::endl;
 
     if(DEBUG) {
         file.close();
