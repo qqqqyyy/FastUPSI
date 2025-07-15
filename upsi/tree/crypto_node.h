@@ -1,80 +1,43 @@
 #ifndef CryptoNode_H
 #define CryptoNode_H
-
-// #include "upsi/crypto/paillier.h"
-// #include "upsi/crypto/threshold_paillier.h"
-#include "upsi/network/upsi.pb.h"
-#include "upsi/utils.h"
+#include "../utils.h"
 
 namespace upsi {
 
-/*
-   Type T can be a tuple for element and payload
-   or be one type for element only when there's no payload
-   */
-template<typename T>
 class CryptoNode
 {
     public:
-        std::vector<T> node;
         size_t node_size;
 
-        CryptoNode() = delete;
-        CryptoNode(size_t node_size);
+        CryptoNode(size_t _node_size) {node_size = _node_size;}
+        virtual ~CryptoNode() = default;
 
-        void clear();
+        virtual void clear() = 0;
 
-        /**
-         * create a copy of this node
-         */
-        CryptoNode<T> copy();
+        // Extract elements
+        virtual std::vector<Element> getElemenets() {throw std::runtime_error("Extracting elements not supported");}
 
-        void copyElementsTo(std::vector<T> &elem);
-
-        // Add an element to the node vector, return true if success, false if it's already full
-        bool addElement(T &elem);
+        // Add an element to the node, return true if success, false if it's already full
+        virtual bool addElement(Element &elem) {throw std::runtime_error("Adding elements not supported");}
 
         // pad with padding elements to the node_size
-        // void pad(Context* ctx);
+        virtual void pad(oc::PRNG* prng) {throw std::runtime_error("Padding not supported");}
+
+        // TODO: query OPRF values for an element, push them into values
+        virtual void query(Element &elem, std::vector<oc::block>& values) {throw std::runtime_error("Queries not supported");}
+
+        //TODO: Serialize, Deserialize
 };
 
-// Status SerializeNode(CryptoNode<Element>* cnode, PlaintextNode* pnode);
-// Status SerializeNode(CryptoNode<ElementAndPayload>* cnode, PlaintextNode* pnode);
-// Status SerializeNode(CryptoNode<Ciphertext>* cnode, TreeNode* tnode);
-// Status SerializeNode(CryptoNode<CiphertextAndPaillier>* cnode, TreeNode* tnode);
-// Status SerializeNode(CryptoNode<CiphertextAndElGamal>* cnode, TreeNode* tnode);
-// Status SerializeNode(CryptoNode<PaillierPair>* cnode, TreeNode* tnode);
-
-// template<typename T>
-// StatusOr<CryptoNode<T>> DeserializeNode(const PlaintextNode& pnode, Context* ctx, ECGroup* group);
-
-// template<typename T>
-// StatusOr<CryptoNode<T>> DeserializeNode(const TreeNode& tnode, Context* ctx, ECGroup* group);
-
-// StatusOr<CryptoNode<Ciphertext>> EncryptNode(
-//     Context* ctx,
-//     ElGamalEncrypter* encrypter,
-//     const CryptoNode<Element>& node
-// );
-
-// StatusOr<CryptoNode<CiphertextAndElGamal>> EncryptNode(
-//     Context* ctx,
-//     ElGamalEncrypter* encrypter,
-//     const CryptoNode<ElementAndPayload>& node
-// );
-
-// StatusOr<CryptoNode<CiphertextAndPaillier>> EncryptNode(
-//     Context* ctx,
-//     ElGamalEncrypter* elgamal,
-//     ThresholdPaillier* paillier,
-//     const CryptoNode<ElementAndPayload>& node
-// );
-
-// StatusOr<CryptoNode<PaillierPair>> EncryptNode(
-//     Context* ctx,
-//     PrivatePaillier* paillier,
-//     const CryptoNode<ElementAndPayload>& node
-// );
+class RawNode : public CryptoNode{
+    public:
+        std::vector<Element> elems;
+        RawNode(size_t _node_size) : CryptoNode(_node_size) {}
+        void clear() override {elems.clear();}
+        std::vector<Element> getElemenets() override {return elems;}
+        bool addElement(Element &elem) override;
+        void pad(oc::PRNG* prng) override;
+};
 
 } // namespace upsi
 

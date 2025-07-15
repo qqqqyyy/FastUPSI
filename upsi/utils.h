@@ -3,15 +3,6 @@
 
 #include <string>
 
-// #include "upsi/crypto/context.h"
-// #include "upsi/crypto/ec_commutative_cipher.h"
-// #include "upsi/crypto/elgamal.h"
-// #include "upsi/crypto/paillier.h"
-#include "upsi/network/upsi.pb.h"
-#include "absl/strings/string_view.h"
-#include "absl/strings/str_format.h"
-#include "upsi/util/status.inc"
-
 #include <algorithm>
 #include <bitset>
 #include <chrono>
@@ -27,6 +18,9 @@
 #include <tuple>
 #include <utility>
 #include <vector>
+
+#include "cryptoTools/Common/Defines.h"
+#include "cryptoTools/Crypto/PRNG.h"
 
 // for printing to the command line in colors
 #define RED    "\033[0;31m"
@@ -45,39 +39,29 @@ namespace upsi {
 
     // #define MAX_SUM 50000
 
-    #define ELEMENT_STR_LENGTH 16
+    // #define ELEMENT_STR_LENGTH 16
 
 	#define DEBUG 1
 
     // type of elements in each party's sets
     // TODO
-	typedef std::string Element;
+	typedef oc::block Element;
+    typedef oc::u64 u64;
 
     // protocol functionality options
-    enum Functionality { PSI };
+    // enum Functionality { PSI };
 
-    // these allow us to have a Functionality command line flag
-    bool AbslParseFlag(absl::string_view text, Functionality* func, std::string* err);
-    std::string AbslUnparseFlag(Functionality func);
 
-    template<typename T>
-	T elementCopy(const T &elem);
+    // template<typename T> T elementCopy(const T &elem);
     
     typedef std::string BinaryHash;
+	template<typename T> BinaryHash computeBinaryHash(T &elem);
+    BinaryHash generateRandomHash(oc::PRNG* prng);
+	std::vector<BinaryHash> generateRandomHash(oc::PRNG* prng, size_t cnt);
 
-	std::string Byte2Binary(const std::string &byte_hash);
-	template<typename T>
-	BinaryHash computeBinaryHash(T &elem);
-
-    BinaryHash generateRandomHash();
-	void generateRandomHash(int cnt, std::vector<std::string> &hsh);
-
-
-	int64_t NumericString2uint(const std::string &str);
-
-	std::string GetRandomNumericString(size_t length, bool padding);
-    std::string GetRandomSetElement();
-    // Element GetRandomPadElement(Context* ctx);
+    Element GetRandomSetElement(oc::PRNG* prng);
+    Element GetRandomPadElement(oc::PRNG* prng);
+    std::vector<Element> GetRandomSet(oc::PRNG* prng, size_t set_size);
 
     /**
      * class to unify time benchmarking

@@ -1,12 +1,3 @@
-# Bazel generated symlinks
-bazel-*
-# Mac files
+libOTe/
+build/
 .DS_Store
-
-# key files
-*.ekey
-*.epub
-*.pkey
-*.csv
-*.tree
-*.etree
