@@ -1,5 +1,7 @@
 set(TREE_SRCS
     "utils.cpp"
+    "ASE.h"
+    "tree/poly.cpp"
     "tree/crypto_node.cpp"
     "tree/crypto_tree.cpp"
 )
