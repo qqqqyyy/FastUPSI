@@ -8,7 +8,7 @@
 using namespace oc;
 // using VecF = typename CoeffCtxGF128::template Vec<block>;
 CoeffCtxGF128 ctx;
-const bool DEBUG = false;
+// const bool DEBUG = false;
 
 // void test(VecF a, VecF b, VecF c, block delta) {
 //     std::cout << "test VOLE correlations ...\n";

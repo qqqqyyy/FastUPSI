@@ -41,8 +41,6 @@ namespace upsi {
 
     // #define ELEMENT_STR_LENGTH 16
 
-	#define DEBUG 1
-
     // type of elements in each party's sets
     // TODO
 	typedef oc::block Element;

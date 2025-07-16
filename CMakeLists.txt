@@ -23,4 +23,4 @@ endif()
 
 add_subdirectory(upsi)
 
-add_subdirectory(vole_tests)
+add_subdirectory(tests)

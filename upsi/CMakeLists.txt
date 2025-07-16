@@ -7,4 +7,4 @@ set(TREE_SRCS
 )
 
 add_library(tree STATIC ${TREE_SRCS})
-target_link_libraries(tree oc::libOTe )
+target_link_libraries(tree oc::libOTe)
