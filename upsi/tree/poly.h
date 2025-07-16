@@ -55,24 +55,33 @@ class Poly : public ASE{
                 x = oc::OneBlock; y = oc::ZeroBlock;
                 return;
             }
+            else if(a == oc::ZeroBlock) {
+               y = oc::OneBlock; x = oc::ZeroBlock;
+               return;
+            }
             int degA = computeDeg(a), degB = computeDeg(b);
-            int shift = std::max(0, degA - degB);
-            exgcd(b, a ^ (block_shift_left(b, shift)), y, x);
-            // y ^= block_shift_left(x, shift);
-            if(shift < 64) y ^= x.gf128Mul(oc::toBlock(1ull << shift));
-            else y ^= x.gf128Mul(oc::toBlock(1ull << (shift - 64), 0));
+            if(degA < degB) {
+                int shift = degB - degA;
+                exgcd(a, b ^ (block_shift_left(a, shift)), x, y);
+                if(shift < 64) x ^= y.gf128Mul(oc::toBlock(1ull << shift));
+                else x ^= y.gf128Mul(oc::toBlock(1ull << (shift - 64), 0));
+            }
+            else {
+                int shift = degA - degB;
+                exgcd(a ^ (block_shift_left(b, shift)), b, x, y);
+                if(shift < 64) y ^= x.gf128Mul(oc::toBlock(1ull << shift));
+                else y ^= x.gf128Mul(oc::toBlock(1ull << (shift - 64), 0));
+            }
         }
 
         oc::block gf128Inverse_EEA(oc::block a) {
             oc::block x, y;
             oc::block b = oc::toBlock(0, 0x87);
             int degA = computeDeg(a), shift = 128 - degA;
-            // std::cout << a << " " << degA << " " << "\n";
 
             exgcd(a, b ^ block_shift_left(a, shift), x, y);
-            // x ^= block_shift_left(y, 128 - degA);
             if(shift < 64) x ^= y.gf128Mul(oc::toBlock(1ull << shift));
-            else x ^= y.gf128Mul(oc::toBlock(1ull << (shift-64), 0));
+            else x ^= y.gf128Mul(oc::toBlock(1ull << (shift - 64), 0));
 
             return x;
         }
