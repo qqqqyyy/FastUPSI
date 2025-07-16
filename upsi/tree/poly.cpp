@@ -17,25 +17,21 @@ void Poly::interpolation(std::vector<oc::block>& keys, std::vector<oc::block>& v
             denom = denom.gf128Mul(keys[j] ^ keys[i]);
         }
 
-        oc::block inv = gf128Inverse(denom);
-        // oc::block inv = oc::ZeroBlock;
+        oc::block inv = gf128Inverse_EEA(denom);
+        // oc::block inv = gf128Inverse(denom);
         oc::block scale = values[i].gf128Mul(inv);
         // std::cout << keys[i] << " " << values[i] << ":\n";
-        // std::cout << denom << " " << inv << std::endl;
-        // std::cout << inv.gf128Mul(denom) << "\n";
+        // std::cout << tmp << " " << inv << std::endl;
         std::vector<oc::block> term;
         term.resize(n, oc::ZeroBlock);
         term[n - 1] = scale;
-        // for (int k = 0; k < n; ++k) std::cout << term[k] << std::endl; std::cout << "\n";
            
         for (int j = 0, num = 0; j < n; ++j) {
             if(i == j) continue;
             ++num;
-            // std::cout << j << " " << num << " " << keys[j] << "\n";
             for (int k = num; k; --k) {
                 term[n - k - 1] = term[n - k - 1] ^ (term[n - k].gf128Mul(keys[j]));
             }
-            // for (int k = 0; k < n; ++k) std::cout << term[k] << std::endl; std::cout << "\n";
         }
         for(int j = 0; j < n; ++j) ase[j] ^= term[j];
     }
