@@ -9,7 +9,7 @@ class ASE{
     PtrVec ase;
 
     ASE(){}
-    ASE(const oc::AlignedUnVector<oc::block>& vec) {
+    ASE(const std::span<oc::block>& vec) {
         ase.reserve(vec.size());
         for (const auto& elem : vec) ase.push_back(std::make_shared<oc::block>(elem));
     }

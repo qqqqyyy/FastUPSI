@@ -205,10 +205,9 @@ void CryptoTree<NodeType, StashType>::replaceNodes(int new_elem_cnt, std::vector
 	this->actual_size += new_elem_cnt;
 }
 
-// Find path for an element (including stash) and extract all elements on the path
+
 template<typename NodeType, typename StashType>
-BlockVec CryptoTree<NodeType, StashType>::getPath(Element elem) {
-    BlockVec values;
+void CryptoTree<NodeType, StashType>::eval(Element elem, BlockVec& values) {
     //std::cerr << "computing binary hash of "<< element << "\n";
     BinaryHash binary_hash = computeBinaryHash(elem);
     //std::cerr << "hash is " << binary_hash << "\n";
@@ -221,7 +220,6 @@ BlockVec CryptoTree<NodeType, StashType>::getPath(Element elem) {
 		crypto_tree[u]->eval(elem, values);
 		if (u == 0) break;
 	}
-    return values;
 }
 
 template class CryptoTree<RawNode, RawNode>;

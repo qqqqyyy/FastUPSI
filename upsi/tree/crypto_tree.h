@@ -48,7 +48,7 @@ class CryptoTree : public ASE
             std::vector<std::shared_ptr<CryptoNode> >& new_nodes,
             std::vector<BinaryHash>& hsh
         );
-		std::vector<oc::block> getPath(Element elem);
+		void eval(Element elem, BlockVec& values) override;
 
         // Status Serialize(S* tree);
 
