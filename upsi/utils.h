@@ -45,6 +45,7 @@ namespace upsi {
     // TODO
 	typedef oc::block Element;
     typedef oc::u64 u64;
+    typedef std::vector<oc::block> BlockVec;
 
     // protocol functionality options
     // enum Functionality { PSI };

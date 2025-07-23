@@ -6,13 +6,15 @@ namespace upsi {
 
 class ASE{
     public:
-    std::vector<oc::block> ase;
-    ASE(){} 
+    BlockVec ase;
+
+    ASE(){}
+    virtual ~ASE() = default;
 
     //output k values (relaxed)
-    virtual std::vector<oc::block> eval(Element elem) {
+    virtual BlockVec eval(Element elem) {
         std::runtime_error("relaxed ASE eval not supported");
-        return std::vector<oc::block>();
+        return BlockVec();
     }
 
     //output 1 value
