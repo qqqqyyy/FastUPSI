@@ -19,6 +19,7 @@ class Poly : public CryptoNode{
         void computeDenom(const BlockVec& keys, const BlockVec& values, BlockVec& denoms);
         void interpolation(const BlockVec& keys, const BlockVec& values, BlockVec& denoms_inv, int& idx);
 
+        void eval(Element elem, BlockVec& values) override;
         oc::block eval1(Element elem) override;
         
 };

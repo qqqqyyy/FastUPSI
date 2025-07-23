@@ -49,6 +49,10 @@ void Poly::interpolation(const BlockVec& keys, const BlockVec& values, BlockVec&
     }
 }
 
+void Poly::eval(Element elem, BlockVec& values) {
+    values.push_back(eval1(elem));
+}
+
 oc::block Poly::eval1(Element elem) {
     oc::block rs = oc::ZeroBlock;
     for(int i = n - 1; i >= 0; --i) {
