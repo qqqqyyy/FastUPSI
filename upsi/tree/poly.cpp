@@ -29,7 +29,7 @@ void Poly::interpolation(const BlockVec& keys, const BlockVec& values, BlockVec&
         throw std::runtime_error("polynomial interpolation: size incorrect");
     }
 
-    ase.resize(n, oc::ZeroBlock);
+    clear();
 
     for (int i = 0; i < n; ++i) {
         oc::block inv = denoms_inv[idx++];
@@ -45,7 +45,7 @@ void Poly::interpolation(const BlockVec& keys, const BlockVec& values, BlockVec&
                 term[n - k - 1] = term[n - k - 1] ^ (term[n - k].gf128Mul(keys[j]));
             }
         }
-        for(int j = 0; j < n; ++j) ase[j] ^= term[j];
+        for(int j = 0; j < n; ++j) *(ase[j]) ^= term[j];
     }
 }
 
@@ -53,7 +53,7 @@ oc::block Poly::eval1(Element elem) {
     oc::block rs = oc::ZeroBlock;
     for(int i = n - 1; i >= 0; --i) {
         rs = rs.gf128Mul(elem);
-        rs ^= ase[i];
+        rs ^= *(ase[i]);
     }
     return rs;
 }

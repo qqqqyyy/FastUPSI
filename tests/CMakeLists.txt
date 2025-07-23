@@ -12,4 +12,4 @@ target_link_libraries(vole_receiver oc::libOTe)
 
 
 add_executable(poly_test PolyTest.cpp)
-target_link_libraries(poly_test oc::libOTe tree)
+target_link_libraries(poly_test tree)

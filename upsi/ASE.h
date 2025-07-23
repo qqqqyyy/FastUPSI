@@ -6,15 +6,14 @@ namespace upsi {
 
 class ASE{
     public:
-    BlockVec ase;
+    PtrVec ase;
 
     ASE(){}
     virtual ~ASE() = default;
 
     //output k values (relaxed)
-    virtual BlockVec eval(Element elem) {
+    virtual void eval(Element elem, BlockVec& values) {
         std::runtime_error("relaxed ASE eval not supported");
-        return BlockVec();
     }
 
     //output 1 value

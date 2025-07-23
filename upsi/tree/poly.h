@@ -1,14 +1,20 @@
 #ifndef Poly_H
 #define Poly_H
-#include "../ASE.h"
+#include "crypto_node.h"
 
 namespace upsi {
 
-class Poly : public ASE{
+class Poly : public CryptoNode{
     public:
         size_t n;
 
-        Poly(size_t _n = DEFAULT_NODE_SIZE):n(_n){ase.reserve(_n);}
+        Poly(size_t _n = DEFAULT_NODE_SIZE):n(_n){
+            ase.reserve(_n);
+            for (int i = 0; i < _n; ++i) 
+                ase.push_back(std::make_shared<oc::block>(oc::ZeroBlock));
+        }
+        
+        void clear() override {for (int i = 0; i < n; ++i) *(ase[i]) = oc::ZeroBlock;}
 
         void computeDenom(const BlockVec& keys, const BlockVec& values, BlockVec& denoms);
         void interpolation(const BlockVec& keys, const BlockVec& values, BlockVec& denoms_inv, int& idx);

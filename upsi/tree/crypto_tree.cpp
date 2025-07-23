@@ -16,9 +16,17 @@ CryptoTree<NodeType, StashType>::CryptoTree(size_t stash_size, size_t node_size)
 
     // Index for root node is 1, index for stash node is 0
     // depth = 0
-    this->crypto_tree.push_back(std::make_shared<StashType>(stash_size));
-    this->crypto_tree.push_back(std::make_shared<NodeType>(node_size));
+	auto stash = std::make_shared<StashType>(stash_size);
+    this->crypto_tree.push_back(stash);
+	for (int i = 0; i < stash_size; ++i) ase.push_back(stash->ase[i]);
+    addNode(); //root;
+}
 
+template<typename NodeType, typename StashType>
+void CryptoTree<NodeType, StashType>::addNode() {
+	auto cur_node = std::make_shared<NodeType>(node_size);
+    this->crypto_tree.push_back(cur_node);
+	for (int i = 0; i < node_size; ++i) ase.push_back(cur_node->ase[i]);
 }
 
 /// @brief Helper methods
@@ -27,9 +35,7 @@ void CryptoTree<NodeType, StashType>::addNewLayer() {
     this->depth += 1;
     size_t new_size = (1 << (this->depth + 1));
 
-    while (this->crypto_tree.size() < new_size) {
-        this->crypto_tree.emplace_back(std::make_shared<NodeType>(node_size));
-    }
+    while (this->crypto_tree.size() < new_size) addNode();
 }
 
 // compute leaf index of a binary hash
@@ -111,11 +117,11 @@ std::vector<std::shared_ptr<CryptoNode> > CryptoTree<NodeType, StashType>::inser
 	*/
 	for (int o = 0; o < new_elem_cnt; ++o) {
 		// extract all elements in the path and empty the origin node
-		std::vector<Element> tmp_elem[this->depth + 2];
+		BlockVec tmp_elem[this->depth + 2];
 
 		//std::cerr << "************leaf ind = " << leaf_ind[o] << std::endl;
 		for (int u = leaf_ind[o]; ; u >>= 1) {
-			std::vector<Element> cur;
+			BlockVec cur = crypto_tree[u]->getElements();
 			if(u == 0) cur.push_back(elem[o]);
 
 			int cur_size = cur.size();
@@ -190,16 +196,19 @@ void CryptoTree<NodeType, StashType>::replaceNodes(int new_elem_cnt, std::vector
 	//for (u64 i = 0; i < node_cnt; ++i) std::cerr << ind[i] << std::endl;
 
 	// replace nodes (including stash)
-	for (u64 i = 0; i < node_cnt; ++i) crypto_tree[ind[i]] = new_nodes[i];
-
+	for (u64 i = 0; i < node_cnt; ++i) {
+		int cnt = crypto_tree[ind[i]]->ase.size();
+		assert(cnt == new_nodes[i]->ase.size());
+		for (int j = 0; j < cnt; ++j) *(crypto_tree[ind[i]]->ase[j]) = *(new_nodes[i]->ase[j]);
+	}
 	// update actual_size
 	this->actual_size += new_elem_cnt;
 }
 
 // Find path for an element (including stash) and extract all elements on the path
 template<typename NodeType, typename StashType>
-std::vector<oc::block> CryptoTree<NodeType, StashType>::getPath(Element elem) {
-    std::vector<oc::block> values;
+BlockVec CryptoTree<NodeType, StashType>::getPath(Element elem) {
+    BlockVec values;
     //std::cerr << "computing binary hash of "<< element << "\n";
     BinaryHash binary_hash = computeBinaryHash(elem);
     //std::cerr << "hash is " << binary_hash << "\n";
@@ -209,7 +218,7 @@ std::vector<oc::block> CryptoTree<NodeType, StashType>::getPath(Element elem) {
 
 	//std::cerr << "tree size = " << crypto_tree.size() << std::endl;
 	for (int u = leaf_index; ; u >>= 1) {
-		crypto_tree[u]->query(elem, values);
+		crypto_tree[u]->eval(elem, values);
 		if (u == 0) break;
 	}
     return values;

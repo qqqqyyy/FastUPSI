@@ -6,7 +6,7 @@
 namespace upsi {
 
 template<typename NodeType, typename StashType>
-class CryptoTree
+class CryptoTree : public ASE
 {
     static_assert(std::is_base_of<CryptoNode, NodeType>::value, "NodeType must derive from CryptoNode");
     static_assert(std::is_base_of<CryptoNode, StashType>::value, "StashType must derive from CryptoNode");
@@ -41,6 +41,7 @@ class CryptoTree
         int actual_size = 0;
 
         CryptoTree(size_t stash_size, size_t node_size);
+        void addNode();
         std::vector<std::shared_ptr<CryptoNode> > insert(oc::PRNG* prng, std::vector<Element> &elem);
         void replaceNodes(
             int new_elem_cnt,
