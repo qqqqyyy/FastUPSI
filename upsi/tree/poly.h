@@ -13,6 +13,11 @@ class Poly : public CryptoNode{
             for (int i = 0; i < _n; ++i) 
                 ase.push_back(std::make_shared<oc::block>(oc::ZeroBlock));
         }
+
+        Poly(ASE&& other_ASE) { //move
+            ase = std::move(other_ASE.ase);
+            node_size = n = ase.size();
+        }
         
         void clear() override {for (int i = 0; i < n; ++i) *(ase[i]) = oc::ZeroBlock;}
 
