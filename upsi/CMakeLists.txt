@@ -1,14 +1,14 @@
 set(TREE_SRCS
     "utils.cpp"
-    "ASE.h"
+    "ASE/ASE.h"
+    "ASE/plain_ASE.cpp"
+    "ASE/poly.cpp"
+    "ASE/cuckoo.cpp"
     "vole.cpp"
+    "binary_tree.cpp"
     "party.h"
-    "tree/crypto_node.cpp"
-    "tree/poly.cpp"
-    "tree/cuckoo.cpp"
-    "tree/crypto_tree.cpp"
-    "tree/tree_party.h"
+    "tree_party.h"
 )
 
-add_library(tree STATIC ${TREE_SRCS})
-target_link_libraries(tree oc::libOTe)
+add_library(upsi STATIC ${TREE_SRCS})
+target_link_libraries(upsi oc::libOTe)

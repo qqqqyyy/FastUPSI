@@ -1,23 +1,17 @@
 #ifndef Poly_H
 #define Poly_H
-#include "crypto_node.h"
+#include "ASE.h"
 
 namespace upsi {
 
-class Poly : public CryptoNode{
+class Poly : public ASE{
     public:
-        size_t n;
 
-        Poly(size_t _n = DEFAULT_NODE_SIZE):n(_n){
-            node_size = n;
-            ase.reserve(_n);
-            for (int i = 0; i < _n; ++i) 
-                ase.push_back(std::make_shared<oc::block>(oc::ZeroBlock));
-        }
+        Poly(size_t _n = DEFAULT_NODE_SIZE):ASE(_n, true){}
 
         Poly(ASE&& other_ASE) { //move
             ase = std::move(other_ASE.ase);
-            node_size = n = ase.size();
+            n = ase.size();
         }
         
         void clear() override {for (int i = 0; i < n; ++i) *(ase[i]) = oc::ZeroBlock;}

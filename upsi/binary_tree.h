@@ -1,17 +1,18 @@
-#ifndef CryptoTree_H
-#define CryptoTree_H
+#ifndef BinaryTree_H
+#define BinaryTree_H
 
-#include "crypto_node.h"
-#include "poly.h"
-#include "cuckoo.h"
+#include "ASE/ASE.h"
+#include "ASE/plain_ASE.h"
+#include "ASE/poly.h"
+#include "ASE/cuckoo.h"
 
 namespace upsi {
 
 template<typename NodeType, typename StashType>
-class CryptoTree : public ASE
+class BinaryTree : public ASE
 {
-    static_assert(std::is_base_of<CryptoNode, NodeType>::value, "NodeType must derive from CryptoNode");
-    static_assert(std::is_base_of<CryptoNode, StashType>::value, "StashType must derive from CryptoNode");
+    static_assert(std::is_base_of<ASE, NodeType>::value, "NodeType must derive from ASE");
+    static_assert(std::is_base_of<ASE, StashType>::value, "StashType must derive from ASE");
 
     protected:
 
@@ -34,7 +35,7 @@ class CryptoTree : public ASE
            2     3
           4  5  6  7
         */
-        std::vector<std::shared_ptr<CryptoNode> > crypto_tree;
+        std::vector<std::shared_ptr<ASE> > nodes;
 
         // Depth of the tree (empty tree or just root is depth 0)
         int depth = 0;
@@ -42,12 +43,12 @@ class CryptoTree : public ASE
         // the number of set elements in the tree (= size of set)
         int actual_size = 0;
 
-        CryptoTree(size_t stash_size, size_t node_size);
+        BinaryTree(size_t stash_size, size_t node_size);
         void addNode();
-        std::vector<std::shared_ptr<CryptoNode> > insert(oc::PRNG* prng, std::vector<Element> &elem);
+        std::vector<std::shared_ptr<ASE> > insert(oc::PRNG* prng, std::vector<Element> &elem);
         void replaceNodes(
             int new_elem_cnt,
-            std::vector<std::shared_ptr<CryptoNode> >& new_nodes,
+            std::vector<std::shared_ptr<ASE> >& new_nodes,
             std::vector<BinaryHash>& hsh
         );
 		void eval(Element elem, BlockVec& values) override;
@@ -56,7 +57,7 @@ class CryptoTree : public ASE
 
         // Status Deserialize(const S& tree, Context* ctx, ECGroup* group);
 
-        virtual void Print() = 0;
+        // virtual void Print() = 0;
 };
 
 }      // namespace upsi
