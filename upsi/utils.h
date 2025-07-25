@@ -1,5 +1,5 @@
-#ifndef UTILS_HPP
-#define UTILS_HPP
+#ifndef UTILS_H
+#define UTILS_H
 
 #include <string>
 
@@ -21,6 +21,7 @@
 
 #include "cryptoTools/Common/Defines.h"
 #include "cryptoTools/Crypto/PRNG.h"
+#include "cryptoTools/Common/Timer.h"
 
 // for printing to the command line in colors
 #define RED    "\033[0;31m"
@@ -36,6 +37,7 @@ namespace upsi {
     // #define CURVE_ID NID_X9_62_prime256v1
 	#define DEFAULT_NODE_SIZE 4
     #define DEFAULT_STASH_SIZE 89
+    #define DEFAULT_CUCKOO_SIZE 200 //TODO
 
     // #define MAX_SUM 50000
 
@@ -67,19 +69,19 @@ namespace upsi {
     /**
      * class to unify time benchmarking
      */
-    class Timer {
-        public:
-            Timer(std::string msg, std::string color = WHITE);
-            void stop();
-            void lap();
-            void print();
-        private:
-            std::string message;
-            std::string color;
-            std::chrono::time_point<std::chrono::high_resolution_clock> start;
-            std::vector<std::chrono::duration<float>> laps;
-            bool using_laps = false;
-    };
+    // class Timer {
+    //     public:
+    //         Timer(std::string msg, std::string color = WHITE);
+    //         void stop();
+    //         void lap();
+    //         void print();
+    //     private:
+    //         std::string message;
+    //         std::string color;
+    //         std::chrono::time_point<std::chrono::high_resolution_clock> start;
+    //         std::vector<std::chrono::duration<float>> laps;
+    //         bool using_laps = false;
+    // };
 }
 
 #endif

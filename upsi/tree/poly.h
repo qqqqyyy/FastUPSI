@@ -9,6 +9,7 @@ class Poly : public CryptoNode{
         size_t n;
 
         Poly(size_t _n = DEFAULT_NODE_SIZE):n(_n){
+            node_size = n;
             ase.reserve(_n);
             for (int i = 0; i < _n; ++i) 
                 ase.push_back(std::make_shared<oc::block>(oc::ZeroBlock));

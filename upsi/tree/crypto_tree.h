@@ -1,7 +1,9 @@
-#pragma once
+#ifndef CryptoTree_H
+#define CryptoTree_H
 
 #include "crypto_node.h"
-#include "../utils.h"
+#include "poly.h"
+#include "cuckoo.h"
 
 namespace upsi {
 
@@ -58,3 +60,5 @@ class CryptoTree : public ASE
 };
 
 }      // namespace upsi
+
+#endif

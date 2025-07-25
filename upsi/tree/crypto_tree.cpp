@@ -223,5 +223,6 @@ void CryptoTree<NodeType, StashType>::eval(Element elem, BlockVec& values) {
 }
 
 template class CryptoTree<RawNode, RawNode>;
+template class CryptoTree<Poly, Cuckoo>;
 
 } // namespace upsi

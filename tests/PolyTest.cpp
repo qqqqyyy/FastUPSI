@@ -29,19 +29,23 @@ int main() {
     }
 
     Timer t0("polynomial interpolation");
+    t0.setTimePoint("start");
     for (int i = 0; i < n; ++i) {
         polys.push_back(Poly(m));
         // polys[i].interpolation(keys[i], values[i]);
     }
     batchInterpolation(polys, keys, values);
-    t0.stop();
+    t0.setTimePoint("end");
 
     // for (int i = 0; i < m; ++i) std::cout << polys[0].ase[i] << std::endl;
     Timer t1("eval");
+    t1.setTimePoint("start");
     for (int i = 0; i < n; ++i) {
         rs.push_back(polys[i].eval1(keys[i][ind[i]]));
     }
-    t1.stop();
+    t1.setTimePoint("end");
+
+    std::cout << t0 << "\n" << t1 << "\n";
 
     if(DEBUG) {
         // for (int i = 0; i < n; ++i) if(rs[i] != values[i][ind[i]]) {
