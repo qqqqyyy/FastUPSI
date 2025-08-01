@@ -2,14 +2,17 @@
 
 namespace upsi {
 
-BlockVec PlainASE::getElements() {
-    BlockVec rs;
-    for (int i = 0; i < elem_cnt; ++i) rs.push_back(*ase[i]);
-    return rs;
+void PlainASE::build(const std::vector<Element>& elems, oc::PRNG* prng) {
+    elem_cnt = elems.size();
+    for (int i = 0; i < elem_cnt; ++i) *(ase[i]) = elems[i];
+}
+
+void PlainASE::getElements(std::vector<Element>& elems) {
+    for (int i = 0; i < elem_cnt; ++i) elems.push_back(*ase[i]);
 }
 
 // Add an element to the node, return true if success, false if it's already full
-bool PlainASE::addElement(const Element &elem) {
+bool PlainASE::insertElement(const Element &elem, oc::PRNG* prng) {
     if (elem_cnt >= n) {
         return false;
     }

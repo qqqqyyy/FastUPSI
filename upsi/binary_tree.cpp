@@ -96,11 +96,11 @@ int* BinaryTree<NodeType, StashType>::generateRandomPaths(size_t cnt, std::vecto
 // Return vector of (plaintext) nodes
 // stash: index = 0
 template<typename NodeType, typename StashType>
-std::vector<std::shared_ptr<ASE> > BinaryTree<NodeType, StashType>::insert(oc::PRNG* prng, std::vector<Element> &elem) {
+std::vector<std::shared_ptr<ASE> > BinaryTree<NodeType, StashType>::insert(const std::vector<Element> &elem, oc::PRNG* prng) {
 	int new_elem_cnt = elem.size();
 
 	// add new layer when tree is full
-	while(new_elem_cnt + this->actual_size >= (1 << (this->depth + 1))) addNewLayer();
+	while(new_elem_cnt + this->elem_cnt >= (1 << (this->depth + 1))) addNewLayer();
 	// no need to tell the receiver the new depth of tree?
 
 	// get the node indices in random paths
@@ -121,7 +121,8 @@ std::vector<std::shared_ptr<ASE> > BinaryTree<NodeType, StashType>::insert(oc::P
 
 		//std::cerr << "************leaf ind = " << leaf_ind[o] << std::endl;
 		for (int u = leaf_ind[o]; ; u >>= 1) {
-			BlockVec cur = nodes[u]->getElements();
+			BlockVec cur;
+			nodes[u]->getElements(cur);
 			if(u == 0) cur.push_back(elem[o]);
 
 			int cur_size = cur.size();
@@ -146,7 +147,7 @@ std::vector<std::shared_ptr<ASE> > BinaryTree<NodeType, StashType>::insert(oc::P
 			while(st <= steps && tmp_elem[st].empty()) ++st;
 			while(st <= steps) {
 				Element cur_elem = tmp_elem[st].back();
-				if(nodes[u]->addElement(cur_elem)) tmp_elem[st].pop_back();
+				if(nodes[u]->insertElement(cur_elem)) tmp_elem[st].pop_back();
 				else break;
 				while(st <= steps && tmp_elem[st].empty()) ++st;
 			}
@@ -166,8 +167,8 @@ std::vector<std::shared_ptr<ASE> > BinaryTree<NodeType, StashType>::insert(oc::P
 
 	delete [] leaf_ind;
 
-	// update actual_size
-	this->actual_size += new_elem_cnt;
+	// update elem_cnt
+	this->elem_cnt += new_elem_cnt;
 
 	int node_cnt = ind.size();
 	std::vector<std::shared_ptr<ASE> > rs;
@@ -179,12 +180,12 @@ std::vector<std::shared_ptr<ASE> > BinaryTree<NodeType, StashType>::insert(oc::P
 
 // Update tree (receiver)
 template<typename NodeType, typename StashType>
-void BinaryTree<NodeType, StashType>::replaceNodes(int new_elem_cnt, std::vector<std::shared_ptr<ASE> > &new_nodes, std::vector<BinaryHash> &hsh) {
+void BinaryTree<NodeType, StashType>::replaceNodes(int new_elem_cnt, const std::vector<std::shared_ptr<ASE> > &new_nodes, std::vector<BinaryHash> &hsh) {
 
 	int node_cnt = new_nodes.size();
 
 	// add new layer when tree is full
-	while(new_elem_cnt + this->actual_size >= (1 << (this->depth + 1))) addNewLayer();
+	while(new_elem_cnt + this->elem_cnt >= (1 << (this->depth + 1))) addNewLayer();
 	//std::cerr << "new depth: " << this->depth << std::endl;
 
 	std::vector<int> ind;
@@ -197,12 +198,11 @@ void BinaryTree<NodeType, StashType>::replaceNodes(int new_elem_cnt, std::vector
 
 	// replace nodes (including stash)
 	for (u64 i = 0; i < node_cnt; ++i) {
-		int cnt = nodes[ind[i]]->ase.size();
-		assert(cnt == new_nodes[i]->ase.size());
-		for (int j = 0; j < cnt; ++j) *(nodes[ind[i]]->ase[j]) = *(new_nodes[i]->ase[j]);
+		assert(nodes[ind[i]]->ase.size() == new_nodes[i]->ase.size());
+		nodes[ind[i]]->copy(*(new_nodes[i]));
 	}
-	// update actual_size
-	this->actual_size += new_elem_cnt;
+	// update elem_cnt
+	this->elem_cnt += new_elem_cnt;
 }
 
 

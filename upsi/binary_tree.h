@@ -40,15 +40,12 @@ class BinaryTree : public ASE
         // Depth of the tree (empty tree or just root is depth 0)
         int depth = 0;
 
-        // the number of set elements in the tree (= size of set)
-        int actual_size = 0;
-
         BinaryTree(size_t stash_size, size_t node_size);
         void addNode();
-        std::vector<std::shared_ptr<ASE> > insert(oc::PRNG* prng, std::vector<Element> &elem);
+        std::vector<std::shared_ptr<ASE> > insert(const std::vector<Element> &elem, oc::PRNG* prng = nullptr) override;
         void replaceNodes(
             int new_elem_cnt,
-            std::vector<std::shared_ptr<ASE> >& new_nodes,
+            const std::vector<std::shared_ptr<ASE> >& new_nodes,
             std::vector<BinaryHash>& hsh
         );
 		void eval(Element elem, BlockVec& values) override;

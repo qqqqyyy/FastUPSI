@@ -6,6 +6,7 @@ set(TREE_SRCS
     "ASE/cuckoo.cpp"
     "vole.cpp"
     "binary_tree.cpp"
+    "adaptive.cpp"
     "party.h"
     "tree_party.h"
 )

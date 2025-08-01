@@ -7,7 +7,8 @@ namespace upsi {
 class ASE{
     public:
     PtrVec ase;
-    int n; //size of ase
+    size_t n; //size of ase
+    size_t elem_cnt; //number of elements
 
     ASE(){}
     ASE(const std::span<oc::block>& vec) {
@@ -26,23 +27,37 @@ class ASE{
 
     virtual void clear() {throw std::runtime_error("clear() not implemented");}
 
-    // Extract elements
-    virtual BlockVec getElements() {throw std::runtime_error("Extracting elements not supported");}
-
-    // Add an element to the ASE, return true if success, false if it's already full
-    virtual bool addElement(const Element &elem) {throw std::runtime_error("Adding element not supported");}
-
-    // pad with padding elements
-    virtual void pad(oc::PRNG* prng) {throw std::runtime_error("Padding not supported");}
-
-    //output k values (relaxed)
-    virtual void eval(Element elem, BlockVec& values) {
-        std::runtime_error("relaxed ASE eval not supported");
+    virtual void copy(const ASE& other_ASE) {
+        n = other_ASE.n;
+        elem_cnt = other_ASE.elem_cnt;
+        if(n != ase.size()) ase.resize(n);
+        for (int i = 0; i < n; ++i) *(ase[i]) = *(other_ASE.ase[i]);
     }
 
-    //output 1 value
+
+    // construct this ASE with elements
+    virtual void build(const std::vector<Element>& elems, oc::PRNG* prng = nullptr) {throw std::runtime_error("build() not implemented");}
+
+    // Extract elements
+    virtual void getElements(std::vector<Element>& elems) {throw std::runtime_error("Extracting elements not supported");}
+
+    // Insert an element to ASE, return true if success, false if it's already full
+    virtual bool insertElement(const Element &elem, oc::PRNG* prng = nullptr) {throw std::runtime_error("Adding element not supported");}
+
+    virtual std::vector<std::shared_ptr<ASE> > insert(const std::vector<Element>& elem, oc::PRNG* prng = nullptr) {
+        throw std::runtime_error("Adding elements not supported");
+    }
+    // pad ASE with padding elements
+    virtual void pad(oc::PRNG* prng) {throw std::runtime_error("Padding not supported");}
+
+    // output k values (relaxed)
+    virtual void eval(Element elem, BlockVec& values) {
+        throw std::runtime_error("relaxed ASE eval not supported");
+    }
+
+    // output 1 value
     virtual oc::block eval1(Element elem) {
-        std::runtime_error("ASE eval not supported for single ouput");
+        throw std::runtime_error("ASE eval not supported for single ouput");
         return oc::ZeroBlock;
     }
 
