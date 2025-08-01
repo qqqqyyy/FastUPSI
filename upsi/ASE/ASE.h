@@ -27,6 +27,8 @@ class ASE{
 
     virtual void clear() {throw std::runtime_error("clear() not implemented");}
 
+    virtual bool isEmpty() {throw std::runtime_error("isEmpty() not implemented");}
+
     virtual void copy(const ASE& other_ASE) {
         n = other_ASE.n;
         elem_cnt = other_ASE.elem_cnt;

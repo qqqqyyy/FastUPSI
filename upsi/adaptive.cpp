@@ -42,7 +42,8 @@ std::vector<std::shared_ptr<ASE> > Adaptive<BaseType>::insert(const std::vector<
     std::vector<std::shared_ptr<ASE> > rs;
     rs.push_back(nodes[0]);
     for (int i = 0; i < node_cnt; ++i) 
-        if(((last ^ now) >> i) & 1) rs.push_back(nodes[i + 1]);
+        if(((last >> i) & 1) == 0 && ((now >> i) & 1) == 1) 
+            rs.push_back(nodes[i + 1]);
     return rs;
 }
 
@@ -53,14 +54,19 @@ void Adaptive<BaseType>::replaceASEs(int new_elem_cnt, const std::vector<std::sh
     nodes[0]->copy(*new_ASEs[0]);
     
     for (int i = 0, idx = 0; i < node_cnt; ++i) 
-        if(((last ^ now) >> i) & 1) nodes[i + 1]->copy(*new_ASEs[++idx]);
+        if(((last >> i) & 1) == 0 && ((now >> i) & 1) == 1)
+            nodes[i + 1]->copy(*new_ASEs[++idx]);
+        else if (((last >> i) & 1) == 1 && ((now >> i) & 1) == 0) 
+            nodes[i + 1]->clear();
 
     elem_cnt += new_elem_cnt;
 }
 
 template<typename BaseType> 
 void Adaptive<BaseType>::eval(Element elem, BlockVec& values) {
-    for (int i = 0; i <= node_cnt; ++i) nodes[i]->eval(elem, values);
+    for (int i = 0; i <= node_cnt; ++i) 
+        if(!nodes[i]->isEmpty()) 
+            nodes[i]->eval(elem, values);
 }
 
 template class Adaptive<PlainASE>;
