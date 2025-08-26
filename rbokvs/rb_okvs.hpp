@@ -4,10 +4,12 @@
 #include <cstdint>
 #include <algorithm>
 
+#include "types.hpp"
+
 namespace rbokvs {
 
-    inline constexpr double epsilon = 1.0;          // EPSILON
-    inline constexpr std::size_t defaultBandWidth = 80; // BAND_WIDTH
+    inline constexpr double epsilon = 1.0;
+    inline constexpr std::size_t defaultBandWidth = 80;
 
     class RbOkvs {
         public:
@@ -24,6 +26,12 @@ namespace rbokvs {
                 r2(inputR2)
             {}
 
+            //public functions
+            std::vector<FE> encode(const std::vector<std::pair<FE,FE>>& input) const;
+            std::vector<FE> decode(const std::vector<FE>& encoding,
+                                    const std::vector<FE>& keys) const;
+
+            //not sure if needed
             std::size_t getBandWidth() const noexcept { return bandWidth; }
             const std::array<std::uint8_t, 16>& getR1() const noexcept { return r1; }
             const std::array<std::uint8_t, 16>& getR2() const noexcept { return r2; }
