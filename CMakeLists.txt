@@ -21,6 +21,19 @@ if (ENABLE_SILENT_VOLE)
     message(STATUS "SlientVole enabled")
 endif()
 
+# Original UPSI components
 add_subdirectory(upsi)
-
 add_subdirectory(tests)
+
+# RB-OKVS components
+add_subdirectory(rbokvs)
+
+# Vole test components
+add_executable(vole_test VoleTest.cpp)
+target_link_libraries(vole_test oc::libOTe)
+
+add_executable(sender Sender.cpp)
+target_link_libraries(sender oc::libOTe)
+
+add_executable(receiver Receiver.cpp)
+target_link_libraries(receiver oc::libOTe)
