@@ -17,7 +17,7 @@ int main() {
     assert(a * ai == o);
 
     // additive identity
-    assert((a - a).is_zero());
+    assert((a - a).isZero());
 
     // bytes round-trip (compare canonical bytes)
     auto bytes = c.to_bytes_le();

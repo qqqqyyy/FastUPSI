@@ -21,54 +21,54 @@ class FE {
         return x;
     }
 
-public:
-    FE() : value(CryptoPP::Integer::Zero()) {}
-    explicit FE(const CryptoPP::Integer& x) : value(mod(x)) {}
+    public:
+        FE() : value(CryptoPP::Integer::Zero()) {}
+        explicit FE(const CryptoPP::Integer& x) : value(mod(x)) {}
 
-    static FE zero() { return FE(CryptoPP::Integer::Zero()); }
-    static FE one()  { return FE(CryptoPP::Integer::One());  }
-    static FE from_u64(uint64_t x) { return FE(CryptoPP::Integer(x)); }
+        static FE zero() { return FE(CryptoPP::Integer::Zero()); }
+        static FE one()  { return FE(CryptoPP::Integer::One());  }
+        static FE from_u64(uint64_t x) { return FE(CryptoPP::Integer(x)); }
 
-    FE  operator+(const FE& b) const { return FE(value + b.value); }
-    FE  operator-(const FE& b) const { return FE(value - b.value); }
-    FE  operator*(const FE& b) const { return FE((value * b.value) % prime()); }
+        FE  operator+(const FE& x) const { return FE(value + x.value); }
+        FE  operator-(const FE& x) const { return FE(value - x.value); }
+        FE  operator*(const FE& x) const { return FE((value * x.value) % prime()); }
 
-    FE& operator+=(const FE& b) { value = mod(value + b.value); return *this; }
-    FE& operator-=(const FE& b) { value = mod(value - b.value); return *this; }
-    FE& operator*=(const FE& b) { value = (value * b.value) % prime();   return *this; }
+        FE& operator+=(const FE& x) { value = mod(value + x.value); return *this; }
+        FE& operator-=(const FE& x) { value = mod(value - x.value); return *this; }
+        FE& operator*=(const FE& x) { value = (value * x.value) % prime();   return *this; }
 
-    bool operator==(const FE& b) const { return value == b.value; }
-    bool operator!=(const FE& b) const { return value != b.value; }
+        bool operator==(const FE& x) const { return value == x.value; }
+        bool operator!=(const FE& x) const { return value != x.value; }
 
-    bool is_zero() const { return value.IsZero(); }
+        bool isZero() const { return value.IsZero(); }
 
-    FE inv() const {
-        if (is_zero()) throw std::domain_error("FE::inv of zero");
-        return FE(value.InverseMod(prime()));
-    }
-
-    std::array<uint8_t, 32> to_bytes_le() const {
-        std::array<uint8_t, 32> out{};
-        CryptoPP::Integer t = value;
-        const CryptoPP::Integer mask = (CryptoPP::Integer::One() << 8) - CryptoPP::Integer::One();
-        for (size_t i = 0; i < out.size(); ++i) {
-            if (t.IsZero()) { out[i] = 0; continue; }
-            out[i] = static_cast<uint8_t>((t & mask).ConvertToLong());
-            t >>= 8;
+        FE inv() const {
+            if (isZero()) throw std::domain_error("FE::inv of zero");
+            return FE(value.InverseMod(prime()));
         }
-        return out;
-    }
 
-    static FE from_bytes_le(const uint8_t* data, size_t len) {
-        CryptoPP::Integer x = CryptoPP::Integer::Zero();
-        const size_t n = (len > 32) ? 32 : len;
-        for (size_t i = 0; i < n; ++i) {
-            x += CryptoPP::Integer(data[i]) << (8 * i);
+        std::array<uint8_t, 32> to_bytes_le() const {
+            std::array<uint8_t, 32> out{};
+            CryptoPP::Integer t = value;
+            const CryptoPP::Integer mask = (CryptoPP::Integer::One() << 8) - CryptoPP::Integer::One();
+            for (size_t i = 0; i < out.size(); ++i) {
+                if (t.IsZero()) { out[i] = 0; continue; }
+                out[i] = static_cast<uint8_t>((t & mask).ConvertToLong());
+                t >>= 8;
+            }
+            return out;
         }
-        return FE(x);
-    }
 
-    const CryptoPP::Integer& raw() const { return value; }
-};
+        static FE from_bytes_le(const uint8_t* data, size_t len) {
+            CryptoPP::Integer x = CryptoPP::Integer::Zero();
+            const size_t n = (len > 32) ? 32 : len;
+            for (size_t i = 0; i < n; ++i) {
+                x += CryptoPP::Integer(data[i]) << (8 * i);
+            }
+            return FE(x);
+        }
 
-} // namespace fe252
+        const CryptoPP::Integer& raw() const { return value; }
+    };
+
+}
