@@ -32,3 +32,13 @@ target_link_libraries(sender oc::libOTe)
 add_executable(receiver Receiver.cpp)
 target_link_libraries(receiver oc::libOTe)
 
+add_library(rbokvs
+  rbokvs/utils.cpp
+  rbokvs/rb_okvs.cpp
+)
+target_include_directories(rbokvs PUBLIC ${CMAKE_SOURCE_DIR}/rbokvs)
+find_library(CRYPTOPP_LIB cryptopp REQUIRED)
+target_link_libraries(rbokvs PUBLIC ${CRYPTOPP_LIB})
+
+add_executable(test_rb_okvs rbokvs/test/test_rb_okvs.cpp)
+target_link_libraries(test_rb_okvs PRIVATE rbokvs)

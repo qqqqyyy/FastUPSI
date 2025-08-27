@@ -7,9 +7,7 @@ git clone https://github.com/osu-crypto/libOTe.git
 cd libOTe
 python build.py --all --boost --sodium
 cd ..
-mkdir build
-cd build
+mkdir -p build && cd build
 cmake ..
-make
-./sender & ./receiver
-``` 
+cmake --build . -j
+./test_rb_okvs
