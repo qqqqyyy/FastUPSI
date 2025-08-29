@@ -6,7 +6,6 @@ using namespace upsi;
 
 void test_correctness(ASE a, ASE b, ASE c, block delta, int n) {
     CoeffCtxGF128 ctx;
-    std::cout << "test VOLE correlations ...\n";
     for (u64 i = 0; i < n; ++i) {
         block exp;
         ctx.mul(exp, delta, *c.ase[i]);
@@ -16,11 +15,12 @@ void test_correctness(ASE a, ASE b, ASE c, block delta, int n) {
             throw std::runtime_error("Incorrect VOLE");
         }
     }
-    std::cout << "test ok\n\n";
 }
 
 void test_generate_new(VoleSender& vole_sender, VoleReceiver& vole_receiver) {
-    u64 n = (1 << 18);
+    std::cout << "test VOLE correlations ...\n";
+
+    u64 n = (1 << 15) + rand() % (1 << 15);
     Timer timer;
     timer.setTimePoint("start");
 
@@ -33,18 +33,23 @@ void test_generate_new(VoleSender& vole_sender, VoleReceiver& vole_receiver) {
 
     auto tmp = vole_receiver.get(n);
     test_correctness(tmp.first, vole_sender.get(n), tmp.second, vole_sender.delta, n);
+
+    std::cout << "test ok\n\n";
 }
 
 void test_doerner_shelat(VoleSender& vole_sender, VoleReceiver& vole_receiver) {
+    std::cout << "test Doerner-Shelat\n";
+
     int n = 20, point_cnt = 100;
-    u64 domain_size = (1 << n);
+    PRNG prng(CCBlock);
+    u64 domain_size = (1 << (n - 1)) + prng.get<u64>() % (1 << (n - 1));
 
     auto t0 = std::thread([&] { vole_sender.generate(1 << 20); });
     vole_receiver.generate(1 << 20);
     t0.join();
 
     std::vector<size_t> points;
-    for (int i = 0; i < point_cnt; ++i) points.push_back((rand() | (rand() << 16)) % domain_size);
+    for (int i = 0; i < point_cnt; ++i) points.push_back(prng.get<u64>() % domain_size);
 
     BlockVec values;
     for (int i = 0; i < point_cnt; ++i) values.push_back(toBlock(rand(), rand()));
@@ -61,7 +66,6 @@ void test_doerner_shelat(VoleSender& vole_sender, VoleReceiver& vole_receiver) {
     std::cout << timer << std::endl;
 
     
-    std::cout << "test Doerner-Shelat\n";
     // std::cout << points[0] << std::endl;
     int cnt = 0;
     for (int i = 0; i < domain_size; ++i) {
@@ -87,6 +91,7 @@ void test_doerner_shelat(VoleSender& vole_sender, VoleReceiver& vole_receiver) {
             throw std::runtime_error("Incorrect");
         }
     }
+
     std::cout << "test ok\n\n";
 }
 
@@ -97,9 +102,10 @@ int main() {
     VoleSender vole_sender(&chl[0], &prng0);
     VoleReceiver vole_receiver(&chl[1], &prng1);
 
-    test_generate_new(vole_sender, vole_receiver);
-
-    test_doerner_shelat(vole_sender, vole_receiver);
+    for (int i = 0; i < 10; ++i) {
+        test_generate_new(vole_sender, vole_receiver);
+        test_doerner_shelat(vole_sender, vole_receiver);
+    }
 
     return 0;
 }
