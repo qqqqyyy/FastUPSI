@@ -11,7 +11,7 @@ class ASE{
     size_t elem_cnt; //number of elements
 
     ASE(){}
-    ASE(const std::span<oc::block>& vec) {
+    ASE(const BlockSpan& vec) {
         n = vec.size();
         ase.reserve(n);
         for (const auto& elem : vec) ase.push_back(std::make_shared<oc::block>(elem));
@@ -21,6 +21,29 @@ class ASE{
         for (int i = 0; i < n; ++i) 
             if(build) ase.push_back(std::make_shared<oc::block>(oc::ZeroBlock));
             else ase.push_back(nullptr);
+    }
+
+    oc::AlignedUnVector<oc::block> VecF() {
+        oc::AlignedUnVector<oc::block> out(n);
+        for (size_t i = 0; i < n; ++i) out[i] = *(ase[i]);
+        return out;
+    }
+
+    void serialize(BlockVec& data) {
+        data.push_back(oc::toBlock(n));
+        data.push_back(oc::toBlock(elem_cnt));
+        for (int i = 0; i < n; ++i) {
+            if(!ase[i]) throw std::runtime_error("serialize error!");
+            data.push_back(*ase[i]);
+        }
+    }
+
+    int deserialize(const BlockSpan& data) {
+        int cnt = 0;
+        n = data[cnt++].get<uint64_t>()[0];
+        elem_cnt = data[cnt++].get<uint64_t>()[0];
+        for (int i = 0; i < n; ++i) *ase[i] = data[cnt++];
+        return cnt;
     }
 
     virtual ~ASE() = default;
@@ -63,25 +86,49 @@ class ASE{
         return oc::ZeroBlock;
     }
 
-    ASE operator + (const ASE& other_ASE) {
-        ASE rs;
+    ASE operator + (const ASE& rhs) {
         int cnt = ase.size();
-        rs.ase.reserve(cnt);
-        for (int i = 0; i < cnt; ++i) rs.ase.push_back(std::make_shared<oc::block>(*(ase[i]) ^ *(other_ASE.ase[i])));
+        if(cnt != rhs.ase.size()) throw std::runtime_error("ASE::operator +/- size");
+        ASE rs(n, true);
+        for (int i = 0; i < cnt; ++i) *rs.ase[i] = *(ase[i]) ^ *(rhs.ase[i]);
         return rs;
     }
 
-    ASE operator - (const ASE& other_ASE) {
-        return *this + other_ASE;
+    ASE& operator += (const ASE& rhs) {
+        int cnt = ase.size();
+        if(cnt != rhs.ase.size()) throw std::runtime_error("ASE::operator +=/-= size");
+        for (int i = 0; i < cnt; ++i) *(ase[i]) ^= *(rhs.ase[i]);
+        return *this;
     }
 
-    ASE operator * (const oc::block& scalar) {
+    oc::block& operator [] (const size_t& idx) {
+        if(idx >= n) throw std::runtime_error("ASE::operator [] index out of range");
+        if(!ase[idx]) throw std::runtime_error("ASE::operator [] nullptr");
+        return *(ase[idx]);
+    }
+
+    ASE operator - (const ASE& rhs) {
+        return *this + rhs;
+    }
+
+    ASE& operator -= (const ASE& rhs) {
+        return (*this += rhs);
+    }
+
+    ASE operator * (const oc::block& rhs) {
         ASE rs;
         int cnt = ase.size();
         rs.ase.reserve(cnt);
-        for (int i = 0; i < cnt; ++i) rs.ase.push_back(std::make_shared<oc::block>((*(ase[i])).gf128Mul(scalar)));
+        for (int i = 0; i < cnt; ++i) rs.ase.push_back(std::make_shared<oc::block>((ase[i])->gf128Mul(rhs)));
         return rs;
     }
+
+    ASE& operator *= (const oc::block& rhs) {
+        int cnt = ase.size();
+        for (int i = 0; i < cnt; ++i) *(ase[i]) = (ase[i])->gf128Mul(rhs);
+        return *this;
+    }
+
 };
 
 } //namespace upsi

@@ -48,6 +48,7 @@ namespace upsi {
 	typedef oc::block Element;
     typedef oc::u64 u64;
     typedef std::vector<oc::block> BlockVec;
+    typedef std::span<oc::block> BlockSpan;
     typedef std::shared_ptr<oc::block> BlockPtr;
     typedef std::vector<BlockPtr> PtrVec;
 
