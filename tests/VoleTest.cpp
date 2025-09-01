@@ -1,98 +1,111 @@
 // #pragma once
 
-#include "libOTe/Vole/Silent/SilentVoleSender.h"
-#include "libOTe/Vole/Silent/SilentVoleReceiver.h"
-
-// #include "libOTe/Tools/CoeffCtx.h"
-// #include <thread>
+#include "vole.cpp"
 using namespace oc;
-// using VecF = typename CoeffCtxGF128::template Vec<block>;
-CoeffCtxGF128 ctx;
-// const bool DEBUG = false;
+using namespace upsi;
 
-// void test(VecF a, VecF b, VecF c, block delta) {
-//     std::cout << "test VOLE correlations ...\n";
-//     for (u64 i = 0; i < n; ++i) {
-//         block exp;
-//         ctx.mul(exp, delta, c[i]);
-//         ctx.plus(exp, exp, b[i]);
-//         if(a[i] != exp) {
-//             std::cout << "i = " << i << std::endl;
-//             throw std::runtime_error("Incorrect VOLE");
-//         }
-//     }
-//     std::cout << "test ok\n";
-// }
+void test_correctness(ASE a, ASE b, ASE c, block delta, int n) {
+    CoeffCtxGF128 ctx;
+    for (u64 i = 0; i < n; ++i) {
+        block exp;
+        ctx.mul(exp, delta, *c.ase[i]);
+        ctx.plus(exp, exp, *b.ase[i]);
+        if(*a.ase[i] != exp) {
+            std::cout << "i = " << i << std::endl;
+            throw std::runtime_error("Incorrect VOLE");
+        }
+    }
+}
 
-void doit() {
-    u64 n = (1 << 14);
+void test_generate_new(VoleSender& vole_sender, VoleReceiver& vole_receiver) {
+    std::cout << "test VOLE correlations ...\n";
+
+    u64 n = (1 << 15) + rand() % (1 << 15);
     Timer timer;
     timer.setTimePoint("start");
-    SilentVoleSender<block, block, CoeffCtxGF128> sender;
-    SilentVoleReceiver<block, block, CoeffCtxGF128> receiver;
 
-    sender.configure(n, SilentSecType::SemiHonest, DefaultMultType, SilentBaseType::BaseExtend, SdNoiseDistribution::Stationary);
-    receiver.configure(n, SilentSecType::SemiHonest, DefaultMultType, SilentBaseType::BaseExtend, SdNoiseDistribution::Stationary);
-
-    // sender.mMultType = MultType::ExConv7x24;
-    // receiver.mMultType = MultType::ExConv7x24;
-
-    std::cout << "n = " << n << std::endl;
+    auto t0 = std::thread([&] { vole_sender.generate(n); });
+    vole_receiver.generate(n);
+    t0.join();
     
-    PRNG prng0(ZeroBlock), prng1(ZeroBlock);
-    // VecF a(n), b(n), c(n);
-    block delta = prng0.get();
+    timer.setTimePoint("end");
+    std::cout << "n = " << n << ":\n"<< timer << std::endl;
 
-    // std::cout << delta << std::endl;
+    auto tmp = vole_receiver.get(n);
+    test_correctness(tmp.first, vole_sender.get(n), tmp.second, vole_sender.delta, n);
 
-    auto chls = cp::LocalAsyncSocket::makePair();
+    std::cout << "test ok\n\n";
+}
 
-            macoro::thread_pool pool0, pool1;
-			auto w0 = pool0.make_work();
-			auto w1 = pool1.make_work();
-			pool0.create_thread();
-			pool1.create_thread();
-			chls[0].setExecutor(pool0);
-			chls[1].setExecutor(pool1);
-    
-    auto t0 = std::thread([&] {
-    for (int q = 0; q < (1 << 10); ++q) {
-        if(q) {
-            auto count = sender.baseCount();
-            int t = count.mBaseVoleCount;
-            span<block> subB(sender.mB.subspan(0, t));
-            sender.setBaseCors({}, subB);
-        }
+void test_doerner_shelat(VoleSender& vole_sender, VoleReceiver& vole_receiver) {
+    std::cout << "test Doerner-Shelat\n";
 
-        // timer.setTimePoint("s A");
-        auto p0 = sender.silentSendInplace(delta, n, prng0, chls[0]) | macoro::start_on(pool0);
-        coproto::sync_wait(p0);
-        // timer.setTimePoint("s B");
-    }
-	});
+    int n = 20, point_cnt = 100;
+    PRNG prng(CCBlock);
+    u64 domain_size = (1 << (n - 1)) + prng.get<u64>() % (1 << (n - 1));
 
-    for (int q = 0; q < (1 << 10); ++q) {
-        if(q) {
-            auto count = receiver.baseCount();
-            int t = count.mBaseVoleCount;
-            span<block> subA(receiver.mA.subspan(0, t));
-            span<block> subC(receiver.mC.subspan(0, t));
-            receiver.setBaseCors({}, {}, subA, subC);
-        }
+    auto t0 = std::thread([&] { vole_sender.generate(1 << 20); });
+    vole_receiver.generate(1 << 20);
+    t0.join();
 
-        // timer.setTimePoint("r A");
-        auto p1 = receiver.silentReceiveInplace(n, prng1, chls[1])| macoro::start_on(pool0);
-        coproto::sync_wait(p1);
-        // timer.setTimePoint("r B");
-    }
+    std::vector<size_t> points;
+    for (int i = 0; i < point_cnt; ++i) points.push_back(prng.get<u64>() % domain_size);
+
+    BlockVec values;
+    for (int i = 0; i < point_cnt; ++i) values.push_back(toBlock(rand(), rand()));
+
+    Timer timer;
+    timer.setTimePoint("start");
+
+    ASE x, y;
+    t0 = std::thread([&] { x = vole_sender.generate(domain_size, point_cnt); });
+    y = vole_receiver.generate(domain_size, values, points);
     t0.join();
 
     timer.setTimePoint("end");
     std::cout << timer << std::endl;
+
+    
+    // std::cout << points[0] << std::endl;
+    int cnt = 0;
+    for (int i = 0; i < domain_size; ++i) {
+        if(x[i] != y[i]) ++cnt;
+        // else std::cout << i << std::endl;
+    }
+    if(cnt != point_cnt) {
+        std::cout << cnt << std::endl;
+        throw std::runtime_error("Incorrect others");
+    }
+
+
+    CoeffCtxGF128 ctx;
+    for (int i = 0; i < point_cnt; ++i) {
+        int idx = points[i];
+        block exp;
+        ctx.mul(exp, vole_sender.delta, values[i]);
+        ctx.plus(exp, exp, x[idx]);
+        if(y[idx] != exp) {
+            std::cout << "i = " << i << std::endl;
+            std::cout << x[idx] << std::endl;
+            std::cout << y[idx] << std::endl;
+            throw std::runtime_error("Incorrect");
+        }
+    }
+
+    std::cout << "test ok\n\n";
 }
 
 int main() {
-    doit();
+    auto chl = cp::LocalAsyncSocket::makePair();
+    PRNG prng0(ZeroBlock), prng1(OneBlock);
+
+    VoleSender vole_sender(&chl[0], &prng0);
+    VoleReceiver vole_receiver(&chl[1], &prng1);
+
+    for (int i = 0; i < 10; ++i) {
+        test_generate_new(vole_sender, vole_receiver);
+        test_doerner_shelat(vole_sender, vole_receiver);
+    }
 
     return 0;
 }
