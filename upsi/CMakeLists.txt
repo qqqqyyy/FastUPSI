@@ -3,7 +3,7 @@ set(TREE_SRCS
     "ASE/ASE.h"
     "ASE/plain_ASE.cpp"
     "ASE/poly.cpp"
-    "ASE/cuckoo.cpp"
+    "rbokvs/rb_okvs.cpp"
     "vole.cpp"
     "binary_tree.cpp"
     "adaptive.cpp"

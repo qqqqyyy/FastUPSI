@@ -223,6 +223,6 @@ void BinaryTree<NodeType, StashType>::eval(Element elem, BlockVec& values) {
 }
 
 template class BinaryTree<PlainASE, PlainASE>;
-template class BinaryTree<Poly, Cuckoo>;
+template class BinaryTree<Poly, rb_okvs>;
 
 } // namespace upsi
