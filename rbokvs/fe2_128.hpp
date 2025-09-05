@@ -66,6 +66,21 @@ public:
         return out;
     }
 
+    static inline FE2_128 from_bytes_le(const std::uint8_t* data, std::size_t len) {
+        if (!data) throw std::invalid_argument("FE2_128::from_bytes_le: null pointer");
+        std::uint64_t lo = 0, hi = 0;
+        const std::size_t n = (len > 16) ? 16 : len;
+    
+        const std::size_t n_lo = (n < 8) ? n : 8;
+        for (std::size_t i = 0; i < n_lo; ++i)
+            lo |= (static_cast<std::uint64_t>(data[i])) << (8 * i);
+    
+        for (std::size_t i = 8; i < n; ++i)
+            hi |= (static_cast<std::uint64_t>(data[i])) << (8 * (i - 8));
+    
+        return FE2_128(lo, hi);
+    }
+
 private:
     limb_t lo_, hi_;
 };
