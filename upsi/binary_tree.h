@@ -19,6 +19,7 @@ class BinaryTree : public ASE
         // The node and stash size of the tree
         size_t node_size;
         size_t stash_size;
+        oc::block seed;
 
         /// @brief Helper Methods
         // Add a new layer to the tree, expand the size of the vector
@@ -40,7 +41,7 @@ class BinaryTree : public ASE
         // Depth of the tree (empty tree or just root is depth 0)
         int depth = 0;
 
-        BinaryTree(size_t stash_size, size_t node_size);
+        BinaryTree(size_t stash_size, size_t node_size, oc::block seed);
         void addNode();
         std::vector<std::shared_ptr<ASE> > insert(const std::vector<Element> &elem, oc::PRNG* prng = nullptr) override;
         void replaceNodes(

@@ -10,9 +10,10 @@ namespace upsi {
 ////////////////////////////////////////////////////////////////////////////////
 
 template<typename NodeType, typename StashType>
-BinaryTree<NodeType, StashType>::BinaryTree(size_t stash_size, size_t node_size) {
+BinaryTree<NodeType, StashType>::BinaryTree(size_t stash_size, size_t node_size, oc::block seed) {
     this->node_size = node_size;
     this->stash_size = stash_size;
+	this->seed = seed;
 
     // Index for root node is 1, index for stash node is 0
     // depth = 0
@@ -43,8 +44,8 @@ template<typename NodeType, typename StashType>
 int BinaryTree<NodeType, StashType>::computeIndex(BinaryHash binary_hash) {//TODO
 	int x = 1;
 	for (u64 i = 0; i < this->depth; ++i) {
-        if (binary_hash[i] == '0') x = (x << 1);
-        else if (binary_hash[i] == '1') x = ((x << 1) | 1);
+        if (binary_hash[i] == false) x = (x << 1);
+        else if (binary_hash[i] == true) x = ((x << 1) | 1);
     }
     return x;
 }
@@ -129,7 +130,7 @@ std::vector<std::shared_ptr<ASE> > BinaryTree<NodeType, StashType>::insert(const
 			//std::cerr << "tmp_node size  = " << tmp_node_size << std::endl;
 
 			for (u64 i = 0; i < cur_size; ++i) {
-				int x = computeIndex(computeBinaryHash(cur[i]));
+				int x = computeIndex(computeBinaryHash(cur[i], seed));
 				//if(u == 0 && i == 0) std::cerr<<"index is " << x << std::endl;
 				int steps = 0;
 				if(x != leaf_ind[o]) steps = 32 - __builtin_clz(x ^ leaf_ind[o]);
@@ -209,7 +210,7 @@ void BinaryTree<NodeType, StashType>::replaceNodes(int new_elem_cnt, const std::
 template<typename NodeType, typename StashType>
 void BinaryTree<NodeType, StashType>::eval(Element elem, BlockVec& values) {
     //std::cerr << "computing binary hash of "<< element << "\n";
-    BinaryHash binary_hash = computeBinaryHash(elem);
+    BinaryHash binary_hash = computeBinaryHash(elem, seed);
     //std::cerr << "hash is " << binary_hash << "\n";
     //std::cerr << "computing index...\n";
     int leaf_index = computeIndex(binary_hash);

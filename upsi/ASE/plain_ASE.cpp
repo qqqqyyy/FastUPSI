@@ -2,7 +2,7 @@
 
 namespace upsi {
 
-void PlainASE::build(const std::vector<Element>& elems, oc::PRNG* prng) {
+void PlainASE::build(const std::vector<Element>& elems, oc::PRNG* prng, oc::block ro_seed) {
     elem_cnt = elems.size();
     for (int i = 0; i < elem_cnt; ++i) *(ase[i]) = elems[i];
 }

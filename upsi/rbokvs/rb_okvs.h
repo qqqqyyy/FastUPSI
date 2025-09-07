@@ -16,7 +16,7 @@ class rb_okvs : public ASE{
         }
         void clear() override {elem_cnt = 0;} //you might change this function if you want
         bool isEmpty() override {return elem_cnt == 0;} //you might change this function if you want
-        void build(const std::vector<Element>& elems, oc::PRNG* prng = nullptr) override; //encode, build a new okvs 
+        void build(const std::vector<Element>& elems, oc::PRNG* prng = nullptr, oc::block ro_seed = oc::ZeroBlock) override; //encode, build a new okvs 
         void eval(Element elem, BlockVec& values) override; //decode, outputs should be put in values 
 };
 

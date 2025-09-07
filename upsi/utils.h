@@ -22,6 +22,8 @@
 #include "cryptoTools/Common/Defines.h"
 #include "cryptoTools/Crypto/PRNG.h"
 #include "cryptoTools/Common/Timer.h"
+#include "cryptoTools/Common/BitVector.h"
+#include "cryptoTools/Crypto/RandomOracle.h"
 
 // for printing to the command line in colors
 #define RED    "\033[0;31m"
@@ -39,10 +41,6 @@ namespace upsi {
     #define DEFAULT_STASH_SIZE 89
     #define DEFAULT_CUCKOO_SIZE 200 //TODO
 
-    // #define MAX_SUM 50000
-
-    // #define ELEMENT_STR_LENGTH 16
-
     // type of elements in each party's sets
     // TODO
 	typedef oc::block Element;
@@ -58,14 +56,20 @@ namespace upsi {
 
     // template<typename T> T elementCopy(const T &elem);
     
-    typedef std::string BinaryHash;
-	template<typename T> BinaryHash computeBinaryHash(T &elem);
+    typedef oc::BitVector BinaryHash;
+
+    BinaryHash block2binary(oc::block x);
+	BinaryHash computeBinaryHash(oc::block elem, oc::block seed);
     BinaryHash generateRandomHash(oc::PRNG* prng);
 	std::vector<BinaryHash> generateRandomHash(oc::PRNG* prng, size_t cnt);
 
     Element GetRandomSetElement(oc::PRNG* prng);
     Element GetRandomPadElement(oc::PRNG* prng);
     std::vector<Element> GetRandomSet(oc::PRNG* prng, size_t set_size);
+
+    //random oracle
+    oc::block random_oracle(oc::block seed, oc::block x);
+    std::pair<oc::block, oc::block> random_oracle_256(oc::block seed, oc::block x);
 
     /**
      * class to unify time benchmarking

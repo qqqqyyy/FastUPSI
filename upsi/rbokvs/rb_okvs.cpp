@@ -2,7 +2,7 @@
 
 namespace upsi {
 
-void rb_okvs::build(const std::vector<Element>& elems, oc::PRNG* prng) {
+void rb_okvs::build(const std::vector<Element>& elems, oc::PRNG* prng, oc::block ro_seed) {
     //TODO
 }
 

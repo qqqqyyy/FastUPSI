@@ -61,7 +61,7 @@ class ASE{
 
 
     // construct this ASE with elements
-    virtual void build(const std::vector<Element>& elems, oc::PRNG* prng = nullptr) {throw std::runtime_error("build() not implemented");}
+    virtual void build(const std::vector<Element>& elems, oc::PRNG* prng = nullptr, oc::block ro_seed = oc::ZeroBlock) {throw std::runtime_error("build() not implemented");}
 
     // Extract elements
     virtual void getElements(std::vector<Element>& elems) {throw std::runtime_error("Extracting elements not supported");}
