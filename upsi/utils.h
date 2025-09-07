@@ -49,6 +49,8 @@ namespace upsi {
     typedef std::span<oc::block> BlockSpan;
     typedef std::shared_ptr<oc::block> BlockPtr;
     typedef std::vector<BlockPtr> PtrVec;
+    typedef std::pair<oc::block, oc::block> OPRFValue;
+    typedef std::vector<OPRFValue> OPRFValueVec;
 
     // protocol functionality options
     // enum Functionality { PSI };
@@ -68,8 +70,8 @@ namespace upsi {
     std::vector<Element> GetRandomSet(oc::PRNG* prng, size_t set_size);
 
     //random oracle
-    oc::block random_oracle(oc::block seed, oc::block x);
-    std::pair<oc::block, oc::block> random_oracle_256(oc::block seed, oc::block x);
+    oc::block random_oracle(oc::block x, oc::block seed = oc::ZeroBlock);
+    OPRFValue random_oracle_256(oc::block x, oc::block seed = oc::ZeroBlock);
 
     /**
      * class to unify time benchmarking
