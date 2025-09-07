@@ -61,19 +61,19 @@ class ASE{
 
 
     // construct this ASE with elements
-    virtual void build(const std::vector<Element>& elems, oc::PRNG* prng = nullptr, oc::block ro_seed = oc::ZeroBlock) {throw std::runtime_error("build() not implemented");}
+    virtual void build(const std::vector<Element>& elems, oc::block ro_seed = oc::ZeroBlock, oc::PRNG* prng = nullptr) {throw std::runtime_error("build() not implemented");}
 
-    // Extract elements
+    // Extract elements, only for plain_ASE
     virtual void getElements(std::vector<Element>& elems) {throw std::runtime_error("Extracting elements not supported");}
 
-    // Insert an element to ASE, return true if success, false if it's already full
-    virtual bool insertElement(const Element &elem, oc::PRNG* prng = nullptr) {throw std::runtime_error("Adding element not supported");}
+    // Insert an element to ASE, return true if success, false if it's already full, only for plain_ASE
+    virtual bool insertElement(const Element &elem) {throw std::runtime_error("Adding element not supported");}
 
-    virtual std::vector<std::shared_ptr<ASE> > insert(const std::vector<Element>& elem, oc::PRNG* prng = nullptr) {
-        throw std::runtime_error("Adding elements not supported");
-    }
-    // pad ASE with padding elements
-    virtual void pad(oc::PRNG* prng) {throw std::runtime_error("Padding not supported");}
+    // virtual std::vector<std::shared_ptr<ASE> > insert(const std::vector<Element>& elem, oc::PRNG* prng = nullptr) {
+    //     throw std::runtime_error("Adding elements not supported");
+    // }
+    // // pad ASE with padding elements
+    // virtual void pad(oc::PRNG* prng) {throw std::runtime_error("Padding not supported");}
 
     // output k values (relaxed)
     virtual void eval(Element elem, BlockVec& values) {

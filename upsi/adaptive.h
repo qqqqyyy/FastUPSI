@@ -16,6 +16,7 @@ class Adaptive : public ASE
 
     public:
         std::vector<std::shared_ptr<BaseType> > nodes;
+        BlockVec seed;
         //TODO: hash
 
         size_t start_size;
@@ -30,12 +31,16 @@ class Adaptive : public ASE
 
         void addASE();
 
-        std::vector<std::shared_ptr<ASE> > insert(const std::vector<Element>& elem, oc::PRNG* prng = nullptr) override;
+        std::vector<std::shared_ptr<ASE> > insert(
+            const std::vector<Element>& elem, 
+            BlockVec& new_seeds,
+            oc::PRNG* prng = nullptr);
         void replaceASEs(
             int new_elem_cnt,
+            const BlockVec& new_seeds,
             const std::vector<std::shared_ptr<ASE> >& new_ASEs
         );
-		void eval(Element elem, BlockVec& values) override;
+		// void eval(Element elem, BlockVec& values) override;
 };
 
 }      // namespace upsi

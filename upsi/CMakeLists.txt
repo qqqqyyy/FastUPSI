@@ -7,6 +7,7 @@ set(TREE_SRCS
     "vole.cpp"
     "binary_tree.cpp"
     "adaptive.cpp"
+    "oprf.cpp"
     "party.h"
     "tree_party.h"
 )

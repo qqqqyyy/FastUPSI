@@ -8,11 +8,12 @@ void Adaptive<BaseType>::addASE() {
     ++node_cnt;
     auto cur_node = std::make_shared<BaseType>(node_size);
     nodes.push_back(cur_node);
+    seed.push_back(oc::sysRandomSeed());
     for (int i = 0; i < node_size; ++i) ase.push_back(cur_node->ase[i]);
 }
 
 template<typename BaseType>
-std::vector<std::shared_ptr<ASE> > Adaptive<BaseType>::insert(const std::vector<Element> &elem, oc::PRNG* prng) {
+std::vector<std::shared_ptr<ASE> > Adaptive<BaseType>::insert(const std::vector<Element> &elem, BlockVec& new_seeds, oc::PRNG* prng) {
     int new_elem_cnt = elem.size();
     while((1 << node_cnt) * start_size <= elem_cnt + new_elem_cnt) addASE();
     int last = elem_cnt / start_size, now = (elem_cnt + new_elem_cnt) / start_size;
@@ -31,43 +32,49 @@ std::vector<std::shared_ptr<ASE> > Adaptive<BaseType>::insert(const std::vector<
         if(((last >> i) & 1) == 0 && ((now >> i) & 1) == 1) {
             int cur_size = (1 << i);
             std::vector<Element> tmp(all_elems.begin() + start, all_elems.begin() + start + cur_size);
-            nodes[i + 1]->build(tmp, prng);
+            nodes[i + 1]->build(tmp, seed[i + 1] = oc::sysRandomSeed(), prng);
             start += cur_size;
         }
     std::vector<Element> tmp(all_elems.begin() + start, all_elems.end());
-    nodes[0]->build(tmp, prng);
+    nodes[0]->build(tmp, seed[0] = oc::sysRandomSeed(), prng);
     // nodes[0]->pad();
     elem_cnt += new_elem_cnt;
 
     std::vector<std::shared_ptr<ASE> > rs;
     rs.push_back(nodes[0]);
+    new_seeds.push_back(seed[0]);
+    
     for (int i = 0; i < node_cnt; ++i) 
-        if(((last >> i) & 1) == 0 && ((now >> i) & 1) == 1) 
+        if(((last >> i) & 1) == 0 && ((now >> i) & 1) == 1) {
             rs.push_back(nodes[i + 1]);
+            new_seeds.push_back(seed[i + 1]);
+        }
     return rs;
 }
 
 template<typename BaseType>
-void Adaptive<BaseType>::replaceASEs(int new_elem_cnt, const std::vector<std::shared_ptr<ASE> >& new_ASEs) {
+void Adaptive<BaseType>::replaceASEs(int new_elem_cnt, const BlockVec& new_seeds, const std::vector<std::shared_ptr<ASE> >& new_ASEs) {
     while((1 << node_cnt) * start_size <= elem_cnt + new_elem_cnt) addASE();
     int last = elem_cnt / start_size, now = (elem_cnt + new_elem_cnt) / start_size;
     nodes[0]->copy(*new_ASEs[0]);
     
     for (int i = 0, idx = 0; i < node_cnt; ++i) 
-        if(((last >> i) & 1) == 0 && ((now >> i) & 1) == 1)
+        if(((last >> i) & 1) == 0 && ((now >> i) & 1) == 1) {
             nodes[i + 1]->copy(*new_ASEs[++idx]);
+            seed[i + 1] = new_seeds[idx];
+        }
         else if (((last >> i) & 1) == 1 && ((now >> i) & 1) == 0) 
             nodes[i + 1]->clear();
 
     elem_cnt += new_elem_cnt;
 }
 
-template<typename BaseType> 
-void Adaptive<BaseType>::eval(Element elem, BlockVec& values) {
-    for (int i = 0; i <= node_cnt; ++i) 
-        if(!nodes[i]->isEmpty()) 
-            nodes[i]->eval(elem, values);
-}
+// template<typename BaseType> 
+// void Adaptive<BaseType>::eval(Element elem, BlockVec& values) {
+//     for (int i = 0; i <= node_cnt; ++i) 
+//         if(!nodes[i]->isEmpty()) 
+//             nodes[i]->eval(elem, values);
+// }
 
 template class Adaptive<PlainASE>;
 
