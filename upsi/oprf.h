@@ -9,7 +9,7 @@ namespace upsi {
 
 template<typename ASEType>
 class OPRF{
-    void sender(const std::vector<Element>& input, ASE* ase_diff, VoleSender* vole_sender, 
+    void sender(const std::vector<Element>& input, ASEType& b, oc::block delta,
         OPRFValueVec& values, oc::block ro_seed = oc::ZeroBlock, oc::PRNG* prng = nullptr);
 
     ASE receiver(const std::vector<Element>& input, ASEType* ase, VoleReceiver* vole_receiver, 

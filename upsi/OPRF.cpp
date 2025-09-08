@@ -4,12 +4,8 @@ namespace upsi{
 
 // push back oprf values into "values"
 template<typename ASEType>
-void OPRF<ASEType>::sender(const std::vector<Element>& input, ASE* ase_diff, VoleSender* vole_sender, 
+void OPRF<ASEType>::sender(const std::vector<Element>& input, ASEType& b, oc::block delta,
     OPRFValueVec& values, oc::block ro_seed, oc::PRNG* prng){
-    
-    int ase_size = ase_diff->n;
-    oc::block delta = vole_sender->delta;
-    ASEType b = ASEType(std::move(vole_sender->get(ase_size) + (*ase_diff * delta))); //convert base ASE type to ASEType
     
     // a = b + delta * okvs
     // you may use b.eval(input[i], ...), gf128Mul

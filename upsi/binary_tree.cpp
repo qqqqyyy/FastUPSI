@@ -126,7 +126,6 @@ std::vector<std::shared_ptr<ASE> > BinaryTree<NodeType, StashType>::insert(const
 			if(u == 0) cur.push_back(elem[o]);
 
 			int cur_size = cur.size();
-			//std::cerr << "tmp_node size  = " << tmp_node_size << std::endl;
 
 			for (u64 i = 0; i < cur_size; ++i) {
 				int x = computeIndex(computeBinaryHash(cur[i], seed));
@@ -204,7 +203,17 @@ void BinaryTree<NodeType, StashType>::replaceNodes(int new_elem_cnt, const std::
 	// update elem_cnt
 	this->elem_cnt += new_elem_cnt;
 }
-
+template<typename NodeType, typename StashType>
+void BinaryTree<NodeType, StashType>::build(const std::vector<Element>& elems, oc::block ro_seed, oc::PRNG* prng) {
+	nodes.clear();
+	depth = 0;
+	auto stash = std::make_shared<StashType>(stash_size);
+    this->nodes.push_back(stash);
+	for (int i = 0; i < stash_size; ++i) ase.push_back(stash->ase[i]);
+    addNode(); //root;
+	seed = ro_seed;
+	insert(elems, prng);
+}
 
 template<typename NodeType, typename StashType>
 void BinaryTree<NodeType, StashType>::eval(Element elem, BlockVec& values) {
