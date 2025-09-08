@@ -41,7 +41,7 @@ class BinaryTree : public ASE
         // Depth of the tree (empty tree or just root is depth 0)
         int depth = 0;
 
-        BinaryTree(size_t stash_size = DEFAULT_STASH_SIZE, size_t node_size = DEFAULT_NODE_SIZE);
+        BinaryTree(oc::block seed = oc::ZeroBlock, size_t stash_size = DEFAULT_STASH_SIZE, size_t node_size = DEFAULT_NODE_SIZE);
         void clear() override;
 
         void addNode();
@@ -52,6 +52,7 @@ class BinaryTree : public ASE
             const std::vector<std::shared_ptr<ASE> >& new_nodes,
             std::vector<BinaryHash>& hsh
         );
+        // build is only used for adaptive
         void build(const std::vector<Element>& elems, oc::block ro_seed = oc::ZeroBlock, oc::PRNG* prng = nullptr) override;
 		void eval(Element elem, BlockVec& values) override;
 

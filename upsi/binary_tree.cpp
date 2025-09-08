@@ -10,9 +10,10 @@ namespace upsi {
 ////////////////////////////////////////////////////////////////////////////////
 
 template<typename NodeType, typename StashType>
-BinaryTree<NodeType, StashType>::BinaryTree(size_t stash_size, size_t node_size) {
+BinaryTree<NodeType, StashType>::BinaryTree(oc::block seed, size_t stash_size, size_t node_size) {
     this->node_size = node_size;
     this->stash_size = stash_size;
+	this->seed = seed;
 
     // Index for root node is 1, index for stash node is 0
     // depth = 0

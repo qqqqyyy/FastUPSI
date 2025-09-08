@@ -10,10 +10,10 @@ namespace upsi {
 template<typename ASEType>
 class OPRF{
     void sender(const std::vector<Element>& input, ASEType& b, oc::block delta,
-        OPRFValueVec& values, oc::block ro_seed = oc::ZeroBlock, oc::PRNG* prng = nullptr);
+        OPRFValueVec& values, oc::block ro_seed = oc::ZeroBlock);
 
-    ASE receiver(const std::vector<Element>& input, ASEType* ase, VoleReceiver* vole_receiver, 
-        OPRFValueVec& values, oc::block ro_seed = oc::ZeroBlock, oc::PRNG* prng = nullptr);
+    void receiver(const std::vector<Element>& input, ASEType& a, 
+        OPRFValueVec& values, oc::block ro_seed = oc::ZeroBlock);
 };
 
 } //namespace upsi

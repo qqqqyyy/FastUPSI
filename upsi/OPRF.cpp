@@ -5,7 +5,7 @@ namespace upsi{
 // push back oprf values into "values"
 template<typename ASEType>
 void OPRF<ASEType>::sender(const std::vector<Element>& input, ASEType& b, oc::block delta,
-    OPRFValueVec& values, oc::block ro_seed, oc::PRNG* prng){
+    OPRFValueVec& values, oc::block ro_seed){
     
     // a = b + delta * okvs
     // you may use b.eval(input[i], ...), gf128Mul
@@ -16,20 +16,13 @@ void OPRF<ASEType>::sender(const std::vector<Element>& input, ASEType& b, oc::bl
 
 }
 
-//push back oprf values into "values", return ase_diff
+//push back oprf values into "values"
 template<typename ASEType>
-ASE OPRF<ASEType>::receiver(const std::vector<Element>& input, ASEType* ase, VoleReceiver* vole_receiver, 
-    OPRFValueVec& values, oc::block ro_seed, oc::PRNG* prng){
+void OPRF<ASEType>::receiver(const std::vector<Element>& input, ASEType& a, 
+    OPRFValueVec& values, oc::block ro_seed){
     
-    ase->build(input, ro_seed, prng);
-    int ase_size = ase->n;
-    auto vole = vole_receiver->get(ase_size);
-    ASEType a = ASEType(std::move(vole.first));
-    ASE c = vole.second;
-
     // TODO
 
-    return *ase - c;
 }
 
 template class OPRF<Poly>;

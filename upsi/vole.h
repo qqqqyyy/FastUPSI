@@ -26,7 +26,13 @@ class VOLE{
         size_t m = n - 128; //TODO
 
         size_t idx = 0;
-        VOLE(oc::Socket* _chl = nullptr, oc::PRNG* _prng = nullptr):chl(_chl), prng(_prng){idx = 0;}
+        VOLE(oc::Socket* _chl = nullptr, oc::PRNG* _prng = nullptr):chl(_chl), prng(_prng){}
+
+        void setup(oc::Socket* _chl, oc::PRNG* _prng = nullptr){
+            this->chl = _chl;
+            this->prng = _prng;
+            idx = 0;
+        }
 
         virtual void generate(size_t vole_size) = 0;
     
