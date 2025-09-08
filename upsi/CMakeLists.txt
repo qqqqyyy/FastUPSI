@@ -9,7 +9,7 @@ set(TREE_SRCS
     "adaptive.cpp"
     "oprf.cpp"
     "party.h"
-    "tree_party.h"
+    "tree_party.cpp"
 )
 
 add_library(upsi STATIC ${TREE_SRCS})

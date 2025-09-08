@@ -9,6 +9,7 @@ namespace upsi {
 
 template<typename ASEType>
 class OPRF{
+public:
     void sender(const std::vector<Element>& input, ASEType& b, oc::block delta,
         OPRFValueVec& values, oc::block ro_seed = oc::ZeroBlock);
 
