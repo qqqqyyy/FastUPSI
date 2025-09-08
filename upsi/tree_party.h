@@ -48,6 +48,8 @@ class TreeParty : public Party{
             intersection = cur_I;
         }
 
+        void run();
+
         void sender(std::vector<Element> elems); // query for elems
 
         OPRFValueVec receiver();
