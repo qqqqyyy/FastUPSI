@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "ASE/ASE.h"
 #include "vole.h"
+#include "network.h"
 
 namespace upsi{
 
@@ -22,6 +23,37 @@ class Party{
         oc::PRNG my_prng;
 
         std::vector<Element> intersection;
+
+        struct OPRFData{
+            struct OPRFValueHash {
+                size_t operator()(const OPRFValue& p) const noexcept {
+                    size_t h1 = std::hash<oc::block>{}(p.first);
+                    size_t h2 = std::hash<oc::block>{}(p.second);
+                    return h1 ^ (h2 + 0x9e3779b97f4a7c15ULL + (h1<<6) + (h1>>2)); //TODO?
+                }
+            };
+            std::unordered_map<Element, OPRFValue> key_value;
+            std::unordered_map<OPRFValue, Element, OPRFValueHash> value_key;
+            void insert(const Element& key, const OPRFValue& value) {
+                key_value[key] = value;
+                value_key[value] = key;
+            }
+            void remove(const Element& key) {
+                auto it = key_value.find(key);
+                if(it == key_value.end()) throw std::runtime_error("oprf dataset deletion error (key_value)");
+                OPRFValue value = it->second;
+                key_value.erase(it);
+                
+                auto it2 = value_key.find(value);
+                if(it2 == value_key.end()) throw std::runtime_error("oprf dataset deletion error (value_key)");
+                value_key.erase(it2);
+            }
+            std::pair<bool, oc::block> find(const OPRFValue& value) {
+                auto it = value_key.find(value);
+                if(it == value_key.end()) return std::make_pair(false, oc::ZeroBlock);
+                return std::make_pair(true, it->second);
+            }
+        }oprf_data;
 
         Party(int _party, oc::Socket* _chl, int _total_days, int _max_data_size) {
 

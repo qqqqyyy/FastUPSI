@@ -68,12 +68,13 @@ oc::block random_oracle(oc::block x, oc::block seed) {
     return rs;
 }
 
-OPRFValue random_oracle_256(oc::block x, oc::block seed){
+OPRFValue random_oracle_256(oc::block x, size_t index, oc::block seed){
     oc::RandomOracle ro(32);
     oc::u8 type = 1;
     ro.Update(&type, 1);
     ro.Update(&seed, 1);
     ro.Update(&x, 1);
+    ro.Update(&index, 1);
     std::array<oc::block, 2> buf;
     ro.Final(buf);
     return std::make_pair(buf[0], buf[1]);

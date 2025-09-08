@@ -71,11 +71,8 @@ ASE VoleSender::generate(int domain_size, int point_cnt) {
 
     // generate secret shares of delta * v
     ASE cur_b = get(point_cnt);
-    BlockVec data;
-    data.resize(point_cnt + 2);
-    coproto::sync_wait(chl->recv(data));
     // std::cout << "sender " << data.size() << std::endl;
-    ASE tmp(point_cnt, true); tmp.deserialize(data);
+    ASE tmp = cp::sync_wait(recv_ASE(chl));
     cur_b += (tmp *= delta);
 
     // std::cerr << "sender secret shares" << std::endl;
@@ -132,10 +129,8 @@ ASE VoleReceiver::generate(int domain_size, BlockVec values, std::vector<size_t>
     // generate secret shares of delta * v
     auto base_vole = get(point_cnt);
     ASE diff = ASE(values) - base_vole.second;
-    BlockVec data;
-    diff.serialize(data);
     // std::cout << "receiver " << data.size() << std::endl;
-    coproto::sync_wait(chl->send(data));
+    coproto::sync_wait(send_ASE(diff, chl));
     coproto::sync_wait(chl->flush());
 
     // std::cerr << "receiver secret shares" << std::endl;

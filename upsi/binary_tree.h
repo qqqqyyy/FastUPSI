@@ -46,7 +46,7 @@ class BinaryTree : public ASE
 
         void addNode();
         // insert is only for plaintext tree
-        std::vector<std::shared_ptr<ASE> > insert(const std::vector<Element> &elem, oc::PRNG* prng = nullptr);
+        std::pair<std::vector<std::shared_ptr<ASE> >, std::vector<int> > insert(const std::vector<Element> &elem, oc::PRNG* prng = nullptr);
         void replaceNodes(
             int new_elem_cnt,
             const std::vector<std::shared_ptr<ASE> >& new_nodes,

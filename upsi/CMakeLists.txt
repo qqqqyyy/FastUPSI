@@ -4,6 +4,7 @@ set(TREE_SRCS
     "ASE/plain_ASE.cpp"
     "ASE/poly.cpp"
     "rbokvs/rb_okvs.cpp"
+    "network.h"
     "vole.cpp"
     "binary_tree.cpp"
     "adaptive.cpp"

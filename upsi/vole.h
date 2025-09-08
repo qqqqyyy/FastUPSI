@@ -4,9 +4,9 @@
 #include "libOTe/Vole/Silent/SilentVoleReceiver.h"
 #include "libOTe/TwoChooseOne/Silent/SilentOtExtSender.h"
 #include "libOTe/TwoChooseOne/Silent/SilentOtExtReceiver.h"
-#include "coproto/Socket/AsioSocket.h"
 
 #include "utils.h"
+#include "network.h"
 #include "ASE/ASE.h"
 
 namespace upsi{

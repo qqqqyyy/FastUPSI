@@ -71,7 +71,7 @@ namespace upsi {
 
     //random oracle
     oc::block random_oracle(oc::block x, oc::block seed = oc::ZeroBlock);
-    OPRFValue random_oracle_256(oc::block x, oc::block seed = oc::ZeroBlock);
+    OPRFValue random_oracle_256(oc::block x, size_t index, oc::block seed = oc::ZeroBlock);
 
     /**
      * class to unify time benchmarking

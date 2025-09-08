@@ -4,7 +4,7 @@ namespace upsi{
 
 // push back oprf values into "values"
 template<typename ASEType>
-void OPRF<ASEType>::sender(const std::vector<Element>& input, ASEType& b, oc::block delta,
+void OPRF<ASEType>::sender(const std::vector<Element>& input, size_t index, ASEType& b, oc::block delta,
     OPRFValueVec& values, oc::block ro_seed){
     
     // a = b + delta * okvs
@@ -18,7 +18,7 @@ void OPRF<ASEType>::sender(const std::vector<Element>& input, ASEType& b, oc::bl
 
 //push back oprf values into "values"
 template<typename ASEType>
-void OPRF<ASEType>::receiver(const std::vector<Element>& input, ASEType& a, 
+void OPRF<ASEType>::receiver(const std::vector<Element>& input, size_t index, ASEType& a, 
     OPRFValueVec& values, oc::block ro_seed){
     
     // TODO

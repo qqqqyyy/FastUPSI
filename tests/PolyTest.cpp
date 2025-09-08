@@ -4,7 +4,7 @@
 using namespace oc;
 using namespace upsi;
 
-const int n = 20 * (1 << 10), m = 4;
+const int n = 20 * (1 << 10) * 2, m = 4;
 bool DEBUG = true;
 
 int main() {

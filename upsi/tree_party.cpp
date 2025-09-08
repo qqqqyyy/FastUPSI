@@ -4,12 +4,14 @@ namespace upsi{
 
 
 void TreeParty::my_addition(std::vector<Element> elems) {
-    auto nodes = my_tree.insert(elems, &tree_prng);
+    auto ins = my_tree.insert(elems, &tree_prng);
+    auto nodes = ins.first;
+    auto ind = ins.second;
     int cnt = nodes.size();
 
     std::vector<Poly> polys(cnt - 1);
     std::vector<BlockVec> cur_elems;
-    std::vector<BlockVec>  cur_values;
+    std::vector<BlockVec> cur_values;
     for (int i = 0; i < cnt - 1; ++i) {
         std::vector<Element> tmp;
         BlockVec tmp_values;
@@ -22,20 +24,23 @@ void TreeParty::my_addition(std::vector<Element> elems) {
     }
     batchInterpolation(polys, cur_elems, cur_values);
 
-    rb_okvs stash(200); //TODO: size
+    OPRFValueVec values;
+    OPRF<Poly> oprf_poly;
+    for (int i = 0; i < cnt - 1; ++i) {
+        auto vole = vole_receiver.get(polys[i].n);
+        ASE c = polys[i] - vole.second;
+        oc::cp::sync_wait(send_ASE(c, chl));
+        Poly a = Poly(std::move(vole.first));
+        oprf_poly.receiver(cur_elems[i], ind[i], a, values, ro_seed); //TODO
+    } //TODO
+
+    rb_okvs stash(200); //TODO: okvs size
 
     std::vector<Element> tmp;
     nodes[cnt - 1]->getElements(tmp);
     stash.build(tmp, ro_seed);
 
-    OPRFValueVec values;
-    OPRF<Poly> oprf_poly;
-    for (int i = 0; i < cnt - 1; ++i) {
-        auto vole = vole_receiver.get(polys[i].n);
-        Poly a = Poly(std::move(vole.first));
-        oprf_poly.receiver(cur_elems[i], a, values, ro_seed); //TODO
-        ASE c = vole.second;
-    } //TODO
+    
 }
 
 

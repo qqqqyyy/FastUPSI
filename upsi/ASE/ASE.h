@@ -29,19 +29,19 @@ class ASE{
         return out;
     }
 
-    void serialize(BlockVec& data) {
-        data.push_back(oc::toBlock(n));
-        data.push_back(oc::toBlock(elem_cnt));
+    void write(BlockVec& data) const {
+        // data.push_back(oc::toBlock(n));
+        // data.push_back(oc::toBlock(elem_cnt));
         for (int i = 0; i < n; ++i) {
             if(!ase[i]) throw std::runtime_error("serialize error!");
             data.push_back(*ase[i]);
         }
     }
 
-    int deserialize(const BlockSpan& data) {
+    int read(const BlockSpan& data) {
         int cnt = 0;
-        n = data[cnt++].get<uint64_t>()[0];
-        elem_cnt = data[cnt++].get<uint64_t>()[0];
+        // n = data[cnt++].get<uint64_t>()[0];
+        // elem_cnt = data[cnt++].get<uint64_t>()[0];
         for (int i = 0; i < n; ++i) *ase[i] = data[cnt++];
         return cnt;
     }

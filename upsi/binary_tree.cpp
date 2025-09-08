@@ -97,7 +97,7 @@ int* BinaryTree<NodeType, StashType>::generateRandomPaths(size_t cnt, std::vecto
 // Return vector of (plaintext) nodes
 // stash: index = 0
 template<typename NodeType, typename StashType>
-std::vector<std::shared_ptr<ASE> > BinaryTree<NodeType, StashType>::insert(const std::vector<Element> &elem, oc::PRNG* prng) {
+std::pair<std::vector<std::shared_ptr<ASE> >, std::vector<int> > BinaryTree<NodeType, StashType>::insert(const std::vector<Element> &elem, oc::PRNG* prng) {
 	int new_elem_cnt = elem.size();
 
 	// add new layer when tree is full
@@ -175,7 +175,7 @@ std::vector<std::shared_ptr<ASE> > BinaryTree<NodeType, StashType>::insert(const
 	for (u64 i = 0; i < node_cnt; ++i) {
         rs.push_back(nodes[ind[i]]);
     }
-	return rs;
+	return std::make_pair(rs, ind);
 }
 
 // Update tree (receiver)
