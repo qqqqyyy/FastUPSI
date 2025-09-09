@@ -8,11 +8,16 @@ void OPRF<ASEType>::sender(const std::vector<Element>& input, size_t index, ASET
     OPRFValueVec& values, oc::block ro_seed){
     
     // a = b + delta * okvs
-    // you may use b.eval(input[i], ...), gf128Mul
-    // key = input[i], value = random_oracle(key, ro_seed)
-    // use random_oracle_256 for the hash outside
-    // TODO
+    // values[i] = random_oracle_256(b.eval(input[i])+delta * random_oracle(input[i], ro_seed), ro_seed)
 
+    values.reserve(values.size() + input.size());
+    for (const auto& x : input) {
+        auto bx   = b.eval1(x);                 
+        auto kx   = random_oracle(x, ro_seed);        
+        auto prod = kx.gf128Mul(delta);             
+        auto y    = bx ^ prod;                        // b(x) + delta*H(x)
+        values.push_back(random_oracle_256(y, index, ro_seed));
+    }
 
 }
 
@@ -20,8 +25,13 @@ void OPRF<ASEType>::sender(const std::vector<Element>& input, size_t index, ASET
 template<typename ASEType>
 void OPRF<ASEType>::receiver(const std::vector<Element>& input, size_t index, ASEType& a, 
     OPRFValueVec& values, oc::block ro_seed){
-    
-    // TODO
+
+    // values[i] = random_oracle_256(a.eval(input[i]), ro_seed)
+    values.reserve(values.size() + input.size());
+    for (const auto& x : input) {
+        auto ax = a.eval1(x);                   
+        values.push_back(random_oracle_256(ax, index, ro_seed)); // a(x)
+    }
 
 }
 

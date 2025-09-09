@@ -38,15 +38,22 @@ class Party{
                 key_value[key] = value;
                 value_key[value] = key;
             }
+            void insert(const BlockVec& keys, const OPRFValueVec& values) {
+                int cnt = keys.size();
+                for (int i = 0; i < cnt; ++i) insert(keys[i], values[i]);
+            }
             void remove(const Element& key) {
                 auto it = key_value.find(key);
-                if(it == key_value.end()) throw std::runtime_error("oprf dataset deletion error (key_value)");
+                if(it == key_value.end()) return;
                 OPRFValue value = it->second;
                 key_value.erase(it);
                 
                 auto it2 = value_key.find(value);
                 if(it2 == value_key.end()) throw std::runtime_error("oprf dataset deletion error (value_key)");
                 value_key.erase(it2);
+            }
+            void remove(const BlockVec& keys) {
+                for (const auto& key: keys) remove(key);
             }
             std::pair<bool, oc::block> find(const OPRFValue& value) {
                 auto it = value_key.find(value);

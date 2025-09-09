@@ -13,7 +13,7 @@ void Adaptive<BaseType>::addASE() {
 }
 
 template<typename BaseType>
-std::vector<std::shared_ptr<ASE> > Adaptive<BaseType>::insert(const std::vector<Element> &elem, BlockVec& new_seeds, oc::PRNG* prng) {
+std::vector<std::shared_ptr<ASE> > Adaptive<BaseType>::insert(const std::vector<Element> &elem, BlockVec& new_seeds) {
     int new_elem_cnt = elem.size();
     while((1 << node_cnt) * start_size <= elem_cnt + new_elem_cnt) addASE();
     int last = elem_cnt / start_size, now = (elem_cnt + new_elem_cnt) / start_size;
@@ -32,11 +32,11 @@ std::vector<std::shared_ptr<ASE> > Adaptive<BaseType>::insert(const std::vector<
         if(((last >> i) & 1) == 0 && ((now >> i) & 1) == 1) {
             int cur_size = (1 << i);
             std::vector<Element> tmp(all_elems.begin() + start, all_elems.begin() + start + cur_size);
-            nodes[i + 1]->build(tmp, seed[i + 1] = oc::sysRandomSeed(), prng);
+            nodes[i + 1]->build(tmp, seed[i + 1] = oc::sysRandomSeed());
             start += cur_size;
         }
     std::vector<Element> tmp(all_elems.begin() + start, all_elems.end());
-    nodes[0]->build(tmp, seed[0] = oc::sysRandomSeed(), prng);
+    nodes[0]->build(tmp, seed[0] = oc::sysRandomSeed());
     // nodes[0]->pad();
     elem_cnt += new_elem_cnt;
 

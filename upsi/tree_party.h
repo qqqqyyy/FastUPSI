@@ -32,7 +32,8 @@ class TreeParty : public Party{
                 coproto::sync_wait(chl->recv(ro_seed));
             }
             tree_prng.SetSeed(prng_seed);
-            my_tree.seed = other_tree.seed = tree_seed;
+            my_tree.setup(&tree_prng, tree_seed, DEFAULT_STASH_SIZE, DEFAULT_NODE_SIZE);
+            other_tree.setup(&tree_prng, tree_seed, DEFAULT_STASH_SIZE, 200); //TODO
         }
 
 

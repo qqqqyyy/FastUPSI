@@ -10,10 +10,11 @@ namespace upsi {
 ////////////////////////////////////////////////////////////////////////////////
 
 template<typename NodeType, typename StashType>
-BinaryTree<NodeType, StashType>::BinaryTree(oc::block seed, size_t stash_size, size_t node_size) {
+void BinaryTree<NodeType, StashType>::setup(oc::PRNG* prng, oc::block seed, size_t stash_size, size_t node_size) {
     this->node_size = node_size;
     this->stash_size = stash_size;
 	this->seed = seed;
+	this->prng = prng;
 
     // Index for root node is 1, index for stash node is 0
     // depth = 0
@@ -97,7 +98,7 @@ int* BinaryTree<NodeType, StashType>::generateRandomPaths(size_t cnt, std::vecto
 // Return vector of (plaintext) nodes
 // stash: index = 0
 template<typename NodeType, typename StashType>
-std::pair<std::vector<std::shared_ptr<ASE> >, std::vector<int> > BinaryTree<NodeType, StashType>::insert(const std::vector<Element> &elem, oc::PRNG* prng) {
+std::pair<std::vector<std::shared_ptr<ASE> >, std::vector<int> > BinaryTree<NodeType, StashType>::insert(const std::vector<Element> &elem) {
 	int new_elem_cnt = elem.size();
 
 	// add new layer when tree is full
@@ -180,41 +181,45 @@ std::pair<std::vector<std::shared_ptr<ASE> >, std::vector<int> > BinaryTree<Node
 
 // Update tree (receiver)
 template<typename NodeType, typename StashType>
-void BinaryTree<NodeType, StashType>::replaceNodes(int new_elem_cnt, const std::vector<std::shared_ptr<ASE> > &new_nodes, std::vector<BinaryHash> &hsh) {
+std::vector<int> BinaryTree<NodeType, StashType>::update(int new_elem_cnt) {
 
-	int node_cnt = new_nodes.size();
+	// int node_cnt = new_nodes.size();
 
 	// add new layer when tree is full
 	while(new_elem_cnt + this->elem_cnt >= (1 << (this->depth + 1))) addNewLayer();
 	//std::cerr << "new depth: " << this->depth << std::endl;
 
 	std::vector<int> ind;
+	// generate hash
+	auto hsh = generateRandomHash(prng, new_elem_cnt);
 	int *leaf_ind = generateRandomPaths(new_elem_cnt, ind, hsh);
 	delete [] leaf_ind;
 
-	assert(node_cnt == ind.size());
+	// assert(node_cnt == ind.size());
 
 	//for (u64 i = 0; i < node_cnt; ++i) std::cerr << ind[i] << std::endl;
 
 	// replace nodes (including stash)
-	for (u64 i = 0; i < node_cnt; ++i) {
-		assert(nodes[ind[i]]->ase.size() == new_nodes[i]->ase.size());
-		nodes[ind[i]]->copy(*(new_nodes[i]));
-	}
-	// update elem_cnt
+	// for (u64 i = 0; i < node_cnt; ++i) {
+	// 	assert(nodes[ind[i]]->ase.size() == new_nodes[i]->ase.size());
+	// 	nodes[ind[i]]->copy(*(new_nodes[i]));
+	// }
+	// // update elem_cnt
 	this->elem_cnt += new_elem_cnt;
+
+	return ind;
 }
-template<typename NodeType, typename StashType>
-void BinaryTree<NodeType, StashType>::build(const std::vector<Element>& elems, oc::block ro_seed, oc::PRNG* prng) {
-	nodes.clear();
-	depth = 0;
-	auto stash = std::make_shared<StashType>(stash_size);
-    this->nodes.push_back(stash);
-	for (int i = 0; i < stash_size; ++i) ase.push_back(stash->ase[i]);
-    addNode(); //root;
-	seed = ro_seed;
-	insert(elems, prng);
-}
+// template<typename NodeType, typename StashType>
+// void BinaryTree<NodeType, StashType>::build(const std::vector<Element>& elems, oc::block ro_seed, oc::PRNG* prng) {
+// 	nodes.clear();
+// 	depth = 0;
+// 	auto stash = std::make_shared<StashType>(stash_size);
+//     this->nodes.push_back(stash);
+// 	for (int i = 0; i < stash_size; ++i) ase.push_back(stash->ase[i]);
+//     addNode(); //root;
+// 	seed = ro_seed;
+// 	insert(elems, prng);
+// }
 
 template<typename NodeType, typename StashType>
 void BinaryTree<NodeType, StashType>::eval(Element elem, BlockVec& values) {

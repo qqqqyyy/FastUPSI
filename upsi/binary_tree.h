@@ -37,23 +37,21 @@ class BinaryTree : public ASE
         */
         std::vector<std::shared_ptr<ASE> > nodes;
         oc::block seed;
+        oc::PRNG* prng;
 
         // Depth of the tree (empty tree or just root is depth 0)
         int depth = 0;
 
-        BinaryTree(oc::block seed = oc::ZeroBlock, size_t stash_size = DEFAULT_STASH_SIZE, size_t node_size = DEFAULT_NODE_SIZE);
+        // setup before insert
+        void setup(oc::PRNG* prng, oc::block seed = oc::ZeroBlock, size_t stash_size = DEFAULT_STASH_SIZE, size_t node_size = DEFAULT_NODE_SIZE);
         void clear() override;
 
         void addNode();
         // insert is only for plaintext tree
-        std::pair<std::vector<std::shared_ptr<ASE> >, std::vector<int> > insert(const std::vector<Element> &elem, oc::PRNG* prng = nullptr);
-        void replaceNodes(
-            int new_elem_cnt,
-            const std::vector<std::shared_ptr<ASE> >& new_nodes,
-            std::vector<BinaryHash>& hsh
-        );
+        std::pair<std::vector<std::shared_ptr<ASE> >, std::vector<int> > insert(const std::vector<Element> &elem);
+        std::vector<int> update(int new_elem_cnt);
         // build is only used for adaptive
-        void build(const std::vector<Element>& elems, oc::block ro_seed = oc::ZeroBlock, oc::PRNG* prng = nullptr) override;
+        // void build(const std::vector<Element>& elems, oc::block ro_seed = oc::ZeroBlock, oc::PRNG* prng = nullptr) override;
 		void eval(Element elem, BlockVec& values) override;
 
         // Status Serialize(S* tree);

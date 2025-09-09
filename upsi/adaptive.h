@@ -33,8 +33,8 @@ class Adaptive : public ASE
 
         std::vector<std::shared_ptr<ASE> > insert(
             const std::vector<Element>& elem, 
-            BlockVec& new_seeds,
-            oc::PRNG* prng = nullptr);
+            BlockVec& new_seeds
+        );
         void replaceASEs(
             int new_elem_cnt,
             const BlockVec& new_seeds,
