@@ -18,7 +18,13 @@ public:
         ase = std::move(other_ASE.ase);
         n   = ase.size();
         band_width_ = default_band_width(n);
-        elem_cnt = 0;
+        elem_cnt = other_ASE.elem_cnt;
+    }
+
+    // setup before eval
+    void setup(oc::block ro_seed) {
+        r1_ = random_oracle(ro_seed, oc::toBlock(1));
+        r2_ = random_oracle(ro_seed, oc::toBlock(2));
     }
 
     void clear() override { elem_cnt = 0; }

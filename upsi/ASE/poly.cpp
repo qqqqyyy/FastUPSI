@@ -8,14 +8,17 @@ namespace upsi {
 ******************************************************************/
 
 void Poly::computeDenom(const BlockVec& keys, const BlockVec& values, BlockVec& denoms) {
-    if((keys.size() != n) || (values.size() != n)) {
+    if((keys.size() > n) || (values.size() != keys.size())) {
         throw std::runtime_error("polynomial interpolation: size incorrect");
     }
 
-    for (int i = 0; i < n; ++i) {
+    int cnt = keys.size();
+    if(cnt == 0 || cnt == 1) return;
+
+    for (int i = 0; i < cnt; ++i) {
         oc::block cur_denom = oc::OneBlock;
 
-        for (int j = 0; j < n; ++j) {
+        for (int j = 0; j < cnt; ++j) {
             if (i == j) continue;
             cur_denom = cur_denom.gf128Mul(keys[j] ^ keys[i]);
         }
@@ -25,27 +28,34 @@ void Poly::computeDenom(const BlockVec& keys, const BlockVec& values, BlockVec& 
 }
 
 void Poly::interpolation(const BlockVec& keys, const BlockVec& values, BlockVec& denoms_inv, int& idx) {
-    if((keys.size() != n) || (values.size() != n)) {
+    if((keys.size() > n) || (values.size() != keys.size())) {
         throw std::runtime_error("polynomial interpolation: size incorrect");
     }
 
     clear();
 
-    for (int i = 0; i < n; ++i) {
+    int cnt = keys.size();
+    if(cnt == 0) return;
+    if(cnt == 1) {
+        *(ase[0]) = values[0];
+        return;
+    }
+
+    for (int i = 0; i < cnt; ++i) {
         oc::block inv = denoms_inv[idx++];
         oc::block scale = values[i].gf128Mul(inv);
         std::vector<oc::block> term;
-        term.resize(n, oc::ZeroBlock);
-        term[n - 1] = scale;
+        term.resize(cnt, oc::ZeroBlock);
+        term[cnt - 1] = scale;
            
-        for (int j = 0, num = 0; j < n; ++j) {
+        for (int j = 0, num = 0; j < cnt; ++j) {
             if(i == j) continue;
             ++num;
             for (int k = num; k; --k) {
-                term[n - k - 1] = term[n - k - 1] ^ (term[n - k].gf128Mul(keys[j]));
+                term[cnt - k - 1] = term[cnt - k - 1] ^ (term[cnt - k].gf128Mul(keys[j]));
             }
         }
-        for(int j = 0; j < n; ++j) *(ase[j]) ^= term[j];
+        for(int j = 0; j < cnt; ++j) *(ase[j]) ^= term[j];
     }
 }
 
@@ -66,6 +76,7 @@ void batchInterpolation(std::vector<Poly>& polys, const std::vector<BlockVec>& k
     int cnt = polys.size();
 
     BlockVec denoms, denoms_inv, tmp;
+    oc::PRNG prng(oc::sysRandomSeed());
     for (int i = 0; i < cnt; ++i) {
         polys[i].computeDenom(keys[i], values[i], denoms);
     }
@@ -116,8 +127,7 @@ void batchInterpolation(std::vector<Poly>& polys, const std::vector<BlockVec>& k
         }
 
         inline int computeDeg(oc::block& a) {
-            uint64_t hi, lo;
-            std::tie(lo, hi) = a.get<uint64_t>();
+            auto [lo, hi] = a.get<uint64_t>();
             // std::cout << std::hex << hi << " " << lo << "\n";
             if (hi != 0) {
                 return 64 + (63 - __builtin_clzll(hi));  // high bits

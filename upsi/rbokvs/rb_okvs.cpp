@@ -158,8 +158,7 @@ namespace upsi {
     void rb_okvs::build(const std::vector<Element>& elems, oc::block ro_seed) {
         // choose per-instance seeds (persist for eval)
         // derive deterministically from ro_seed (or use PRNG seeded with ro_seed)
-        r1_ = random_oracle(ro_seed, oc::toBlock(1));
-        r2_ = random_oracle(ro_seed, oc::toBlock(2));
+        setup(ro_seed);
 
         const std::size_t columns = n;
         if (columns < band_width_)
@@ -180,9 +179,11 @@ namespace upsi {
         auto X = simple_gauss_xor(std::move(rhs), bands, starts, columns, band_width_);
 
         // write into ASE storage
-        if (ase.size() != columns) ase.resize(columns);
+        // if (ase.size() != columns) ase.resize(columns);
+        if (ase.size() != columns) throw std::runtime_error("rb_okvs ase size error");
         for (std::size_t i = 0; i < columns; ++i) {
-            if (!ase[i]) ase[i] = std::make_shared<oc::block>(oc::ZeroBlock);
+            // if (!ase[i]) ase[i] = std::make_shared<oc::block>(oc::ZeroBlock);
+            if (!ase[i]) throw std::runtime_error("rb_okvs ase null pointer");
             *(ase[i]) = X[i];
         }
         elem_cnt = elems.size();

@@ -22,6 +22,7 @@ oc::cp::task<ASE> recv_ASE(oc::Socket* chl) {
     BlockVec data;
     co_await chl->recvResize(data);
     ase.read(data);
+    ase.elem_cnt = 1; //non_empty
     co_return ase;
 }
 
