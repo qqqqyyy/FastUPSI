@@ -5,7 +5,7 @@
 
 namespace upsi{
 
-oc::cp::task<> send_ASE(const ASE& ase, oc::Socket* chl) {
+inline oc::cp::task<> send_ASE(const ASE& ase, oc::Socket* chl) {
     co_await chl->send(ase.n);
     // co_await chl->send(ase.elem_cnt);
     BlockVec data;
@@ -14,7 +14,7 @@ oc::cp::task<> send_ASE(const ASE& ase, oc::Socket* chl) {
     co_return;
 }
 
-oc::cp::task<ASE> recv_ASE(oc::Socket* chl) {
+inline oc::cp::task<ASE> recv_ASE(oc::Socket* chl) {
     size_t n;
     co_await chl->recv(n);
     ASE ase(n, true);
@@ -26,7 +26,7 @@ oc::cp::task<ASE> recv_ASE(oc::Socket* chl) {
     co_return ase;
 }
 
-oc::cp::task<> send_OPRF(const OPRFValueVec& values, oc::Socket* chl) {
+inline oc::cp::task<> send_OPRF(const OPRFValueVec& values, oc::Socket* chl) {
     BlockVec tmp;
     for (auto x: values) {
         tmp.push_back(x.first);
@@ -36,7 +36,7 @@ oc::cp::task<> send_OPRF(const OPRFValueVec& values, oc::Socket* chl) {
     co_return;
 }
 
-oc::cp::task<OPRFValueVec> recv_OPRF(oc::Socket* chl) {
+inline oc::cp::task<OPRFValueVec> recv_OPRF(oc::Socket* chl) {
     BlockVec tmp;
     co_await chl->recvResize(tmp);
     int cnt = tmp.size() >> 1;

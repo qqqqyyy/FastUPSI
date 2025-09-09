@@ -21,6 +21,14 @@ public:
         elem_cnt = other_ASE.elem_cnt;
     }
 
+    void copy(const ASE& other_ASE) override{
+        n = other_ASE.n;
+        band_width_ = default_band_width(n);
+        elem_cnt = other_ASE.elem_cnt;
+        if(n != ase.size()) ase.resize(n);
+        for (int i = 0; i < n; ++i) *(ase[i]) = *(other_ASE.ase[i]);
+    }
+
     // setup before eval
     void setup(oc::block ro_seed) {
         r1_ = random_oracle(ro_seed, oc::toBlock(1));
@@ -54,6 +62,16 @@ private:
         if (bw < 16) bw = 16;
         if (bw > 256) bw = 256;
         return bw;
+    }
+};
+
+struct rb_okvs_size_table final{
+    inline static const int cnt = 4;
+    inline static size_t input_size[cnt] = {128, 1 << 10, 1 << 12, 1 << 14};
+    inline static size_t okvs_size[cnt] = {1 << 10, 1 << 12, 1 << 13, 1 << 15}; //TODO
+    static size_t get(size_t x) {
+        for (int i = 0; i < cnt; ++i) if(input_size[i] >= x) return okvs_size[i];
+        return 1.1 * x;
     }
 };
 

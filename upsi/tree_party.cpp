@@ -2,46 +2,7 @@
 
 namespace upsi{
 
-int TreeParty::addition_part(std::vector<Element> addition_set) {
-
-    std::vector<Element> I_plus;
-
-    if(party == 0) {
-        sender(addition_set);
-        I_plus = receiver();
-        auto I_1 = PSI_receiver(addition_set);
-        I_plus.reserve(I_plus.size() + I_1.size());
-        I_plus.insert(I_plus.end(), I_1.begin(), I_1.end());
-        random_shuffle<Element>(I_plus);
-        oc::cp::sync_wait(chl->send(I_plus));
-        oc::cp::sync_wait(chl->flush());
-
-        my_addition(addition_set);
-        other_addition();
-    }
-    else {
-        auto cur_set = receiver();
-        sender(addition_set);
-        merge_set(cur_set, addition_set);
-        PSI_sender(cur_set);
-        oc::cp::sync_wait(chl->recvResize(I_plus));
-
-        other_addition();
-        my_addition(addition_set);
-    }
-
-    intersection.reserve(intersection.size() + I_plus.size());
-    intersection.insert(intersection.end(), I_plus.begin(), I_plus.end());
-
-    return I_plus.size();
-}
-
-int TreeParty::deletion_part(std::vector<Element> deletion_set) {
-    //TODO
-    return 0;
-}
-
-void TreeParty::sender(std::vector<Element> elems) {
+void TreeParty::sender(const std::vector<Element>& elems) {
     int cnt = elems.size();
     OPRFValueVec values;
     for (int i = 0; i < cnt; ++i)
@@ -61,14 +22,17 @@ std::vector<Element> TreeParty::receiver() {
 }
 
 
-void TreeParty::my_addition(std::vector<Element> elems) {
+void TreeParty::my_addition(const std::vector<Element>& elems) {
     
-    chl->send(elems.size());
+    oc::cp::sync_wait(chl->send(elems.size()));
+    oc::cp::sync_wait(chl->flush());
 
     auto ins = my_tree.insert(elems);
     auto nodes = ins.first;
     auto ind = ins.second;
     int cnt = nodes.size();
+
+    std::cout << "[my_addition] polys...\n";
 
     std::vector<Poly> polys(cnt);
     std::vector<BlockVec> cur_elems;
@@ -85,6 +49,9 @@ void TreeParty::my_addition(std::vector<Element> elems) {
     }
     batchInterpolation(polys, cur_elems, cur_values);
 
+
+    std::cout << "[my_addition] polys oprf...\n";
+
     OPRF<Poly> oprf_poly;
     for (int i = 0; i < cnt; ++i) {
         auto vole = vole_receiver.get(polys[i].n);
@@ -97,21 +64,32 @@ void TreeParty::my_addition(std::vector<Element> elems) {
         oprf_data.insert(cur_elems[i], oprf_values);
     }
 
-    rb_okvs stash(DEFAULT_STASH_SIZE); //TODO: okvs size
+    oc::cp::sync_wait(chl->flush());
+
+
+    std::cout << "[my_addition] stash...\n";
+
+    rb_okvs stash(rb_okvs_size_table::get(DEFAULT_STASH_SIZE));
 
     std::vector<Element> tmp;
     my_tree.stash.getElements(tmp);
     stash.build(tmp, ro_seed);
+
+
+    std::cout << "[my_addition] stash oprf...\n";
 
     OPRF<rb_okvs> oprf_okvs;
     auto vole = vole_receiver.get(stash.n);
     ASE c = stash - vole.second;
     oc::cp::sync_wait(send_ASE(c, chl));
     rb_okvs a = rb_okvs(std::move(vole.first));
+    a.setup(ro_seed);
     OPRFValueVec oprf_values;
     oprf_okvs.receiver(tmp, 0, a, oprf_values, ro_seed); //TODO for deletion
     oprf_data.remove(tmp);
     oprf_data.insert(tmp, oprf_values);
+
+    oc::cp::sync_wait(chl->flush());
 }
 
 void TreeParty::other_addition() {
@@ -119,8 +97,13 @@ void TreeParty::other_addition() {
 
     chl->recv(new_elem_cnt);
 
+    std::cout << "[other_addition] update...\n";
+
     std::vector<int> ind = other_tree.update(new_elem_cnt);
     int cnt = ind.size();
+
+
+    std::cout << "[other_addition] polys oprf...\n";
 
     for (int i = 0; i < cnt; ++i) {
         ASE diff = oc::cp::sync_wait(recv_ASE(chl));
@@ -129,11 +112,14 @@ void TreeParty::other_addition() {
         other_tree.binary_tree.nodes[ind[i]]->copy(diff);
     }
 
+    std::cout << "[other_addition] stash oprf...\n";
+
     //stash
     ASE diff = oc::cp::sync_wait(recv_ASE(chl));
     diff *= vole_sender.delta;
     diff += vole_sender.get(diff.n);
     other_tree.stash.copy(diff);
+    other_tree.stash.setup(ro_seed);
 }
 
 

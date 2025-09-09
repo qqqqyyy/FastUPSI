@@ -10,7 +10,8 @@ set(TREE_SRCS
     "binary_tree.cpp"
     "tree.cpp"
     "adaptive.cpp"
-    "party.h"
+    "data_util.cpp"
+    "party.cpp"
     "tree_party.cpp"
 )
 

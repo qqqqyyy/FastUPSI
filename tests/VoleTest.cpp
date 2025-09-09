@@ -92,7 +92,7 @@ void test_doerner_shelat(VoleSender& vole_sender, VoleReceiver& vole_receiver) {
         }
     }
 
-    std::cout << "test ok\n\n";
+    std::cout << "test passed\n\n";
 }
 
 int main() {

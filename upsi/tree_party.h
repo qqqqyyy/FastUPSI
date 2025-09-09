@@ -1,3 +1,6 @@
+#ifndef TREE_PARTY_H
+#define TREE_PARTY_H
+
 #include "party.h"
 #include "tree.h"
 #include "oprf.h"
@@ -12,8 +15,8 @@ class TreeParty : public Party{
         oc::PRNG tree_prng;
         oc::block tree_seed;
 
-        TreeParty(int _party, oc::Socket* _chl, int _total_days, int _max_data_size):
-                Party(_party, _chl, _total_days, _max_data_size){
+        TreeParty(int _party, oc::Socket* _chl, int _total_days, std::string fn):
+                Party(_party, _chl, _total_days, fn){
 
             oc::block prng_seed;
             if(party == 0) {
@@ -32,38 +35,20 @@ class TreeParty : public Party{
             }
             tree_prng.SetSeed(prng_seed);
             my_tree.setup(&tree_prng, tree_seed, DEFAULT_STASH_SIZE, DEFAULT_NODE_SIZE);
-            other_tree.setup(&tree_prng, tree_seed, DEFAULT_STASH_SIZE, DEFAULT_NODE_SIZE); //TODO: okvs size
+            other_tree.setup(&tree_prng, tree_seed, rb_okvs_size_table::get(DEFAULT_STASH_SIZE), DEFAULT_NODE_SIZE);
         }
 
 
-        void setup(std::vector<Element> elems, const std::vector<Element>& cur_I) {
-            if(party == 0) {
-                my_addition(elems);
-                other_addition();
-            }
-            else {
-                other_addition();
-                my_addition(elems);
-            }
-            intersection = cur_I;
-        }
+        void sender(const std::vector<Element>& elems) override; // query for elems
 
-        void one_day(std::vector<Element> addition_set, std::vector<Element> deletion_set) {
-            int cnt_del = deletion_part(deletion_set);
-            int cnt_add = addition_part(addition_set);
-        }
-
-        int addition_part(std::vector<Element> addition_set);
-        int deletion_part(std::vector<Element> deletion_set);
-
-        void sender(std::vector<Element> elems); // query for elems
-
-        std::vector<Element> receiver();
+        std::vector<Element> receiver() override;
         
-        void my_addition(std::vector<Element> elems);
+        void my_addition(const std::vector<Element>& elems) override;
 
-        void other_addition();
+        void other_addition() override;
         
 };
 
 }
+
+#endif

@@ -24,4 +24,6 @@ endif()
 
 add_subdirectory(upsi)
 
+add_subdirectory(frontend)
+
 add_subdirectory(tests)

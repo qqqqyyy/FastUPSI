@@ -1,0 +1,108 @@
+#include"party.h"
+
+namespace upsi{
+
+Party::Party(int _party, oc::Socket* _chl, int _total_days, std::string fn) {
+
+    this->party = _party;
+    this->chl = _chl;
+    this->total_days = _total_days;
+
+    dataset.Read(fn);
+    
+    if(total_days > dataset.days) throw std::runtime_error("dataset days error");
+    this->max_data_size = dataset.start_size + dataset.add_size * total_days;
+    
+    my_prng.SetSeed(oc::sysRandomSeed());
+    vole_sender.setup(chl, &my_prng);
+    vole_receiver.setup(chl, &my_prng);
+    
+    // TODO: max_vole_size?
+    size_t max_vole_size = max_data_size * (4 * (oc::log2ceil(max_data_size) + 1) + 2) + 500 * (total_days + 1);
+    if(party == 0) {
+        vole_sender.generate(max_vole_size);
+        vole_receiver.generate(max_vole_size);
+    }
+    else {
+        vole_receiver.generate(max_vole_size);
+        vole_sender.generate(max_vole_size);
+    }
+}
+
+int Party::addition_part(const std::vector<Element>& addition_set) {
+
+    std::vector<Element> I_plus;
+
+    if(party == 0) {
+        sender(addition_set);
+        I_plus = receiver();
+        auto I_1 = PSI_receiver(addition_set);
+        I_plus.reserve(I_plus.size() + I_1.size());
+        I_plus.insert(I_plus.end(), I_1.begin(), I_1.end());
+        random_shuffle<Element>(I_plus);
+        oc::cp::sync_wait(chl->send(I_plus));
+        oc::cp::sync_wait(chl->flush());
+
+        my_addition(addition_set);
+        other_addition();
+    }
+    else {
+        auto cur_set = receiver();
+        sender(addition_set);
+        merge_set(cur_set, addition_set);
+        PSI_sender(cur_set);
+        oc::cp::sync_wait(chl->recvResize(I_plus));
+
+        other_addition();
+        my_addition(addition_set);
+    }
+
+    intersection.reserve(intersection.size() + I_plus.size());
+    intersection.insert(intersection.end(), I_plus.begin(), I_plus.end());
+
+    return I_plus.size();
+}
+
+int Party::deletion_part(const std::vector<Element>& deletion_set) {
+    //TODO
+}
+
+
+std::vector<Element> Party::PSI_receiver(const std::vector<Element>& my_set) {
+    int cnt = my_set.size();
+    rb_okvs okvs(rb_okvs_size_table::get(cnt));
+    okvs.build(my_set, ro_seed);
+
+    auto vole = vole_receiver.get(okvs.n);
+    ASE c = okvs - vole.second;
+    oc::cp::sync_wait(send_ASE(c, chl));
+    rb_okvs a = rb_okvs(std::move(vole.first));
+    a.setup(ro_seed);
+    OPRFValueVec oprf_values;
+    OPRF<rb_okvs> oprf_okvs;
+    oprf_okvs.receiver(my_set, 0, a, oprf_values, ro_seed);
+
+    OPRFValueVec other_oprf_values = oc::cp::sync_wait(recv_OPRF(chl));
+
+    return look_up(my_set, oprf_values, other_oprf_values);
+}
+
+void Party::PSI_sender(const std::vector<Element>& my_set) {
+    ASE diff = oc::cp::sync_wait(recv_ASE(chl));
+    diff *= vole_sender.delta;
+    diff += vole_sender.get(diff.n);
+    rb_okvs b = rb_okvs(std::move(diff));
+    b.setup(ro_seed);
+    
+    OPRFValueVec oprf_values;
+    OPRF<rb_okvs> oprf_okvs;
+    oprf_okvs.sender(my_set, 0, b, vole_sender.delta, oprf_values, ro_seed);
+    
+    std::mt19937_64 rng{std::random_device{}()};
+    std::shuffle(oprf_values.begin(), oprf_values.end(), rng);
+    oc::cp::sync_wait(send_OPRF(oprf_values, chl));
+}
+
+
+
+} // namespace upsi

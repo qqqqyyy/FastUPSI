@@ -73,6 +73,8 @@ namespace upsi {
     oc::block random_oracle(oc::block x, oc::block seed = oc::ZeroBlock);
     OPRFValue random_oracle_256(oc::block x, size_t index, oc::block seed = oc::ZeroBlock);
 
+    template<typename type> void random_shuffle(std::vector<type>& vec);
+
     /**
      * class to unify time benchmarking
      */

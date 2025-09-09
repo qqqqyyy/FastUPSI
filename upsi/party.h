@@ -6,6 +6,7 @@
 #include "network.h"
 #include "rbokvs/rb_okvs.h"
 #include "oprf.h"
+#include "data_util.h"
 
 namespace upsi{
 
@@ -17,6 +18,8 @@ class Party{
         int current_day = 0;
         int max_data_size;
         int party; // 0 / 1
+
+        Dataset dataset;
 
         VoleSender vole_sender;
         VoleReceiver vole_receiver;
@@ -67,28 +70,46 @@ class Party{
             }
         }oprf_data;
 
-        Party(int _party, oc::Socket* _chl, int _total_days, int _max_data_size) {
+        Party(int _party, oc::Socket* _chl, int _total_days, std::string fn);
 
-            this->party = _party;
-            this->chl = _chl;
-            this->total_days = _total_days;
-            this->max_data_size = _max_data_size;
-            
-            my_prng.SetSeed(oc::sysRandomSeed());
-            vole_sender.setup(chl, &my_prng);
-            vole_receiver.setup(chl, &my_prng);
-            
-            // TODO: max_vole_size?
-            size_t max_vole_size = max_data_size * (4 * (oc::log2ceil(max_data_size) + 1) + 2) + 500 * (total_days + 1);
+        void setup() {
             if(party == 0) {
-                vole_sender.generate(max_vole_size);
-                vole_receiver.generate(max_vole_size);
+                my_addition(dataset.initial_set);
+                other_addition();
             }
             else {
-                vole_receiver.generate(max_vole_size);
-                vole_sender.generate(max_vole_size);
+                other_addition();
+                my_addition(dataset.initial_set);
             }
+            intersection = dataset.intersection;
         }
+
+        void run() {
+            for (int i = 0; i < total_days; ++i) one_day();
+        }
+
+        void one_day() {
+            int cnt_del = deletion_part(dataset.daily_deletion[current_day]);
+            int cnt_add = addition_part(dataset.daily_addition[current_day]);
+            std::cout << "[Day " << current_day << "]: " << cnt_del << " " << cnt_add << std::endl;
+            ++current_day;
+        }
+
+        int addition_part(const std::vector<Element>& addition_set);
+
+        int deletion_part(const std::vector<Element>& deletion_set);
+
+        virtual void sender(const std::vector<Element>& elems) = 0; // query for elems
+
+        virtual std::vector<Element> receiver() = 0;
+        
+        virtual void my_addition(const std::vector<Element>& elems) = 0;
+
+        virtual void other_addition() = 0;
+
+        std::vector<Element> PSI_receiver(const std::vector<Element>& my_set);
+
+        void PSI_sender(const std::vector<Element>& my_set);
 
 
         void merge_set(std::vector<Element>& X, const std::vector<Element>& Y) {
@@ -107,46 +128,8 @@ class Party{
             for (auto& value: other_values) {
                 auto it = map.find(value);
                 if(it != map.end()) rs.push_back(it->second);
-                return rs;
             }
-        }
-
-        template<typename type> void random_shuffle(std::vector<type>& vec) {
-            std::mt19937_64 rng{std::random_device{}()};
-            std::shuffle(vec.begin(), vec.end(), rng);
-        }
-
-        std::vector<Element> PSI_receiver(const std::vector<Element>& my_set) {
-            int cnt = my_set.size();
-            rb_okvs okvs(cnt);
-            okvs.build(my_set, ro_seed);
-
-            auto vole = vole_receiver.get(okvs.n);
-            ASE c = okvs - vole.second;
-            oc::cp::sync_wait(send_ASE(c, chl));
-            rb_okvs a = rb_okvs(std::move(vole.first));
-            OPRFValueVec oprf_values;
-            OPRF<rb_okvs> oprf_okvs;
-            oprf_okvs.receiver(my_set, 0, a, oprf_values, ro_seed);
-
-            OPRFValueVec other_oprf_values = oc::cp::sync_wait(recv_OPRF(chl));
-
-            return look_up(my_set, oprf_values, other_oprf_values);
-        }
-
-        void PSI_sender(const std::vector<Element>& my_set) {
-            ASE diff = oc::cp::sync_wait(recv_ASE(chl));
-            diff *= vole_sender.delta;
-            diff += vole_sender.get(diff.n);
-            rb_okvs b = rb_okvs(std::move(diff));
-            
-            OPRFValueVec oprf_values;
-            OPRF<rb_okvs> oprf_okvs;
-            oprf_okvs.sender(my_set, 0, b, vole_sender.delta, oprf_values, ro_seed);
-            
-            std::mt19937_64 rng{std::random_device{}()};
-            std::shuffle(oprf_values.begin(), oprf_values.end(), rng);
-            oc::cp::sync_wait(send_OPRF(oprf_values, chl));
+            return rs;
         }
 
 };

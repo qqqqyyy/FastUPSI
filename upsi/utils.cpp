@@ -80,6 +80,14 @@ OPRFValue random_oracle_256(oc::block x, size_t index, oc::block seed){
     return std::make_pair(buf[0], buf[1]);
 }
 
+template<typename type> void random_shuffle(std::vector<type>& vec) {
+    std::mt19937_64 rng{std::random_device{}()};
+    std::shuffle(vec.begin(), vec.end(), rng);
+}
+
+template void random_shuffle<oc::block>(std::vector<oc::block>&);
+template void random_shuffle<OPRFValue>(std::vector<OPRFValue>&);
+
 ////////////////////////////////////////////////////////////////////////////////
 // Timer
 ////////////////////////////////////////////////////////////////////////////////
