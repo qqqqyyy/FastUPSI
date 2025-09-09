@@ -4,6 +4,8 @@
 #include "ASE/ASE.h"
 #include "vole.h"
 #include "network.h"
+#include "rbokvs/rb_okvs.h"
+#include "oprf.h"
 
 namespace upsi{
 
@@ -22,16 +24,19 @@ class Party{
         oc::Socket* chl;
         oc::PRNG my_prng;
 
+        oc::block ro_seed;
+
         std::vector<Element> intersection;
 
+        struct OPRFValueHash {
+            size_t operator()(const OPRFValue& p) const noexcept {
+                size_t h1 = std::hash<oc::block>{}(p.first);
+                size_t h2 = std::hash<oc::block>{}(p.second);
+                return h1 ^ (h2 + 0x9e3779b97f4a7c15ULL + (h1<<6) + (h1>>2)); //TODO?
+            }
+        };
         struct OPRFData{
-            struct OPRFValueHash {
-                size_t operator()(const OPRFValue& p) const noexcept {
-                    size_t h1 = std::hash<oc::block>{}(p.first);
-                    size_t h2 = std::hash<oc::block>{}(p.second);
-                    return h1 ^ (h2 + 0x9e3779b97f4a7c15ULL + (h1<<6) + (h1>>2)); //TODO?
-                }
-            };
+            
             std::unordered_map<Element, OPRFValue> key_value;
             std::unordered_map<OPRFValue, Element, OPRFValueHash> value_key;
             void insert(const Element& key, const OPRFValue& value) {
@@ -83,6 +88,65 @@ class Party{
                 vole_receiver.generate(max_vole_size);
                 vole_sender.generate(max_vole_size);
             }
+        }
+
+
+        void merge_set(std::vector<Element>& X, const std::vector<Element>& Y) {
+            std::unordered_map<oc::block, bool> map;
+            for (const auto& x: X) map[x] = true;
+            for (const auto& y: Y) if(!map[y]) X.push_back(y);
+        }
+
+        std::vector<Element> look_up(const std::vector<Element>& my_set, 
+                const OPRFValueVec& my_values, const OPRFValueVec& other_values) {
+            std::unordered_map<OPRFValue, Element, OPRFValueHash> map;
+            int cnt = my_set.size();
+            for (int i = 0; i < cnt; ++i) map[my_values[i]] = my_set[i];
+
+            std::vector<Element> rs;
+            for (auto& value: other_values) {
+                auto it = map.find(value);
+                if(it != map.end()) rs.push_back(it->second);
+                return rs;
+            }
+        }
+
+        template<typename type> void random_shuffle(std::vector<type>& vec) {
+            std::mt19937_64 rng{std::random_device{}()};
+            std::shuffle(vec.begin(), vec.end(), rng);
+        }
+
+        std::vector<Element> PSI_receiver(const std::vector<Element>& my_set) {
+            int cnt = my_set.size();
+            rb_okvs okvs(cnt);
+            okvs.build(my_set, ro_seed);
+
+            auto vole = vole_receiver.get(okvs.n);
+            ASE c = okvs - vole.second;
+            oc::cp::sync_wait(send_ASE(c, chl));
+            rb_okvs a = rb_okvs(std::move(vole.first));
+            OPRFValueVec oprf_values;
+            OPRF<rb_okvs> oprf_okvs;
+            oprf_okvs.receiver(my_set, 0, a, oprf_values, ro_seed);
+
+            OPRFValueVec other_oprf_values = oc::cp::sync_wait(recv_OPRF(chl));
+
+            return look_up(my_set, oprf_values, other_oprf_values);
+        }
+
+        void PSI_sender(const std::vector<Element>& my_set) {
+            ASE diff = oc::cp::sync_wait(recv_ASE(chl));
+            diff *= vole_sender.delta;
+            diff += vole_sender.get(diff.n);
+            rb_okvs b = rb_okvs(std::move(diff));
+            
+            OPRFValueVec oprf_values;
+            OPRF<rb_okvs> oprf_okvs;
+            oprf_okvs.sender(my_set, 0, b, vole_sender.delta, oprf_values, ro_seed);
+            
+            std::mt19937_64 rng{std::random_device{}()};
+            std::shuffle(oprf_values.begin(), oprf_values.end(), rng);
+            oc::cp::sync_wait(send_OPRF(oprf_values, chl));
         }
 
 };

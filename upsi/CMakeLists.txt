@@ -6,9 +6,10 @@ set(TREE_SRCS
     "rbokvs/rb_okvs.cpp"
     "network.h"
     "vole.cpp"
-    "binary_tree.cpp"
-    "adaptive.cpp"
     "oprf.cpp"
+    "binary_tree.cpp"
+    "tree.cpp"
+    "adaptive.cpp"
     "party.h"
     "tree_party.cpp"
 )

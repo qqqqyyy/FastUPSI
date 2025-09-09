@@ -1,17 +1,16 @@
 #include "party.h"
-#include "binary_tree.h"
+#include "tree.h"
 #include "oprf.h"
 
 namespace upsi{
 
 class TreeParty : public Party{
     public: 
-        BinaryTree<PlainASE, PlainASE> my_tree;
-        BinaryTree<Poly, rb_okvs> other_tree;
+        Tree<PlainASE, PlainASE> my_tree;
+        Tree<Poly, rb_okvs> other_tree;
 
         oc::PRNG tree_prng;
         oc::block tree_seed;
-        oc::block ro_seed;
 
         TreeParty(int _party, oc::Socket* _chl, int _total_days, int _max_data_size):
                 Party(_party, _chl, _total_days, _max_data_size){
@@ -33,7 +32,7 @@ class TreeParty : public Party{
             }
             tree_prng.SetSeed(prng_seed);
             my_tree.setup(&tree_prng, tree_seed, DEFAULT_STASH_SIZE, DEFAULT_NODE_SIZE);
-            other_tree.setup(&tree_prng, tree_seed, DEFAULT_STASH_SIZE, 200); //TODO
+            other_tree.setup(&tree_prng, tree_seed, DEFAULT_STASH_SIZE, DEFAULT_NODE_SIZE); //TODO: okvs size
         }
 
 
@@ -49,11 +48,17 @@ class TreeParty : public Party{
             intersection = cur_I;
         }
 
-        void run();
+        void one_day(std::vector<Element> addition_set, std::vector<Element> deletion_set) {
+            int cnt_del = deletion_part(deletion_set);
+            int cnt_add = addition_part(addition_set);
+        }
+
+        int addition_part(std::vector<Element> addition_set);
+        int deletion_part(std::vector<Element> deletion_set);
 
         void sender(std::vector<Element> elems); // query for elems
 
-        OPRFValueVec receiver();
+        std::vector<Element> receiver();
         
         void my_addition(std::vector<Element> elems);
 

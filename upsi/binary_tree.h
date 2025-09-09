@@ -4,21 +4,19 @@
 #include "ASE/ASE.h"
 #include "ASE/plain_ASE.h"
 #include "ASE/poly.h"
-#include "rbokvs/rb_okvs.h"
+#include "oprf.h"
 
 namespace upsi {
 
-template<typename NodeType, typename StashType>
+template<typename NodeType>
 class BinaryTree : public ASE
 {
     static_assert(std::is_base_of<ASE, NodeType>::value, "NodeType must derive from ASE");
-    static_assert(std::is_base_of<ASE, StashType>::value, "StashType must derive from ASE");
 
     protected:
 
         // The node and stash size of the tree
         size_t node_size;
-        size_t stash_size;
 
         /// @brief Helper Methods
         // Add a new layer to the tree, expand the size of the vector
@@ -30,12 +28,12 @@ class BinaryTree : public ASE
     public:
 
         // Array list representation
-        /*    0 (stash)
+        /*    0 (empty)
         	  1 (root)
            2     3
           4  5  6  7
         */
-        std::vector<std::shared_ptr<ASE> > nodes;
+        std::vector<std::shared_ptr<NodeType> > nodes;
         oc::block seed;
         oc::PRNG* prng;
 
@@ -43,22 +41,16 @@ class BinaryTree : public ASE
         int depth = 0;
 
         // setup before insert
-        void setup(oc::PRNG* prng, oc::block seed = oc::ZeroBlock, size_t stash_size = DEFAULT_STASH_SIZE, size_t node_size = DEFAULT_NODE_SIZE);
-        void clear() override;
+        void setup(oc::PRNG* prng, oc::block seed = oc::ZeroBlock, size_t node_size = DEFAULT_NODE_SIZE);
+        // void clear() override;
 
         void addNode();
-        // insert is only for plaintext tree
-        std::pair<std::vector<std::shared_ptr<ASE> >, std::vector<int> > insert(const std::vector<Element> &elem);
+        // insert is only used for plaintext tree
+        std::pair<std::vector<std::shared_ptr<NodeType> >, std::vector<int> > insert(const std::vector<Element> &elem, PlainASE& stash);
         std::vector<int> update(int new_elem_cnt);
-        // build is only used for adaptive
-        // void build(const std::vector<Element>& elems, oc::block ro_seed = oc::ZeroBlock, oc::PRNG* prng = nullptr) override;
-		void eval(Element elem, BlockVec& values) override;
 
-        // Status Serialize(S* tree);
+        void eval_oprf(Element elem, oc::block delta, oc::block ro_seed, OPRFValueVec& values);
 
-        // Status Deserialize(const S& tree, Context* ctx, ECGroup* group);
-
-        // virtual void Print() = 0;
 };
 
 }      // namespace upsi

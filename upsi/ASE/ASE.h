@@ -54,7 +54,7 @@ class ASE{
 
     virtual void copy(const ASE& other_ASE) {
         n = other_ASE.n;
-        elem_cnt = other_ASE.elem_cnt;
+        // elem_cnt = other_ASE.elem_cnt;
         if(n != ase.size()) ase.resize(n);
         for (int i = 0; i < n; ++i) *(ase[i]) = *(other_ASE.ase[i]);
     }
