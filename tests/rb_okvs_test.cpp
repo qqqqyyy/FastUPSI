@@ -1,0 +1,68 @@
+#include <cassert>
+#include <iostream>
+
+#include "../upsi/utils.h"
+#include "../upsi/ASE/ASE.h"
+#include "../upsi/rbokvs/rb_okvs.h"
+
+using namespace upsi;
+
+static void one_run(size_t set_size, size_t n_columns, size_t band_width)
+{
+    std::cout << "\n=== rb_okvs test: set=" << set_size
+              << "  n=" << n_columns
+              << "  bw=" << band_width << " ===\n";
+
+    // --- make a random element set ---
+    oc::PRNG prng(oc::toBlock(0xDEADBEEF, 0x01234567));
+    std::vector<Element> elems = GetRandomSet(&prng, set_size);
+
+    // --- choose a build seed (persisted inside rb_okvs) ---
+    oc::block ro_seed = prng.get<oc::block>();
+
+    // --- build the OKVS ---
+    rb_okvs okvs(n_columns, band_width);
+    okvs.build(elems, ro_seed);
+
+    // quick sanity
+    assert(!okvs.isEmpty());
+    assert(okvs.n == n_columns);
+
+    // --- verify every element evaluates to the encoded RHS ---
+    for (const auto& e : elems)
+    {
+        oc::block want = random_oracle(e, ro_seed);
+        oc::block got1 = okvs.eval1(e);
+
+        // eval() pushes into a vector
+        BlockVec outs;
+        okvs.eval(e, outs);
+        assert(!outs.empty());
+        oc::block got2 = outs.back();
+
+        if (got1 != want || got2 != want) {
+            std::cerr << "Mismatch for element! "
+                      << "want=" << want << " got1=" << got1 << " got2=" << got2 << "\n";
+            assert(false && "rb_okvs evaluation mismatch");
+        }        
+    }
+
+    std::cout << "OK: all " << set_size << " evaluations matched.\n";
+}
+
+int main()
+{
+    // A couple of sizes; you can tweak these depending on your build speed.
+    // Heuristic: n should be comfortably larger than |set|; band_width in [16, 256].
+    const size_t set_size = 200;           // number of key/value pairs to encode
+    const size_t n1       = 2048;          // number of GF(128) slots (columns)
+    const size_t bw1      = 64;            // local band width per row
+    const size_t n2       = 4096;
+    const size_t bw2      = 128;
+
+    one_run(set_size, n1, bw1);
+    one_run(set_size, n2, bw2);
+
+    std::cout << "\nAll rb_okvs tests passed\n";
+    return 0;
+}
