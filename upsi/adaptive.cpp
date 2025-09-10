@@ -13,7 +13,9 @@ void Adaptive<BaseType>::addASE() {
     else cur_node = std::make_shared<BaseType>(node_size);
     nodes.push_back(cur_node);
     seeds.push_back(oc::sysRandomSeed());
-    for (int i = 0; i < cur_node->n; ++i) ase.push_back(cur_node->ase[i]);
+    n += cur_node->n;
+    // ase.reserve(ase.size() + cur_node->n);
+    // for (int i = 0; i < cur_node->n; ++i) ase.push_back(cur_node->ase[i]);
 }
 
 template<typename BaseType>

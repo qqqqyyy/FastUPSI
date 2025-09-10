@@ -44,13 +44,20 @@ class BinaryTree : public ASE
         void setup(oc::PRNG* prng, oc::block seed = oc::ZeroBlock, size_t node_size = DEFAULT_NODE_SIZE);
         // void clear() override;
 
-        void addNode();
+        inline void addNode();
         // insert is only used for plaintext tree
         std::pair<std::vector<std::shared_ptr<NodeType> >, std::vector<int> > insert(const std::vector<Element> &elem, PlainASE& stash);
         std::vector<int> update(int new_elem_cnt);
 
         void eval_oprf(Element elem, oc::block delta, oc::block ro_seed, OPRFValueVec& values);
 
+        oc::block& operator [] (const size_t& idx) override{
+            return (*nodes[idx / node_size])[idx % node_size];
+        }
+
+        const oc::block& operator [] (const size_t& idx) const override{
+            return (*nodes[idx / node_size])[idx % node_size];
+        }
 };
 
 }      // namespace upsi

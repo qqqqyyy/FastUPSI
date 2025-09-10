@@ -34,7 +34,8 @@ class Adaptive : public ASE
             else cur_node = std::make_shared<BaseType>(start_size);
             nodes.push_back(cur_node);
             seeds.push_back(oc::sysRandomSeed());
-            for (int i = 0; i < cur_node->n; ++i) ase.push_back(cur_node->ase[i]);
+            n += cur_node->n;
+            // for (int i = 0; i < cur_node->n; ++i) ase.push_back(cur_node->ase[i]);
         }
 
         void addASE();
@@ -52,6 +53,22 @@ class Adaptive : public ASE
         //     const std::vector<std::shared_ptr<ASE> >& new_ASEs
         // );
         void eval_oprf(Element elem, oc::block delta, OPRFValueVec& values);
+
+        oc::block& operator [] (const size_t& idx) override{
+            int tmp = idx;
+            for (int i = 0; i <= node_cnt; ++i) {
+                if(tmp <= nodes[i]->n) return (*nodes[i])[tmp];
+                tmp -= nodes[i]->n;
+            }
+        }
+
+        const oc::block& operator [] (const size_t& idx) const override{
+            int tmp = idx;
+            for (int i = 0; i <= node_cnt; ++i) {
+                if(tmp <= nodes[i]->n) return (*nodes[i])[tmp];
+                tmp -= nodes[i]->n;
+            }
+        }
 };
 
 }      // namespace upsi

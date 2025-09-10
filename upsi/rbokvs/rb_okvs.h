@@ -26,7 +26,8 @@ public:
         band_width_ = default_band_width(n);
         elem_cnt = other_ASE.elem_cnt;
         if(n != ase.size()) ase.resize(n);
-        for (int i = 0; i < n; ++i) *(ase[i]) = *(other_ASE.ase[i]);
+        // for (int i = 0; i < n; ++i) *(ase[i]) = (*other_ASE)[i];
+        for (int i = 0; i < n; ++i) ase[i] = other_ASE[i];
     }
 
     // setup before eval

@@ -8,9 +8,9 @@ void test_correctness(ASE a, ASE b, ASE c, block delta, int n) {
     CoeffCtxGF128 ctx;
     for (u64 i = 0; i < n; ++i) {
         block exp;
-        ctx.mul(exp, delta, *c.ase[i]);
-        ctx.plus(exp, exp, *b.ase[i]);
-        if(*a.ase[i] != exp) {
+        ctx.mul(exp, delta, c.ase[i]);
+        ctx.plus(exp, exp, b.ase[i]);
+        if(a.ase[i] != exp) {
             std::cout << "i = " << i << std::endl;
             throw std::runtime_error("Incorrect VOLE");
         }

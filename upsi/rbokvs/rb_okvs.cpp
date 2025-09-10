@@ -183,8 +183,9 @@ namespace upsi {
         if (ase.size() != columns) throw std::runtime_error("rb_okvs ase size error");
         for (std::size_t i = 0; i < columns; ++i) {
             // if (!ase[i]) ase[i] = std::make_shared<oc::block>(oc::ZeroBlock);
-            if (!ase[i]) throw std::runtime_error("rb_okvs ase null pointer");
-            *(ase[i]) = X[i];
+            // if (!ase[i]) throw std::runtime_error("rb_okvs ase null pointer");
+            // *(ase[i]) = X[i];
+            ase[i] = X[i];
         }
         elem_cnt = elems.size();
     }
@@ -204,7 +205,8 @@ namespace upsi {
         for (std::size_t j = 0; j < band_width_; ++j) {
             if (!row[j]) continue;
             std::size_t col = start + j;
-            acc ^= *(ase[col]);
+            // acc ^= *(ase[col]);
+            acc ^= ase[col];
         }
         return acc;
     }

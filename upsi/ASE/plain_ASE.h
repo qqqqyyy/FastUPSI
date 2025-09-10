@@ -12,7 +12,6 @@ class PlainASE : public ASE{
         void build(const std::vector<Element>& elems, oc::block ro_seed = oc::ZeroBlock) override;
         void getElements(std::vector<Element>& elem) override;
         bool insertElement(const Element &elem) override;
-        void pad(oc::PRNG* prng);
 };
 
 } // namespace upsi

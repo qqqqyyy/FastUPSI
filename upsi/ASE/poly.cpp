@@ -37,7 +37,8 @@ void Poly::interpolation(const BlockVec& keys, const BlockVec& values, BlockVec&
     int cnt = keys.size();
     if(cnt == 0) return;
     if(cnt == 1) {
-        *(ase[0]) = values[0];
+        // *(ase[0]) = values[0];
+        ase[0] = values[0];
         return;
     }
 
@@ -55,7 +56,8 @@ void Poly::interpolation(const BlockVec& keys, const BlockVec& values, BlockVec&
                 term[cnt - k - 1] = term[cnt - k - 1] ^ (term[cnt - k].gf128Mul(keys[j]));
             }
         }
-        for(int j = 0; j < cnt; ++j) *(ase[j]) ^= term[j];
+        // for(int j = 0; j < cnt; ++j) *(ase[j]) ^= term[j];
+        for(int j = 0; j < cnt; ++j) ase[j] ^= term[j];
     }
 }
 
@@ -67,7 +69,8 @@ oc::block Poly::eval1(Element elem) {
     oc::block rs = oc::ZeroBlock;
     for(int i = n - 1; i >= 0; --i) {
         rs = rs.gf128Mul(elem);
-        rs ^= *(ase[i]);
+        // rs ^= *(ase[i]);
+        rs ^= ase[i];
     }
     return rs;
 }

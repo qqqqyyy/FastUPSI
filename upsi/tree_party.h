@@ -39,12 +39,20 @@ class TreeParty : public Party{
             other_tree_prng.SetSeed(other_prng_seed);
             my_tree.setup(&tree_prng, tree_seed, DEFAULT_STASH_SIZE, DEFAULT_NODE_SIZE);
             other_tree.setup(&other_tree_prng, tree_seed, rb_okvs_size_table::get(DEFAULT_STASH_SIZE), DEFAULT_NODE_SIZE);
+
+            int max_node_cnt = (dataset.start_size + total_days * dataset.add_size) * 2;
+            // int max_ase_size = max_node_cnt * DEFAULT_NODE_SIZE;
+            // my_tree.binary_tree.ase.reserve(max_ase_size);
+            my_tree.binary_tree.nodes.reserve(max_node_cnt);
+            // other_tree.binary_tree.ase.reserve(max_ase_size);
+            other_tree.binary_tree.nodes.reserve(max_node_cnt);
         }
 
 
         std::vector<Element> query(const std::vector<Element>& elems) override; // query for elems
         
         void addition(const std::vector<Element>& elems) override;
+        
         
 };
 

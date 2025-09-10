@@ -6,7 +6,7 @@ namespace upsi {
 
 class ASE{
     public:
-    PtrVec ase;
+    BlockVec ase;
     size_t n; //size of ase
     size_t elem_cnt = 0; //number of elements
 
@@ -14,18 +14,21 @@ class ASE{
     ASE(const BlockSpan& vec) {
         n = vec.size();
         ase.reserve(n);
-        for (const auto& elem : vec) ase.push_back(std::make_shared<oc::block>(elem));
+        // for (const auto& elem : vec) ase.push_back(std::make_shared<oc::block>(elem));
+        ase.insert(ase.end(), vec.begin(), vec.end());
     }
     ASE(int _n, bool build = true) : n(_n) {
         ase.reserve(n);
-        for (int i = 0; i < n; ++i) 
-            if(build) ase.push_back(std::make_shared<oc::block>(oc::ZeroBlock));
-            else ase.push_back(nullptr);
+        for (int i = 0; i < n; ++i) {
+            // if(build) ase.push_back(std::make_shared<oc::block>(oc::ZeroBlock));
+            // else ase.push_back(nullptr);
+            ase.push_back(oc::ZeroBlock);
+        }
     }
 
     oc::AlignedUnVector<oc::block> VecF() {
         oc::AlignedUnVector<oc::block> out(n);
-        for (size_t i = 0; i < n; ++i) out[i] = *(ase[i]);
+        for (size_t i = 0; i < n; ++i) out[i] = (*this)[i];
         return out;
     }
 
@@ -33,8 +36,8 @@ class ASE{
         // data.push_back(oc::toBlock(n));
         // data.push_back(oc::toBlock(elem_cnt));
         for (int i = 0; i < n; ++i) {
-            if(!ase[i]) throw std::runtime_error("serialize error!");
-            data.push_back(*ase[i]);
+            // if(!ase[i]) throw std::runtime_error("serialize error!");
+            data.push_back((*this)[i]);
         }
     }
 
@@ -42,7 +45,7 @@ class ASE{
         int cnt = 0;
         // n = data[cnt++].get<uint64_t>()[0];
         // elem_cnt = data[cnt++].get<uint64_t>()[0];
-        for (int i = 0; i < n; ++i) *ase[i] = data[cnt++];
+        for (int i = 0; i < n; ++i) (*this)[i] = data[cnt++];
         return cnt;
     }
 
@@ -56,7 +59,7 @@ class ASE{
         n = other_ASE.n;
         elem_cnt = other_ASE.elem_cnt;
         if(n != ase.size()) ase.resize(n);
-        for (int i = 0; i < n; ++i) *(ase[i]) = *(other_ASE.ase[i]);
+        for (int i = 0; i < n; ++i) (*this)[i] = other_ASE[i];
     }
 
 
@@ -90,21 +93,25 @@ class ASE{
         int cnt = ase.size();
         if(cnt != rhs.ase.size()) throw std::runtime_error("ASE::operator +/- size");
         ASE rs(n, true);
-        for (int i = 0; i < cnt; ++i) *rs.ase[i] = *(ase[i]) ^ *(rhs.ase[i]);
+        for (int i = 0; i < cnt; ++i) rs[i] = (*this)[i] ^ rhs[i];
         return rs;
     }
 
     ASE& operator += (const ASE& rhs) {
         int cnt = ase.size();
         if(cnt != rhs.ase.size()) throw std::runtime_error("ASE::operator +=/-= size");
-        for (int i = 0; i < cnt; ++i) *(ase[i]) ^= *(rhs.ase[i]);
+        for (int i = 0; i < cnt; ++i) (*this)[i] ^= rhs[i];
         return *this;
     }
 
-    oc::block& operator [] (const size_t& idx) {
-        if(idx >= n) throw std::runtime_error("ASE::operator [] index out of range");
-        if(!ase[idx]) throw std::runtime_error("ASE::operator [] nullptr");
-        return *(ase[idx]);
+    virtual oc::block& operator [] (const size_t& idx) {
+        // if(idx >= n) throw std::runtime_error("ASE::operator [] index out of range");
+        // if(!ase[idx]) throw std::runtime_error("ASE::operator [] nullptr");
+        // return *(ase[idx]);
+        return ase[idx];
+    }
+    virtual const oc::block& operator [] (const size_t& idx) const{
+        return ase[idx];
     }
 
     ASE operator - (const ASE& rhs) {
@@ -116,16 +123,15 @@ class ASE{
     }
 
     ASE operator * (const oc::block& rhs) {
-        ASE rs;
         int cnt = ase.size();
-        rs.ase.reserve(cnt);
-        for (int i = 0; i < cnt; ++i) rs.ase.push_back(std::make_shared<oc::block>((ase[i])->gf128Mul(rhs)));
+        ASE rs(cnt, true);
+        for (int i = 0; i < cnt; ++i) rs[i] = (*this)[i].gf128Mul(rhs);
         return rs;
     }
 
     ASE& operator *= (const oc::block& rhs) {
         int cnt = ase.size();
-        for (int i = 0; i < cnt; ++i) *(ase[i]) = (ase[i])->gf128Mul(rhs);
+        for (int i = 0; i < cnt; ++i) (*this)[i] = (*this)[i].gf128Mul(rhs);
         return *this;
     }
 

@@ -22,10 +22,12 @@ void BinaryTree<NodeType>::setup(oc::PRNG* prng, oc::block seed, size_t node_siz
 }
 
 template<typename NodeType>
-void BinaryTree<NodeType>::addNode() {
+inline void BinaryTree<NodeType>::addNode() {
 	auto cur_node = std::make_shared<NodeType>(node_size);
     this->nodes.push_back(cur_node);
-	for (int i = 0; i < node_size; ++i) ase.push_back(cur_node->ase[i]);
+	// for (int i = 0; i < node_size; ++i) ase.push_back(cur_node->ase[i]);
+	// ase.insert(ase.end(), cur_node->ase.begin(), cur_node->ase.end());
+	n += cur_node->n;
 }
 
 /// @brief Helper methods
@@ -98,7 +100,11 @@ std::pair<std::vector<std::shared_ptr<NodeType> >, std::vector<int> > BinaryTree
 	int new_elem_cnt = elem.size();
 
 	// add new layer when tree is full
+	// oc::Timer t1("New Layer");
+	// t1.setTimePoint("begin");
 	while(new_elem_cnt + this->elem_cnt >= (1 << (this->depth + 1))) addNewLayer();
+	// t1.setTimePoint("end");
+	// std::cout << t1 << "\n";
 	// no need to tell the receiver the new depth of tree?
 
 	// get the node indices in random paths
@@ -193,7 +199,11 @@ std::vector<int> BinaryTree<NodeType>::update(int new_elem_cnt) {
 	// int node_cnt = new_nodes.size();
 
 	// add new layer when tree is full
+	// oc::Timer t1("New Layer");
+	// t1.setTimePoint("begin");
 	while(new_elem_cnt + this->elem_cnt >= (1 << (this->depth + 1))) addNewLayer();
+	// t1.setTimePoint("end");
+	// std::cout << t1 << "\n";
 	//std::cerr << "new depth: " << this->depth << std::endl;
 
 	std::vector<int> ind;

@@ -14,7 +14,10 @@ class Poly : public ASE{
             n = ase.size();
         }
         
-        void clear() override {for (int i = 0; i < n; ++i) *(ase[i]) = oc::ZeroBlock;}
+        void clear() override {
+            // for (int i = 0; i < n; ++i) *(ase[i]) = oc::ZeroBlock;
+            for (int i = 0; i < n; ++i) ase[i] = oc::ZeroBlock;
+        }
 
         void computeDenom(const BlockVec& keys, const BlockVec& values, BlockVec& denoms);
         void interpolation(const BlockVec& keys, const BlockVec& values, BlockVec& denoms_inv, int& idx);
