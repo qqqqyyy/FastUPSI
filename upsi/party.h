@@ -73,14 +73,7 @@ class Party{
         Party(int _party, oc::Socket* _chl, int _total_days, std::string fn);
 
         void setup() {
-            if(party == 0) {
-                my_addition(dataset.initial_set);
-                other_addition();
-            }
-            else {
-                other_addition();
-                my_addition(dataset.initial_set);
-            }
+            addition(dataset.initial_set);
             intersection = dataset.intersection;
         }
 
@@ -97,7 +90,7 @@ class Party{
         void one_day() {
             int cnt_del = deletion_part(dataset.daily_deletion[current_day]);
             int cnt_add = addition_part(dataset.daily_addition[current_day]);
-            std::cout << "[Day " << current_day << "]: " << cnt_del << " " << cnt_add << std::endl;
+            std::cout << "[Day " << current_day << "]: " << "-" << cnt_del << ", +" << cnt_add << std::endl;
             ++current_day;
         }
 
@@ -105,13 +98,9 @@ class Party{
 
         int deletion_part(const std::vector<Element>& deletion_set);
 
-        virtual void sender(const std::vector<Element>& elems) = 0; // query for elems
-
-        virtual std::vector<Element> receiver() = 0;
+        virtual std::vector<Element> query(const std::vector<Element>& elems) = 0; // query for elems
         
-        virtual void my_addition(const std::vector<Element>& elems) = 0;
-
-        virtual void other_addition() = 0;
+        virtual void addition(const std::vector<Element>& elems) = 0;
 
         std::vector<Element> PSI_receiver(const std::vector<Element>& my_set);
 

@@ -37,8 +37,7 @@ int Party::addition_part(const std::vector<Element>& addition_set) {
     t0.setTimePoint("begin");
 
     if(party == 0) {
-        sender(addition_set);
-        I_plus = receiver();
+        I_plus = query(addition_set);
         t0.setTimePoint("query");
         auto I_1 = PSI_receiver(addition_set);
         t0.setTimePoint("one-sided plain psi");
@@ -49,13 +48,11 @@ int Party::addition_part(const std::vector<Element>& addition_set) {
         oc::cp::sync_wait(chl->flush());
         t0.setTimePoint("I_plus");
 
-        my_addition(addition_set);
-        other_addition();
+        addition(addition_set);
         t0.setTimePoint("update");
     }
     else {
-        auto cur_set = receiver();
-        sender(addition_set);
+        auto cur_set = query(addition_set);
         t0.setTimePoint("query");
         merge_set(cur_set, addition_set);
         PSI_sender(cur_set);
@@ -63,8 +60,7 @@ int Party::addition_part(const std::vector<Element>& addition_set) {
         I_plus = oc::cp::sync_wait(recv_blocks(chl));
         t0.setTimePoint("I_plus");
 
-        other_addition();
-        my_addition(addition_set);
+        addition(addition_set);
         t0.setTimePoint("update");
     }
 

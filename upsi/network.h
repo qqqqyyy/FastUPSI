@@ -1,6 +1,7 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
+#include "macoro/when_all.h"
 #include "ASE/ASE.h"
 
 namespace upsi{
@@ -38,6 +39,7 @@ inline oc::cp::task<> send_ASEs(const std::vector<ASEType>& ases, oc::Socket* ch
     BlockVec data;
     for(const auto& ase: ases) ase.write(data);
     co_await chl->send(data);
+    co_await chl->flush();
     co_return;
 }
 
@@ -60,6 +62,14 @@ inline oc::cp::task<std::vector<ASE> > recv_ASEs(oc::Socket* chl) {
         rs.push_back(std::move(ase));
     }
     co_return rs;
+}
+
+
+template<typename ASEType>
+inline oc::cp::task<std::vector<ASE> > send_recv_ASEs(const std::vector<ASEType>& ases, oc::Socket* chl) {
+    auto [s1, s2] = co_await oc::cp::when_all_ready(send_ASEs(ases, chl), recv_ASEs(chl));
+    s1.result();
+    co_return s2.result();
 }
 
 inline oc::cp::task<> send_blocks(const BlockVec& blocks, oc::Socket* chl) {
