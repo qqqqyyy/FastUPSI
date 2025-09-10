@@ -33,32 +33,46 @@ int Party::addition_part(const std::vector<Element>& addition_set) {
 
     std::vector<Element> I_plus;
 
+    oc::Timer t0("addition part");
+    t0.setTimePoint("begin");
+
     if(party == 0) {
         sender(addition_set);
         I_plus = receiver();
+        t0.setTimePoint("query");
         auto I_1 = PSI_receiver(addition_set);
+        t0.setTimePoint("one-sided plain psi");
         I_plus.reserve(I_plus.size() + I_1.size());
         I_plus.insert(I_plus.end(), I_1.begin(), I_1.end());
         random_shuffle<Element>(I_plus);
         oc::cp::sync_wait(send_blocks(I_plus, chl));
         oc::cp::sync_wait(chl->flush());
+        t0.setTimePoint("I_plus");
 
         my_addition(addition_set);
         other_addition();
+        t0.setTimePoint("update");
     }
     else {
         auto cur_set = receiver();
         sender(addition_set);
+        t0.setTimePoint("query");
         merge_set(cur_set, addition_set);
         PSI_sender(cur_set);
+        t0.setTimePoint("one-sided plain psi");
         I_plus = oc::cp::sync_wait(recv_blocks(chl));
+        t0.setTimePoint("I_plus");
 
         other_addition();
         my_addition(addition_set);
+        t0.setTimePoint("update");
     }
 
     intersection.reserve(intersection.size() + I_plus.size());
     intersection.insert(intersection.end(), I_plus.begin(), I_plus.end());
+
+    t0.setTimePoint("end");
+    std::cout << t0 << "\n";
 
     return I_plus.size();
 }
