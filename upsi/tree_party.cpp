@@ -32,7 +32,7 @@ void TreeParty::my_addition(const std::vector<Element>& elems) {
     auto ind = ins.second;
     int cnt = nodes.size();
 
-    std::cout << "[my_addition] polys...\n";
+    // std::cout << "[my_addition] polys...\n";
 
     std::vector<Poly> polys(cnt);
     std::vector<BlockVec> cur_elems;
@@ -50,7 +50,7 @@ void TreeParty::my_addition(const std::vector<Element>& elems) {
     batchInterpolation(polys, cur_elems, cur_values);
 
 
-    std::cout << "[my_addition] polys oprf...\n";
+    // std::cout << "[my_addition] polys oprf...\n";
 
     OPRF<Poly> oprf_poly;
     for (int i = 0; i < cnt; ++i) {
@@ -67,7 +67,7 @@ void TreeParty::my_addition(const std::vector<Element>& elems) {
     oc::cp::sync_wait(chl->flush());
 
 
-    std::cout << "[my_addition] stash...\n";
+    // std::cout << "[my_addition] stash...\n";
 
     rb_okvs stash(rb_okvs_size_table::get(DEFAULT_STASH_SIZE));
 
@@ -76,7 +76,7 @@ void TreeParty::my_addition(const std::vector<Element>& elems) {
     stash.build(tmp, ro_seed);
 
 
-    std::cout << "[my_addition] stash oprf...\n";
+    // std::cout << "[my_addition] stash oprf...\n";
 
     OPRF<rb_okvs> oprf_okvs;
     auto vole = vole_receiver.get(stash.n);
@@ -95,15 +95,15 @@ void TreeParty::my_addition(const std::vector<Element>& elems) {
 void TreeParty::other_addition() {
     size_t new_elem_cnt;
 
-    chl->recv(new_elem_cnt);
+    oc::cp::sync_wait(chl->recv(new_elem_cnt));
 
-    std::cout << "[other_addition] update...\n";
+    // std::cout << "[other_addition] update...\n";
 
     std::vector<int> ind = other_tree.update(new_elem_cnt);
     int cnt = ind.size();
 
 
-    std::cout << "[other_addition] polys oprf...\n";
+    // std::cout << "[other_addition] polys oprf...\n";
 
     for (int i = 0; i < cnt; ++i) {
         ASE diff = oc::cp::sync_wait(recv_ASE(chl));
@@ -112,7 +112,7 @@ void TreeParty::other_addition() {
         other_tree.binary_tree.nodes[ind[i]]->copy(diff);
     }
 
-    std::cout << "[other_addition] stash oprf...\n";
+    // std::cout << "[other_addition] stash oprf...\n";
 
     //stash
     ASE diff = oc::cp::sync_wait(recv_ASE(chl));

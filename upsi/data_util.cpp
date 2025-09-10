@@ -7,14 +7,20 @@ std::pair<Dataset, Dataset> GenerateSets(int start_size, int days, int add_size,
         << ",\n\t\t\t add_size = " << add_size << ", del_size = " << del_size << "\n";
     oc::PRNG prng(oc::sysRandomSeed());
     Dataset X(start_size, days, add_size, del_size), Y(start_size, days, add_size, del_size);
-    auto universe = GetRandomSet(&prng, start_size * 2 + add_size * days * 2);
+
+
+    int initial_I_size = start_size / 4;
+    int initial_daily_I = std::fmin((start_size - initial_I_size) / 2, ((add_size - del_size) * days) / 5);
+    int I_size = ((add_size - del_size) * days) / 40;
+
+
+    auto universe = GetRandomSet(&prng, start_size * 2 + add_size * days * 2 - initial_I_size - I_size + 1000);
     std::sort(universe.begin(), universe.end());
     universe.erase(std::unique(universe.begin(), universe.end()), universe.end());
     random_shuffle<oc::block>(universe);
     
 
     int universe_size = universe.size();
-    int initial_I_size = start_size / 3;
 
     X.initial_set.reserve(start_size);
     Y.initial_set.reserve(start_size);
@@ -37,15 +43,17 @@ std::pair<Dataset, Dataset> GenerateSets(int start_size, int days, int add_size,
         Y.initial_set.push_back(universe[idx++]);
     }
 
-    random_shuffle<oc::block>(X.initial_set);
-    random_shuffle<oc::block>(Y.initial_set);
-
     if(del_size == 0) {
-        int I_size = ((add_size - del_size) * days) / 3;
         std::vector<Element> X_universe, Y_universe;
+
+        for (int i = 0; i < initial_daily_I; ++i) {
+            X_universe.push_back(Y.initial_set[start_size - i - 1]);
+            Y_universe.push_back(X.initial_set[start_size - i - 1]);
+        }
+
         for (int i = 0; i < I_size; ++i) {
-            X_universe.push_back(universe[idx++]);
-            Y_universe.push_back(universe[idx]);
+            X_universe.push_back(universe[idx]);
+            Y_universe.push_back(universe[idx++]);
         }
 
         while(idx + 1 < universe_size) {
@@ -66,8 +74,10 @@ std::pair<Dataset, Dataset> GenerateSets(int start_size, int days, int add_size,
             }
         }
     }
-
     //TODO: deletion
+
+    random_shuffle<oc::block>(X.initial_set);
+    random_shuffle<oc::block>(Y.initial_set);
 
     std::cout << "[Generate Dataset] done.\n\n";
 

@@ -40,7 +40,7 @@ int Party::addition_part(const std::vector<Element>& addition_set) {
         I_plus.reserve(I_plus.size() + I_1.size());
         I_plus.insert(I_plus.end(), I_1.begin(), I_1.end());
         random_shuffle<Element>(I_plus);
-        oc::cp::sync_wait(chl->send(I_plus));
+        oc::cp::sync_wait(send_blocks(I_plus, chl));
         oc::cp::sync_wait(chl->flush());
 
         my_addition(addition_set);
@@ -51,7 +51,7 @@ int Party::addition_part(const std::vector<Element>& addition_set) {
         sender(addition_set);
         merge_set(cur_set, addition_set);
         PSI_sender(cur_set);
-        oc::cp::sync_wait(chl->recvResize(I_plus));
+        I_plus = oc::cp::sync_wait(recv_blocks(chl));
 
         other_addition();
         my_addition(addition_set);
@@ -65,6 +65,7 @@ int Party::addition_part(const std::vector<Element>& addition_set) {
 
 int Party::deletion_part(const std::vector<Element>& deletion_set) {
     //TODO
+    return 0;
 }
 
 

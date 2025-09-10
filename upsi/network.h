@@ -26,6 +26,21 @@ inline oc::cp::task<ASE> recv_ASE(oc::Socket* chl) {
     co_return ase;
 }
 
+inline oc::cp::task<> send_blocks(const BlockVec& blocks, oc::Socket* chl) {
+    co_await chl->send(blocks.size());
+    // co_await chl->send(ase.elem_cnt);
+    if(blocks.size() > 0) co_await chl->send(blocks);
+    co_return;
+}
+
+inline oc::cp::task<BlockVec> recv_blocks(oc::Socket* chl) {
+    size_t n;
+    BlockVec rs;
+    co_await chl->recv(n);
+    if(n) co_await chl->recvResize(rs);
+    co_return rs;
+}
+
 inline oc::cp::task<> send_OPRF(const OPRFValueVec& values, oc::Socket* chl) {
     BlockVec tmp;
     for (auto x: values) {

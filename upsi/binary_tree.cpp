@@ -198,8 +198,10 @@ std::vector<int> BinaryTree<NodeType>::update(int new_elem_cnt) {
 
 	std::vector<int> ind;
 	// generate hash
+	// std::cout << "[BinaryTree] update " << new_elem_cnt << std::endl;
 	auto hsh = generateRandomHash(prng, new_elem_cnt);
 	int *leaf_ind = generateRandomPaths(new_elem_cnt, ind, hsh);
+	// std::cout << "[BinaryTree] update done.\n\n";
 	delete [] leaf_ind;
 
 	// assert(node_cnt == ind.size());

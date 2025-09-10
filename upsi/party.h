@@ -85,7 +85,13 @@ class Party{
         }
 
         void run() {
-            for (int i = 0; i < total_days; ++i) one_day();
+            oc::Timer timer("party");
+            timer.setTimePoint("begin");
+            for (int i = 0; i < total_days; ++i) {
+                one_day();
+                timer.setTimePoint("day " + std::to_string(i));
+            }
+            std::cout << "Time: \n" << timer << "\n";
         }
 
         void one_day() {

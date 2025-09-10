@@ -32,13 +32,25 @@ int main(int argc, char** argv)
     if(func == "tree") {
         std::cout << "[Tree] constructor...\n";
         TreeParty tree_party(party, &chl, days, fn);
-        std::cout << "[Tree] setup...\n";
+        std::cout << "[Tree] setup initial sets...\n";
         tree_party.setup();
         std::cout << "[Tree] done.\n";
+        if(party == 0) {
+            int tmp = 0;
+            oc::cp::sync_wait(chl.send(tmp));
+            oc::cp::sync_wait(chl.flush());
+            oc::cp::sync_wait(chl.recv(tmp));
+        }
+        else {
+            int tmp = 0;
+            oc::cp::sync_wait(chl.recv(tmp));
+            oc::cp::sync_wait(chl.send(tmp));
+            oc::cp::sync_wait(chl.flush());
+        }
         tree_party.run();
         oc::cp::sync_wait(chl.close());
     }
-    if(func == "adaptive") {
+    else if(func == "adaptive") {
         //TODO;
     }
     else throw std::runtime_error("functionality error");

@@ -7,10 +7,10 @@ int main(int argc, char** argv)
 {
     oc::CLP clp(argc, argv);
     clp.setDefault("days", 4);
-    // clp.setDefault("start_size", 1044481);
-    // clp.setDefault("add_size", 1024);
-    clp.setDefault("start_size", 49);
-    clp.setDefault("add_size", 4);
+    clp.setDefault("start_size", 1044479);
+    clp.setDefault("add_size", 1024);
+    // clp.setDefault("start_size", 49);
+    // clp.setDefault("add_size", 4);
     clp.setDefault("del_size", 0);
 
     int days = clp.get<int>("days");
