@@ -66,12 +66,12 @@ private:
 };
 
 struct rb_okvs_size_table final{
-    inline static const int cnt = 5;
-    inline static size_t input_size[cnt] = {1 << 7, 1 << 9, 1 << 10, 1 << 12, 1 << 14};
-    inline static size_t okvs_size[cnt] = {1 << 9, 1 << 10, 1 << 11, 1 << 13, 1 << 15}; //TODO
+    inline static const int cnt = 8;
+    inline static size_t input_size[cnt] = {1 << 7, 1 << 8, 1 << 9, 1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14};
+    inline static size_t okvs_size[cnt] = {1 << 9, 1 << 10, 3 << 9, 3 << 10, 1 << 12, 1 << 13, size_t(1.5*(1<<13)), size_t(1.1*(1<<14)+1)}; //TODO
     static size_t get(size_t x) {
         for (int i = 0; i < cnt; ++i) if(input_size[i] >= x) return okvs_size[i];
-        return 1.1 * x;
+        return (1.1 * x) + 1;
     }
 };
 

@@ -40,6 +40,7 @@ namespace upsi {
 	#define DEFAULT_NODE_SIZE 4
     #define DEFAULT_STASH_SIZE 89
     #define DEFAULT_CUCKOO_SIZE 200 //TODO
+    #define DEFAULT_ADAPTIVE_SIZE 1 << 7
 
     // type of elements in each party's sets
     // TODO

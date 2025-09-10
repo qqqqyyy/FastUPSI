@@ -13,6 +13,7 @@ set(TREE_SRCS
     "data_util.cpp"
     "party.cpp"
     "tree_party.cpp"
+    "adaptive_party.cpp"
 )
 
 add_library(upsi STATIC ${TREE_SRCS})

@@ -18,6 +18,8 @@ class Party{
         int current_day = 0;
         int max_data_size;
         int party; // 0 / 1
+        bool support_deletion = false;
+        bool refresh_seeds = false;
 
         Dataset dataset;
 
@@ -88,7 +90,17 @@ class Party{
         }
 
         void one_day() {
-            int cnt_del = deletion_part(dataset.daily_deletion[current_day]);
+            if(refresh_seeds) {
+                if(party == 0) {
+                    ro_seed = oc::sysRandomSeed();
+                    coproto::sync_wait(chl->send(ro_seed));
+                }
+                else {
+                    coproto::sync_wait(chl->recv(ro_seed));
+                }
+            }
+            int cnt_del = 0;
+            if(support_deletion) cnt_del = deletion_part(dataset.daily_deletion[current_day]);
             int cnt_add = addition_part(dataset.daily_addition[current_day]);
             std::cout << "[Day " << current_day << "]: " << "-" << cnt_del << ", +" << cnt_add << std::endl;
             ++current_day;

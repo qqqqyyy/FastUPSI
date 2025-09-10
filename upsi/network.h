@@ -58,6 +58,7 @@ inline oc::cp::task<std::vector<ASE> > recv_ASEs(oc::Socket* chl) {
     auto data_span = std::span{data};
     for (int i = 0, idx = 0; i < n; ++i) {
         ASE ase(data_span.subspan(idx, ase_sizes[i]));
+        ase.elem_cnt = 1; //non_empty
         idx += ase_sizes[i];
         rs.push_back(std::move(ase));
     }

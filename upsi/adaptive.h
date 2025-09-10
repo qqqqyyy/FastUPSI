@@ -5,42 +5,53 @@
 #include "ASE/plain_ASE.h"
 #include "ASE/poly.h"
 #include "rbokvs/rb_okvs.h"
+#include "oprf.h"
 
 namespace upsi {
 
 template<typename BaseType>
 class Adaptive : public ASE
 {
-    static_assert(std::is_base_of<ASE, BaseType>::value, "BaseType must derive from ASE");
+    static_assert(std::is_base_of<ASE, BaseType>::value, "Adaptive: BaseType must derive from ASE");
 
 
     public:
         std::vector<std::shared_ptr<BaseType> > nodes;
-        BlockVec seed;
+        BlockVec seeds;
         //TODO: hash
 
         size_t start_size;
         size_t node_cnt;
 
-        Adaptive(size_t _start_size) {
+        void setup(size_t _start_size = DEFAULT_ADAPTIVE_SIZE) {
             start_size = _start_size;
             elem_cnt = 0;
             node_cnt = 0;
-            nodes.push_back(std::make_shared<BaseType>(start_size));
+            std::shared_ptr<BaseType> cur_node;
+            if constexpr (std::is_same_v<BaseType, rb_okvs>) {
+                cur_node = std::make_shared<rb_okvs>(rb_okvs_size_table::get(start_size));
+            }
+            else cur_node = std::make_shared<BaseType>(start_size);
+            nodes.push_back(cur_node);
+            seeds.push_back(oc::sysRandomSeed());
+            for (int i = 0; i < cur_node->n; ++i) ase.push_back(cur_node->ase[i]);
         }
 
         void addASE();
 
-        std::vector<std::shared_ptr<ASE> > insert(
+        std::pair<std::vector<std::shared_ptr<BaseType> >, std::vector<int> > insert(
             const std::vector<Element>& elem, 
             BlockVec& new_seeds
         );
-        void replaceASEs(
-            int new_elem_cnt,
-            const BlockVec& new_seeds,
-            const std::vector<std::shared_ptr<ASE> >& new_ASEs
-        );
-		// void eval(Element elem, BlockVec& values) override;
+
+        std::vector<int> update(int new_elem_cnt);
+
+        // void replaceASEs(
+        //     int new_elem_cnt,
+        //     const BlockVec& new_seeds,
+        //     const std::vector<std::shared_ptr<ASE> >& new_ASEs
+        // );
+        void eval_oprf(Element elem, oc::block delta, OPRFValueVec& values);
 };
 
 }      // namespace upsi

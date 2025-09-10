@@ -2,6 +2,7 @@
 #include "coproto/Socket/AsioSocket.h"
 #include "cryptoTools/Common/CLP.h"
 #include "tree_party.h"
+#include "adaptive_party.h"
 
 using namespace upsi;
 
@@ -34,7 +35,7 @@ int main(int argc, char** argv)
         TreeParty tree_party(party, &chl, days, fn);
         std::cout << "[Tree] setup initial sets...\n";
         tree_party.setup();
-        std::cout << "[Tree] done.\n";
+        std::cout << "[Tree] setup done.\n\n";
         if(party == 0) {
             int tmp = 0;
             oc::cp::sync_wait(chl.send(tmp));
@@ -51,7 +52,26 @@ int main(int argc, char** argv)
         oc::cp::sync_wait(chl.close());
     }
     else if(func == "adaptive") {
-        //TODO;
+        std::cout << "[Adaptive] constructor...\n";
+        AdaptiveParty adaptive_party(party, &chl, days, fn);
+        adaptive_party.refresh_seeds = true;
+        std::cout << "[Adaptive] setup initial sets...\n";
+        adaptive_party.setup();
+        std::cout << "[Adaptive] setup done.\n\n";
+        if(party == 0) {
+            int tmp = 0;
+            oc::cp::sync_wait(chl.send(tmp));
+            oc::cp::sync_wait(chl.flush());
+            oc::cp::sync_wait(chl.recv(tmp));
+        }
+        else {
+            int tmp = 0;
+            oc::cp::sync_wait(chl.recv(tmp));
+            oc::cp::sync_wait(chl.send(tmp));
+            oc::cp::sync_wait(chl.flush());
+        }
+        adaptive_party.run();
+        oc::cp::sync_wait(chl.close());
     }
     else throw std::runtime_error("functionality error");
 

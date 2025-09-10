@@ -8,7 +8,7 @@ class ASE{
     public:
     PtrVec ase;
     size_t n; //size of ase
-    size_t elem_cnt; //number of elements
+    size_t elem_cnt = 0; //number of elements
 
     ASE(){}
     ASE(const BlockSpan& vec) {

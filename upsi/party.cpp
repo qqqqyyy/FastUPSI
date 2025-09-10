@@ -18,7 +18,7 @@ Party::Party(int _party, oc::Socket* _chl, int _total_days, std::string fn) {
     vole_receiver.setup(chl, &my_prng);
     
     // TODO: max_vole_size?
-    size_t max_vole_size = max_data_size * (4 * (oc::log2ceil(max_data_size) + 1) + 2) + 500 * (total_days + 1);
+    size_t max_vole_size = max_data_size * (4 * (oc::log2ceil(max_data_size) + 1) + 2) + rb_okvs_size_table::get(DEFAULT_STASH_SIZE) * (total_days + 1);
     if(party == 0) {
         vole_sender.generate(max_vole_size);
         vole_receiver.generate(max_vole_size);
