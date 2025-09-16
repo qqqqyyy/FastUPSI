@@ -26,6 +26,17 @@ class ASE{
         }
     }
 
+    ASE(const BlockVec& vec) {
+        n = vec.size();
+        elem_cnt = 0;
+        ase = vec;
+    }
+
+    ASE(BlockVec&& vec) : ase(std::move(vec)) {
+        n = ase.size();
+        elem_cnt = 0;
+    }
+
     oc::AlignedUnVector<oc::block> VecF() {
         oc::AlignedUnVector<oc::block> out(n);
         for (size_t i = 0; i < n; ++i) out[i] = (*this)[i];
@@ -90,16 +101,16 @@ class ASE{
     }
 
     ASE operator + (const ASE& rhs) {
-        int cnt = ase.size();
-        if(cnt != rhs.ase.size()) throw std::runtime_error("ASE::operator +/- size");
+        int cnt = n;
+        if(cnt != rhs.n) throw std::runtime_error("ASE::operator +/- size");
         ASE rs(n, true);
         for (int i = 0; i < cnt; ++i) rs[i] = (*this)[i] ^ rhs[i];
         return rs;
     }
 
     ASE& operator += (const ASE& rhs) {
-        int cnt = ase.size();
-        if(cnt != rhs.ase.size()) throw std::runtime_error("ASE::operator +=/-= size");
+        int cnt = n;
+        if(cnt != rhs.n) throw std::runtime_error("ASE::operator +=/-= size");
         for (int i = 0; i < cnt; ++i) (*this)[i] ^= rhs[i];
         return *this;
     }
@@ -123,14 +134,14 @@ class ASE{
     }
 
     ASE operator * (const oc::block& rhs) {
-        int cnt = ase.size();
+        int cnt = n;
         ASE rs(cnt, true);
         for (int i = 0; i < cnt; ++i) rs[i] = (*this)[i].gf128Mul(rhs);
         return rs;
     }
 
     ASE& operator *= (const oc::block& rhs) {
-        int cnt = ase.size();
+        int cnt = n;
         for (int i = 0; i < cnt; ++i) (*this)[i] = (*this)[i].gf128Mul(rhs);
         return *this;
     }

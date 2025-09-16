@@ -67,7 +67,7 @@ namespace upsi {
 	std::vector<BinaryHash> generateRandomHash(oc::PRNG* prng, size_t cnt);
 
     Element GetRandomSetElement(oc::PRNG* prng);
-    Element GetRandomPadElement(oc::PRNG* prng);
+    // Element GetRandomPadElement(oc::PRNG* prng);
     std::vector<Element> GetRandomSet(oc::PRNG* prng, size_t set_size);
 
     //random oracle

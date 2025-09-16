@@ -41,14 +41,14 @@ std::vector<BinaryHash> generateRandomHash(oc::PRNG* prng, size_t cnt) {
 
 Element GetRandomSetElement(oc::PRNG* prng) {
     Element elem = prng->get<oc::block>();
-    if((elem & oc::OneBlock) == oc::OneBlock) elem ^= oc::OneBlock;
+    // if((elem & oc::OneBlock) == oc::OneBlock) elem ^= oc::OneBlock;
     return elem;
 }
 
-Element GetRandomPadElement(oc::PRNG* prng) {
-    Element elem = prng->get<oc::block>();
-    return elem | oc::OneBlock;
-}
+// Element GetRandomPadElement(oc::PRNG* prng) {
+//     Element elem = prng->get<oc::block>();
+//     return elem | oc::OneBlock;
+// }
 
 std::vector<Element> GetRandomSet(oc::PRNG* prng, size_t set_size) {
     std::vector<Element> elems;

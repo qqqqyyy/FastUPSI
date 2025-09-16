@@ -89,22 +89,29 @@ inline oc::cp::task<BlockVec> recv_blocks(oc::Socket* chl) {
 }
 
 inline oc::cp::task<> send_OPRF(const OPRFValueVec& values, oc::Socket* chl) {
-    BlockVec tmp;
-    for (auto x: values) {
-        tmp.push_back(x.first);
-        tmp.push_back(x.second);
+    co_await chl->send(values.size());
+    if(values.size() > 0) {
+        BlockVec tmp;
+        for (auto x: values) {
+            tmp.push_back(x.first);
+            tmp.push_back(x.second);
+        }
+        co_await chl->send(tmp);
     }
-    co_await chl->send(tmp);
     co_return;
 }
 
 inline oc::cp::task<OPRFValueVec> recv_OPRF(oc::Socket* chl) {
-    BlockVec tmp;
-    co_await chl->recvResize(tmp);
-    int cnt = tmp.size() >> 1;
+    size_t values_size;
+    co_await chl->recv(values_size);
     OPRFValueVec rs;
-    rs.reserve(cnt);
-    for (int i = 0; i < cnt; ++i) rs.push_back(std::make_pair(tmp[i << 1], tmp[i << 1 | 1]));
+    if(values_size) {
+        BlockVec tmp;
+        co_await chl->recvResize(tmp);
+        int cnt = tmp.size() >> 1;
+        rs.reserve(cnt);
+        for (int i = 0; i < cnt; ++i) rs.push_back(std::make_pair(tmp[i << 1], tmp[i << 1 | 1]));
+    }
     co_return rs;
 }
 

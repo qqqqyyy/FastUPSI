@@ -26,6 +26,25 @@ public:
         this->del_size = del_size;
     }
 
+    void print() {
+        std::cout << "[Dataset] initial set:\n";
+        for(const auto& elem: initial_set) std::cout << elem << " ";
+        std::cout << "\n";
+        std::cout << "[Dataset] intersection:\n";
+        for(const auto& elem: intersection) std::cout << elem << " ";
+        std::cout << "\n\n";
+
+        for (int i = 0; i < days; ++i) {
+            std::cout << "[Dataset] day " << std::to_string(i) << ":\n";
+            std::cout << "[Dataset] deletion:\n";
+            for(const auto& elem: daily_deletion[i]) std::cout << elem << " ";
+            std::cout << "\n";
+            std::cout << "[Dataset] addition:\n";
+            for(const auto& elem: daily_addition[i]) std::cout << elem << " ";
+            std::cout << "\n\n";
+        }
+    }
+
     static void write_vec(std::ostream& os, const BlockVec& v) {
         os << v.size() << '\n';
         for (const auto& e : v) os.write(reinterpret_cast<const char*>(e.data()), 16);
@@ -100,6 +119,14 @@ public:
         }
     }
 };
+
+inline Element sample_and_delete(std::vector<Element>& vec, oc::PRNG& prng) {
+    size_t idx = prng.get<size_t>() % vec.size();
+    Element rs = vec[idx];
+    if(idx != vec.size() - 1) vec[idx] = vec.back();
+    vec.pop_back();
+    return rs;
+}
 
 std::pair<Dataset, Dataset> GenerateSets(int start_size, int days, int add_size, int del_size);
 

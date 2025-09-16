@@ -2,13 +2,16 @@
 
 namespace upsi{
 
-Party::Party(int _party, oc::Socket* _chl, int _total_days, std::string fn) {
+Party::Party(int _party, oc::Socket* _chl, int _total_days, std::string fn, bool deletion) {
 
     this->party = _party;
     this->chl = _chl;
     this->total_days = _total_days;
+    this->support_deletion = deletion;
 
     dataset.Read(fn);
+
+    if(dataset.start_size <= 64) dataset.print();
     
     if(total_days > dataset.days) throw std::runtime_error("dataset days error");
     this->max_data_size = dataset.start_size + dataset.add_size * total_days;
@@ -16,9 +19,32 @@ Party::Party(int _party, oc::Socket* _chl, int _total_days, std::string fn) {
     my_prng.SetSeed(oc::sysRandomSeed());
     vole_sender.setup(chl, &my_prng);
     vole_receiver.setup(chl, &my_prng);
+
+    if(support_deletion) {
+        oc::block del_seed;
+        if(party == 0) {
+            del_seed = oc::sysRandomSeed();
+            coproto::sync_wait(chl->send(del_seed));
+            coproto::sync_wait(chl->flush());
+        }
+        else coproto::sync_wait(chl->recv(del_seed));
+        prng_del.SetSeed(del_seed);
+    }
+    
+    oc::u8 tmp = 0;
+    oc::cp::sync_wait(chl->send(tmp));
+    oc::cp::sync_wait(chl->flush());
+    oc::cp::sync_wait(chl->recv(tmp));
+
     
     // TODO: max_vole_size?
-    size_t max_vole_size = max_data_size * (4 * (oc::log2ceil(max_data_size) + 1) + 2) + rb_okvs_size_table::get(DEFAULT_STASH_SIZE) * (total_days + 1);
+    size_t max_vole_size = (1 << oc::log2ceil(max_data_size)) * 4 + rb_okvs_size_table::get(DEFAULT_STASH_SIZE);
+    max_vole_size += total_days * ( dataset.add_size * (4 * (oc::log2ceil(max_data_size) + 1)) + rb_okvs_size_table::get(DEFAULT_STASH_SIZE) );
+    if(support_deletion) max_vole_size += total_days * (dataset.del_size * 4 + rb_okvs_size_table::get(DEFAULT_STASH_SIZE) + 1) + total_days * (1 << oc::log2ceil(max_data_size)) * 4 * 2;
+    
+    std::cout << "[VOLE] generate " << max_vole_size << " ...\n";
+    oc::Timer t1("vole");
+    t1.setTimePoint("vole begin");
     if(party == 0) {
         vole_sender.generate(max_vole_size);
         vole_receiver.generate(max_vole_size);
@@ -26,56 +52,90 @@ Party::Party(int _party, oc::Socket* _chl, int _total_days, std::string fn) {
     else {
         vole_receiver.generate(max_vole_size);
         vole_sender.generate(max_vole_size);
-    }
+    }    
+    t1.setTimePoint("vole generation end");
+    std::cout << t1 << "\n";
+    std::cout << "[VOLE] done.\n\n";
 }
 
 int Party::addition_part(const std::vector<Element>& addition_set) {
 
     std::vector<Element> I_plus;
 
-    oc::Timer t0("addition part");
-    t0.setTimePoint("begin");
+    // oc::Timer t0("addition part");
+    // t0.setTimePoint("begin");
 
     if(party == 0) {
         I_plus = query(addition_set);
-        t0.setTimePoint("query");
+        // t0.setTimePoint("query");
         auto I_1 = PSI_receiver(addition_set);
-        t0.setTimePoint("one-sided plain psi");
+        // t0.setTimePoint("one-sided plain psi");
         I_plus.reserve(I_plus.size() + I_1.size());
         I_plus.insert(I_plus.end(), I_1.begin(), I_1.end());
         random_shuffle<Element>(I_plus);
         oc::cp::sync_wait(send_blocks(I_plus, chl));
         oc::cp::sync_wait(chl->flush());
-        t0.setTimePoint("I_plus");
-
-        addition(addition_set);
-        t0.setTimePoint("update");
+        // t0.setTimePoint("I_plus");
     }
     else {
         auto cur_set = query(addition_set);
-        t0.setTimePoint("query");
+        // t0.setTimePoint("query");
         merge_set(cur_set, addition_set);
         PSI_sender(cur_set);
-        t0.setTimePoint("one-sided plain psi");
+        // t0.setTimePoint("one-sided plain psi");
         I_plus = oc::cp::sync_wait(recv_blocks(chl));
-        t0.setTimePoint("I_plus");
+        // t0.setTimePoint("I_plus");
 
-        addition(addition_set);
-        t0.setTimePoint("update");
     }
+    
+    addition(addition_set);
+    // t0.setTimePoint("update");
 
-    intersection.reserve(intersection.size() + I_plus.size());
-    intersection.insert(intersection.end(), I_plus.begin(), I_plus.end());
+    // intersection.reserve(intersection.size() + I_plus.size());
+    // intersection.insert(intersection.end(), I_plus.begin(), I_plus.end());
+    for (const auto& cur_elem: I_plus) intersection[cur_elem] = true;
 
-    t0.setTimePoint("end");
-    std::cout << t0 << "\n";
+    // t0.setTimePoint("end");
+    // std::cout << t0 << "\n";
 
     return I_plus.size();
 }
 
 int Party::deletion_part(const std::vector<Element>& deletion_set) {
-    //TODO
-    return 0;
+
+    std::cout << "[deletion part] deletion ...\n";
+
+    deletion(deletion_set);
+
+    std::vector<Element> I_minus;
+
+    if(party == 0) {
+        std::cout << "[deletion part] query ...\n";
+        I_minus = query(std::vector<Element>());
+
+        std::cout << "[deletion part] I_minus ...\n";
+
+        for (const auto& cur_elem: deletion_set) {
+            if(intersection[cur_elem]) I_minus.push_back(cur_elem);
+        }
+        random_shuffle(I_minus);
+
+        oc::cp::sync_wait(send_blocks(I_minus, chl));
+    }
+    else {
+        std::cout << "[deletion part] query ...\n";
+        query(deletion_set);
+
+        std::cout << "[deletion part] I_minus ...\n";
+        I_minus = oc::cp::sync_wait(recv_blocks(chl));
+    }
+
+    reset_all();
+    refresh_oprfs();
+
+    for (const auto& cur_elem: I_minus) intersection[cur_elem] = false;
+
+    return I_minus.size();
 }
 
 

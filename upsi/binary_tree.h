@@ -50,6 +50,9 @@ class BinaryTree : public ASE
         std::vector<int> update(int new_elem_cnt);
 
         void eval_oprf(Element elem, oc::block delta, oc::block ro_seed, OPRFValueVec& values);
+        
+        int find(const Element& elem, bool remove = false);
+
 
         oc::block& operator [] (const size_t& idx) override{
             return (*nodes[idx / node_size])[idx % node_size];

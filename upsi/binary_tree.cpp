@@ -16,6 +16,7 @@ void BinaryTree<NodeType>::setup(oc::PRNG* prng, oc::block seed, size_t node_siz
 	this->prng = prng;
 	this->depth = 0;
 	this->elem_cnt = 0;
+	this->n = 0;
 
 	addNode(); //empty node
     addNode(); //root;
@@ -35,8 +36,11 @@ template<typename NodeType>
 void BinaryTree<NodeType>::addNewLayer() {
     this->depth += 1;
     size_t new_size = (1 << (this->depth + 1));
-
-    while (this->nodes.size() < new_size) addNode();
+	// std::cout << new_size << "\n";
+    while (this->nodes.size() < new_size) {
+		addNode();
+		// if(new_size == 4) std::cout << this->nodes.size() << "\n";
+	}
 }
 
 // compute leaf index of a binary hash
@@ -95,8 +99,8 @@ int* BinaryTree<NodeType>::generateRandomPaths(size_t cnt, std::vector<int> &ind
 
 // Insert new set elements (sender)
 // Return vector of (plaintext) nodes
-template<typename NodeType>
-std::pair<std::vector<std::shared_ptr<NodeType> >, std::vector<int> > BinaryTree<NodeType>::insert(const std::vector<Element> &elem, PlainASE &stash) {
+template<>
+std::pair<std::vector<std::shared_ptr<PlainASE> >, std::vector<int> > BinaryTree<PlainASE>::insert(const std::vector<Element> &elem, PlainASE &stash) {
 	int new_elem_cnt = elem.size();
 
 	// add new layer when tree is full
@@ -185,11 +189,22 @@ std::pair<std::vector<std::shared_ptr<NodeType> >, std::vector<int> > BinaryTree
 	this->elem_cnt += new_elem_cnt;
 
 	int node_cnt = ind.size();
-	std::vector<std::shared_ptr<NodeType> > rs;
+	std::vector<std::shared_ptr<PlainASE> > rs;
 	for (u64 i = 0; i < node_cnt; ++i) {
         rs.push_back(nodes[ind[i]]);
     }
 	return std::make_pair(rs, ind);
+}
+
+template<>
+std::pair<std::vector<std::shared_ptr<Poly> >, std::vector<int> > BinaryTree<Poly>::insert(const std::vector<Element> &elem, PlainASE &stash) {
+	int new_elem_cnt = elem.size();
+	while(new_elem_cnt + this->elem_cnt >= (1 << (this->depth + 1))) {
+		// std::cout << this->depth << "\n";
+		addNewLayer();
+	}
+	this->elem_cnt += new_elem_cnt;
+	return std::make_pair(std::vector<std::shared_ptr<Poly> >(), std::vector<int>());
 }
 
 // Update tree (receiver)
@@ -248,6 +263,22 @@ void BinaryTree<Poly>::eval_oprf(Element elem, oc::block delta, oc::block ro_see
 template<>
 void BinaryTree<PlainASE>::eval_oprf(Element elem, oc::block delta, oc::block ro_seed, OPRFValueVec& values) {
 	throw std::runtime_error("eval for PlainASE binary tree");
+}
+
+
+template<>  
+int BinaryTree<PlainASE>::find(const Element& elem, bool remove) {
+    BinaryHash binary_hash = computeBinaryHash(elem, seed);
+    int leaf_index = computeIndex(binary_hash);
+	for (int u = leaf_index; u; u >>= 1) if(nodes[u]->find(elem, remove)) return u;
+	throw std::runtime_error("binary tree: element not found");
+	return 0;
+}
+
+
+template<>  
+int BinaryTree<Poly>::find(const Element& elem, bool remove) {
+	throw std::runtime_error("find() for Poly binary tree");
 }
 
 

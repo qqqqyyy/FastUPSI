@@ -20,6 +20,7 @@ int main(int argc, char** argv)
     std::string func = clp.get<std::string>("func");
     int days = clp.get<int>("days");
     std::string ip = clp.get<std::string>("ip");
+    bool del = clp.isSet("del");
     
     if(party < 0 || party > 1) throw std::runtime_error("party should be 0 or 1");
 
@@ -32,26 +33,22 @@ int main(int argc, char** argv)
 
     if(func == "tree") {
         std::cout << "[Tree] constructor...\n";
-        TreeParty tree_party(party, &chl, days, fn);
+        TreeParty tree_party(party, &chl, days, fn, del);
         std::cout << "[Tree] setup initial sets...\n";
         tree_party.setup();
         std::cout << "[Tree] setup done.\n\n";
-        if(party == 0) {
-            int tmp = 0;
-            oc::cp::sync_wait(chl.send(tmp));
-            oc::cp::sync_wait(chl.flush());
-            oc::cp::sync_wait(chl.recv(tmp));
-        }
-        else {
-            int tmp = 0;
-            oc::cp::sync_wait(chl.recv(tmp));
-            oc::cp::sync_wait(chl.send(tmp));
-            oc::cp::sync_wait(chl.flush());
-        }
+
+        oc::u8 tmp = 0;
+        oc::cp::sync_wait(chl.send(tmp));
+        oc::cp::sync_wait(chl.flush());
+        oc::cp::sync_wait(chl.recv(tmp));
+
         tree_party.run();
         oc::cp::sync_wait(chl.close());
     }
     else if(func == "adaptive") {
+        if(del) throw std::runtime_error("deletion for adaptive protocol not implemented");
+
         std::cout << "[Adaptive] constructor...\n";
         AdaptiveParty adaptive_party(party, &chl, days, fn);
         adaptive_party.refresh_seeds = true;

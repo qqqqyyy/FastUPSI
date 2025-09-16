@@ -17,6 +17,8 @@ public:
 
     void receiver(const std::vector<Element>& input, size_t index, ASEType& a, 
         OPRFValueVec& values, oc::block ro_seed);
+
+    OPRFValue receiver(const Element& x, size_t index, ASEType& a, oc::block ro_seed);
 };
 
 } //namespace upsi

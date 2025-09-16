@@ -23,8 +23,8 @@ std::vector<Element> AdaptiveParty::query(const std::vector<Element>& elems) {
 }
 
 void AdaptiveParty::addition(const std::vector<Element>& elems) {
-    oc::Timer t0("addition");
-    t0.setTimePoint("begin");
+    // oc::Timer t0("addition");
+    // t0.setTimePoint("begin");
 
     BlockVec new_seeds;
     auto ins = my_adaptive.insert(elems, new_seeds);
@@ -32,7 +32,7 @@ void AdaptiveParty::addition(const std::vector<Element>& elems) {
     auto ind = ins.second;
     int cnt = nodes.size();
 
-    t0.setTimePoint("adaptive insert");
+    // t0.setTimePoint("adaptive insert");
 
 
     // std::cout << "[other_addition] update...\n";
@@ -46,7 +46,7 @@ void AdaptiveParty::addition(const std::vector<Element>& elems) {
     int other_cnt = other_ind.size();
 
 
-    t0.setTimePoint("other party's adaptive insert");
+    // t0.setTimePoint("other party's adaptive insert");
 
 
     // std::cout << "[my_addition] nodes...\n";
@@ -62,7 +62,7 @@ void AdaptiveParty::addition(const std::vector<Element>& elems) {
         okvs.push_back(cur_okvs);
     }
 
-    t0.setTimePoint("okvs encode");
+    // t0.setTimePoint("okvs encode");
 
 
     OPRF<rb_okvs> oprf_okvs;
@@ -78,7 +78,7 @@ void AdaptiveParty::addition(const std::vector<Element>& elems) {
         oprf_data.insert(cur_elems[i], oprf_values);
     }
 
-    t0.setTimePoint("my okvs oprf");
+    // t0.setTimePoint("my okvs oprf");
 
     BlockVec other_new_seeds(other_cnt);
     oc::cp::sync_wait(chl->send(new_seeds));
@@ -87,7 +87,7 @@ void AdaptiveParty::addition(const std::vector<Element>& elems) {
 
     // std::cout << cnt << " " << other_cnt << "\n";
 
-    t0.setTimePoint("send/recv vole diff");
+    // t0.setTimePoint("send/recv vole diff");
 
     for (int i = 0; i < other_cnt; ++i) {
         diffs[i] *= vole_sender.delta;
@@ -97,9 +97,9 @@ void AdaptiveParty::addition(const std::vector<Element>& elems) {
         other_adaptive.seeds[other_ind[i]] = other_new_seeds[i];
     }
 
-    t0.setTimePoint("other okvs oprf");
+    // t0.setTimePoint("other okvs oprf");
 
-    std::cout << t0 << "\n";
+    // std::cout << t0 << "\n";
 }
 
 } // namespace upsi

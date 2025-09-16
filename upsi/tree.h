@@ -31,6 +31,9 @@ class Tree
 		
         // eval is only used for sender
         void eval_oprf(Element elem, oc::block delta, oc::block ro_seed, OPRFValueVec& values);
+
+        std::vector<int> find(const std::vector<Element>& elems, bool remove = false);
+        std::vector<int> get(std::vector<Element>& elems);
 };
 
 } // namespace upsi

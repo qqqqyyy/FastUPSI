@@ -66,6 +66,10 @@ void VoleReceiver::generate(size_t vole_size) {
 /////////////////doerner-shelat
 
 ASE VoleSender::generate(int domain_size, int point_cnt) {
+
+    // oc::Timer t_vole("doerner-shelat");
+    // t_vole.setTimePoint("begin");
+
     int tmp_domain_size = domain_size;
     if(tmp_domain_size & 1) ++tmp_domain_size;
 
@@ -74,6 +78,9 @@ ASE VoleSender::generate(int domain_size, int point_cnt) {
     // std::cout << "sender " << data.size() << std::endl;
     ASE tmp = cp::sync_wait(recv_ASE(chl));
     cur_b += (tmp *= delta);
+
+
+    // t_vole.setTimePoint("diff");
 
     // std::cerr << "sender secret shares" << std::endl;
 
@@ -91,6 +98,9 @@ ASE VoleSender::generate(int domain_size, int point_cnt) {
     );
     std::vector<std::array<block,2>> rot(numOTs);
     coproto::sync_wait(ot_sender.send(rot, *prng, *chl));
+
+
+    // t_vole.setTimePoint("ot");
 
     pprf_sender.setBase(rot);
     // for (int i = 0; i < pprf_sender.mDepth; ++i) std::cout << rot[i][0] << " " << rot[i][1] << std::endl;
@@ -118,10 +128,17 @@ ASE VoleSender::generate(int domain_size, int point_cnt) {
         CoeffCtxGF128{}
     ));
 
+    // t_vole.setTimePoint("pprf");
+    // std::cout << t_vole << "\n";
+
     return rs;
 }
 
 ASE VoleReceiver::generate(int domain_size, BlockVec values, std::vector<size_t> points){
+
+    // oc::Timer t_vole("doerner-shelat");
+    // t_vole.setTimePoint("begin");
+    
     int tmp_domain_size = domain_size;
     if(tmp_domain_size & 1) ++tmp_domain_size;
     u64 point_cnt = points.size();
@@ -132,6 +149,8 @@ ASE VoleReceiver::generate(int domain_size, BlockVec values, std::vector<size_t>
     // std::cout << "receiver " << data.size() << std::endl;
     coproto::sync_wait(send_ASE(diff, chl));
     coproto::sync_wait(chl->flush());
+
+    // t_vole.setTimePoint("diff");
 
     // std::cerr << "receiver secret shares" << std::endl;
 
@@ -151,6 +170,9 @@ ASE VoleReceiver::generate(int domain_size, BlockVec values, std::vector<size_t>
     );
     std::vector<block> rot_c(numOTs);
     coproto::sync_wait(ot_receiver.receive(recvBits, rot_c, *prng, *chl));
+
+
+    // t_vole.setTimePoint("ot");
 
     // std::cout << pprf_receiver.mDomain << std::endl;
     // std::cout << points[0] << std::endl;
@@ -179,7 +201,15 @@ ASE VoleReceiver::generate(int domain_size, BlockVec values, std::vector<size_t>
         CoeffCtxGF128{}
     )); 
 
+
+    // t_vole.setTimePoint("pprf");
+
     for (int i = 0; i < point_cnt; ++i) rs[points[i]] ^= base_vole.first[i];
+
+
+    // t_vole.setTimePoint("done");
+
+    // std::cout << t_vole << "\n";
 
     return rs;
 }

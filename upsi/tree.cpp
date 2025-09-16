@@ -26,7 +26,9 @@ std::pair<std::vector<std::shared_ptr<PlainASE> >, std::vector<int> > Tree<Plain
 
 template<>
 std::pair<std::vector<std::shared_ptr<Poly> >, std::vector<int> > Tree<Poly, rb_okvs>::insert(const std::vector<Element> &elem) {
-	throw std::runtime_error("insert for Tree<Poly, rb_okvs>");
+	// throw std::runtime_error("insert for Tree<Poly, rb_okvs>");
+	PlainASE dummy_stash(0);
+	return binary_tree.insert(elem, dummy_stash);
 }
 
 // Update tree (receiver)
@@ -47,6 +49,24 @@ void Tree<Poly, rb_okvs>::eval_oprf(Element elem, oc::block delta, oc::block ro_
 template<>
 void Tree<PlainASE, PlainASE>::eval_oprf(Element elem, oc::block delta, oc::block ro_seed, OPRFValueVec& values) {
 	throw std::runtime_error("eval for PlainASE tree");
+}
+
+template<>
+std::vector<int> Tree<PlainASE, PlainASE>::find(const std::vector<Element>& elems, bool remove) {
+	std::vector<int> rs;
+	for (const auto& cur_elem: elems) {
+		if(stash.find(cur_elem, remove)) {
+			rs.push_back(0);
+			continue;
+		}
+		rs.push_back(binary_tree.find(cur_elem, remove));
+	}
+	return rs;
+}
+
+template<>
+std::vector<int> Tree<Poly, rb_okvs>::find(const std::vector<Element>& elems, bool remove) {
+	throw std::runtime_error("find() for <Poly, rb_okvs> tree");
 }
 
 template class Tree<PlainASE, PlainASE>;

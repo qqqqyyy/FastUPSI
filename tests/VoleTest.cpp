@@ -1,6 +1,7 @@
 // #pragma once
 
 #include "vole.cpp"
+#include "cryptoTools/Common/CLP.h"
 using namespace oc;
 using namespace upsi;
 
@@ -17,10 +18,10 @@ void test_correctness(ASE a, ASE b, ASE c, block delta, int n) {
     }
 }
 
-void test_generate_new(VoleSender& vole_sender, VoleReceiver& vole_receiver) {
+void test_generate_new(VoleSender& vole_sender, VoleReceiver& vole_receiver, int _n = 0) {
     std::cout << "test VOLE correlations ...\n";
 
-    u64 n = (1 << 15) + rand() % (1 << 15);
+    u64 n = _n? _n : (1 << 15) + rand() % (1 << 15);
     Timer timer;
     timer.setTimePoint("start");
 
@@ -95,16 +96,25 @@ void test_doerner_shelat(VoleSender& vole_sender, VoleReceiver& vole_receiver) {
     std::cout << "test passed\n\n";
 }
 
-int main() {
+int main(int argc, char** argv) {
+    oc::CLP clp(argc, argv);
+    clp.setDefault("n", 0);
+    int n = clp.get<int>("n");
+
     auto chl = cp::LocalAsyncSocket::makePair();
     PRNG prng0(ZeroBlock), prng1(OneBlock);
 
     VoleSender vole_sender(&chl[0], &prng0);
     VoleReceiver vole_receiver(&chl[1], &prng1);
 
-    for (int i = 0; i < 10; ++i) {
-        test_generate_new(vole_sender, vole_receiver);
-        test_doerner_shelat(vole_sender, vole_receiver);
+    if(n) {
+        test_generate_new(vole_sender, vole_receiver, n);
+    }
+    else {
+        for (int i = 0; i < 10; ++i) {
+            test_generate_new(vole_sender, vole_receiver);
+            test_doerner_shelat(vole_sender, vole_receiver);
+        }
     }
 
     return 0;

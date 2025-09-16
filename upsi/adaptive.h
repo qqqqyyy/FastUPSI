@@ -60,6 +60,8 @@ class Adaptive : public ASE
                 if(tmp <= nodes[i]->n) return (*nodes[i])[tmp];
                 tmp -= nodes[i]->n;
             }
+            throw std::runtime_error("adaptive [] index out of range");
+            return (*nodes[0])[0];
         }
 
         const oc::block& operator [] (const size_t& idx) const override{
@@ -68,6 +70,8 @@ class Adaptive : public ASE
                 if(tmp <= nodes[i]->n) return (*nodes[i])[tmp];
                 tmp -= nodes[i]->n;
             }
+            throw std::runtime_error("adaptive [] index out of range");
+            return (*nodes[0])[0];
         }
 };
 

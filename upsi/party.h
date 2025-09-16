@@ -28,10 +28,11 @@ class Party{
 
         oc::Socket* chl;
         oc::PRNG my_prng;
+        oc::PRNG prng_del;
 
         oc::block ro_seed;
 
-        std::vector<Element> intersection;
+        std::unordered_map<Element, bool> intersection;
 
         struct OPRFValueHash {
             size_t operator()(const OPRFValue& p) const noexcept {
@@ -44,6 +45,16 @@ class Party{
             
             std::unordered_map<Element, OPRFValue> key_value;
             std::unordered_map<OPRFValue, Element, OPRFValueHash> value_key;
+            void clear() {
+                key_value.clear();
+                value_key.clear();
+            }
+            std::vector<Element> get_keys() {
+                std::vector<Element> rs;
+                rs.reserve(key_value.size());
+                for (const auto& kv : key_value) rs.push_back(kv.first);
+                return rs;
+            }
             void insert(const Element& key, const OPRFValue& value) {
                 key_value[key] = value;
                 value_key[value] = key;
@@ -72,20 +83,31 @@ class Party{
             }
         }oprf_data;
 
-        Party(int _party, oc::Socket* _chl, int _total_days, std::string fn);
+        Party(int _party, oc::Socket* _chl, int _total_days, std::string fn, bool deletion = false);
 
         void setup() {
             addition(dataset.initial_set);
-            intersection = dataset.intersection;
+            // intersection = dataset.intersection;
+            for (const auto& cur_elem: dataset.intersection) intersection[cur_elem] = true;
+            std::cout << "[VOLE] setup used: " << vole_receiver.idx << "\n";
         }
 
         void run() {
+            int vole_idx = vole_receiver.idx;
+            int max_daily_vole = 0;
+            int sum_vole = 0;
             oc::Timer timer("party");
             timer.setTimePoint("begin");
             for (int i = 0; i < total_days; ++i) {
                 one_day();
-                timer.setTimePoint("day " + std::to_string(i));
+                if(total_days <= 8) timer.setTimePoint("day " + std::to_string(i));
+                int cur_vole = vole_receiver.idx - vole_idx;
+                max_daily_vole = std::fmax(max_daily_vole, cur_vole);
+                sum_vole += cur_vole;
+                vole_idx += cur_vole;
             }
+            if(total_days > 8) timer.setTimePoint("end");
+            std::cout << "\n[VOLE] total used = " << sum_vole << ", amortized = " << sum_vole / total_days + 1 << ", max = " << max_daily_vole << "\n"; 
             std::cout << "Time: \n" << timer << "\n";
         }
 
@@ -102,7 +124,7 @@ class Party{
             int cnt_del = 0;
             if(support_deletion) cnt_del = deletion_part(dataset.daily_deletion[current_day]);
             int cnt_add = addition_part(dataset.daily_addition[current_day]);
-            std::cout << "[Day " << current_day << "]: " << "-" << cnt_del << ", +" << cnt_add << std::endl;
+            if(total_days <= 8) std::cout << "[Day " << current_day << "]: " << "-" << cnt_del << ", +" << cnt_add << std::endl;
             ++current_day;
         }
 
@@ -113,6 +135,19 @@ class Party{
         virtual std::vector<Element> query(const std::vector<Element>& elems) = 0; // query for elems
         
         virtual void addition(const std::vector<Element>& elems) = 0;
+
+        virtual void deletion(const std::vector<Element>& elems) {
+            throw std::runtime_error("deletion not supported");
+        }
+
+        virtual void reset_all() {
+            throw std::runtime_error("reset_all not supported");
+        }
+
+        virtual void refresh_oprfs() {
+            throw std::runtime_error("refresh_oprfs not supported");
+
+        }
 
         std::vector<Element> PSI_receiver(const std::vector<Element>& my_set);
 

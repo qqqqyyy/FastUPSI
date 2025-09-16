@@ -143,8 +143,7 @@ void batchInterpolation(std::vector<Poly>& polys, const std::vector<BlockVec>& k
 
         inline oc::block block_shift_left(const oc::block& a, int shift) {
             if(shift == 0) return a;
-            uint64_t hi, lo;
-            std::tie(lo, hi) = a.get<uint64_t>();
+            auto [lo, hi] = a.get<uint64_t>();
 
             uint64_t new_hi, new_lo;
             if (shift >= 64) {
