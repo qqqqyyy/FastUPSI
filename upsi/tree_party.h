@@ -54,6 +54,15 @@ class TreeParty : public Party{
             other_tree.binary_tree.nodes.reserve(max_node_cnt);
         }
 
+        void setup() override{
+            addition(dataset.initial_set);
+            for (const auto& cur_elem: dataset.intersection) intersection[cur_elem] = true;
+            my_tree.binary_tree.addNewLayer();
+            other_tree.binary_tree.addNewLayer();
+            if(support_deletion) my_tree_vole.binary_tree.addNewLayer();
+            std::cout << "[VOLE] setup used: " << vole_receiver.idx << "\n";
+        }
+
 
         std::vector<Element> query(const std::vector<Element>& elems) override; // query for elems
 

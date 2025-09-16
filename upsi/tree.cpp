@@ -20,12 +20,12 @@ void Tree<NodeType, StashType>::setup(oc::PRNG* prng, oc::block seed, size_t sta
 }
 
 template<>
-std::pair<std::vector<std::shared_ptr<PlainASE> >, std::vector<int> > Tree<PlainASE, PlainASE>::insert(const std::vector<Element> &elem) {
+std::pair<std::vector<PlainASE* >, std::vector<int> > Tree<PlainASE, PlainASE>::insert(const std::vector<Element> &elem) {
 	return binary_tree.insert(elem, stash);
 }
 
 template<>
-std::pair<std::vector<std::shared_ptr<Poly> >, std::vector<int> > Tree<Poly, rb_okvs>::insert(const std::vector<Element> &elem) {
+std::pair<std::vector<Poly* >, std::vector<int> > Tree<Poly, rb_okvs>::insert(const std::vector<Element> &elem) {
 	// throw std::runtime_error("insert for Tree<Poly, rb_okvs>");
 	PlainASE dummy_stash(0);
 	return binary_tree.insert(elem, dummy_stash);

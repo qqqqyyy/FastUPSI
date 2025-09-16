@@ -24,11 +24,12 @@ void BinaryTree<NodeType>::setup(oc::PRNG* prng, oc::block seed, size_t node_siz
 
 template<typename NodeType>
 inline void BinaryTree<NodeType>::addNode() {
-	auto cur_node = std::make_shared<NodeType>(node_size);
+	// auto cur_node = std::make_shared<NodeType>(node_size);
+	auto cur_node = NodeType(node_size);
     this->nodes.push_back(cur_node);
 	// for (int i = 0; i < node_size; ++i) ase.push_back(cur_node->ase[i]);
 	// ase.insert(ase.end(), cur_node->ase.begin(), cur_node->ase.end());
-	n += cur_node->n;
+	n += cur_node.n;
 }
 
 /// @brief Helper methods
@@ -100,7 +101,7 @@ int* BinaryTree<NodeType>::generateRandomPaths(size_t cnt, std::vector<int> &ind
 // Insert new set elements (sender)
 // Return vector of (plaintext) nodes
 template<>
-std::pair<std::vector<std::shared_ptr<PlainASE> >, std::vector<int> > BinaryTree<PlainASE>::insert(const std::vector<Element> &elem, PlainASE &stash) {
+std::pair<std::vector<PlainASE* >, std::vector<int> > BinaryTree<PlainASE>::insert(const std::vector<Element> &elem, PlainASE &stash) {
 	int new_elem_cnt = elem.size();
 
 	// add new layer when tree is full
@@ -130,7 +131,7 @@ std::pair<std::vector<std::shared_ptr<PlainASE> >, std::vector<int> > BinaryTree
 		//std::cerr << "************leaf ind = " << leaf_ind[o] << std::endl;
 		for (int u = leaf_ind[o]; u; u >>= 1) {
 			BlockVec cur;
-			nodes[u]->getElements(cur);
+			nodes[u].getElements(cur);
 			int cur_size = cur.size();
 
 			for (u64 i = 0; i < cur_size; ++i) {
@@ -140,7 +141,7 @@ std::pair<std::vector<std::shared_ptr<PlainASE> >, std::vector<int> > BinaryTree
 				tmp_elem[steps].push_back(cur[i]);
 			}
 
-			nodes[u]->clear();
+			nodes[u].clear();
 		}
 
 		BlockVec cur;
@@ -162,7 +163,7 @@ std::pair<std::vector<std::shared_ptr<PlainASE> >, std::vector<int> > BinaryTree
 			while(st <= steps && tmp_elem[st].empty()) ++st;
 			while(st <= steps) {
 				Element cur_elem = tmp_elem[st].back();
-				if(nodes[u]->insertElement(cur_elem)) tmp_elem[st].pop_back();
+				if(nodes[u].insertElement(cur_elem)) tmp_elem[st].pop_back();
 				else break;
 				while(st <= steps && tmp_elem[st].empty()) ++st;
 			}
@@ -189,22 +190,22 @@ std::pair<std::vector<std::shared_ptr<PlainASE> >, std::vector<int> > BinaryTree
 	this->elem_cnt += new_elem_cnt;
 
 	int node_cnt = ind.size();
-	std::vector<std::shared_ptr<PlainASE> > rs;
+	std::vector<PlainASE* > rs;
 	for (u64 i = 0; i < node_cnt; ++i) {
-        rs.push_back(nodes[ind[i]]);
+        rs.push_back(&(nodes[ind[i]]));
     }
 	return std::make_pair(rs, ind);
 }
 
 template<>
-std::pair<std::vector<std::shared_ptr<Poly> >, std::vector<int> > BinaryTree<Poly>::insert(const std::vector<Element> &elem, PlainASE &stash) {
+std::pair<std::vector<Poly* >, std::vector<int> > BinaryTree<Poly>::insert(const std::vector<Element> &elem, PlainASE &stash) {
 	int new_elem_cnt = elem.size();
 	while(new_elem_cnt + this->elem_cnt >= (1 << (this->depth + 1))) {
 		// std::cout << this->depth << "\n";
 		addNewLayer();
 	}
 	this->elem_cnt += new_elem_cnt;
-	return std::make_pair(std::vector<std::shared_ptr<Poly> >(), std::vector<int>());
+	return std::make_pair(std::vector<Poly* >(), std::vector<int>());
 }
 
 // Update tree (receiver)
@@ -256,7 +257,7 @@ void BinaryTree<Poly>::eval_oprf(Element elem, oc::block delta, oc::block ro_see
 	//std::cerr << "tree size = " << nodes.size() << std::endl;
 	OPRF<Poly> oprf_poly;
 	for (int u = leaf_index; u; u >>= 1) {
-		values.push_back(oprf_poly.sender(elem, u, *nodes[u], delta, ro_seed));
+		values.push_back(oprf_poly.sender(elem, u, nodes[u], delta, ro_seed));
 	}
 }
 
@@ -270,7 +271,7 @@ template<>
 int BinaryTree<PlainASE>::find(const Element& elem, bool remove) {
     BinaryHash binary_hash = computeBinaryHash(elem, seed);
     int leaf_index = computeIndex(binary_hash);
-	for (int u = leaf_index; u; u >>= 1) if(nodes[u]->find(elem, remove)) return u;
+	for (int u = leaf_index; u; u >>= 1) if(nodes[u].find(elem, remove)) return u;
 	throw std::runtime_error("binary tree: element not found");
 	return 0;
 }

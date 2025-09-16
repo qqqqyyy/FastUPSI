@@ -24,7 +24,7 @@ class Tree
 
         void addNode();
         // insert is only for plaintext tree
-        std::pair<std::vector<std::shared_ptr<NodeType> >, std::vector<int> > insert(const std::vector<Element> &elem);
+        std::pair<std::vector<NodeType* >, std::vector<int> > insert(const std::vector<Element> &elem);
         std::vector<int> update(int new_elem_cnt);
         // build is only used for adaptive
         // void build(const std::vector<Element>& elems, oc::block ro_seed = oc::ZeroBlock, oc::PRNG* prng = nullptr) override;
@@ -33,7 +33,6 @@ class Tree
         void eval_oprf(Element elem, oc::block delta, oc::block ro_seed, OPRFValueVec& values);
 
         std::vector<int> find(const std::vector<Element>& elems, bool remove = false);
-        std::vector<int> get(std::vector<Element>& elems);
 };
 
 } // namespace upsi

@@ -19,8 +19,6 @@ class BinaryTree : public ASE
         size_t node_size;
 
         /// @brief Helper Methods
-        // Add a new layer to the tree, expand the size of the vector
-        void addNewLayer();
         int computeIndex(BinaryHash binary_hash);
         void extractPathIndices(int* leaf_ind, int leaf_cnt, std::vector<int> &ind);
         int* generateRandomPaths(size_t cnt, std::vector<int> &ind, std::vector<BinaryHash> &hsh);
@@ -33,7 +31,7 @@ class BinaryTree : public ASE
            2     3
           4  5  6  7
         */
-        std::vector<std::shared_ptr<NodeType> > nodes;
+        std::vector<NodeType> nodes;
         oc::block seed;
         oc::PRNG* prng;
 
@@ -45,8 +43,12 @@ class BinaryTree : public ASE
         // void clear() override;
 
         inline void addNode();
+
+        // Add a new layer to the tree, expand the size of the vector
+        void addNewLayer();
+
         // insert is only used for plaintext tree
-        std::pair<std::vector<std::shared_ptr<NodeType> >, std::vector<int> > insert(const std::vector<Element> &elem, PlainASE& stash);
+        std::pair<std::vector<NodeType* >, std::vector<int> > insert(const std::vector<Element> &elem, PlainASE& stash);
         std::vector<int> update(int new_elem_cnt);
 
         void eval_oprf(Element elem, oc::block delta, oc::block ro_seed, OPRFValueVec& values);
@@ -55,11 +57,11 @@ class BinaryTree : public ASE
 
 
         oc::block& operator [] (const size_t& idx) override{
-            return (*nodes[idx / node_size])[idx % node_size];
+            return nodes[idx / node_size][idx % node_size];
         }
 
         const oc::block& operator [] (const size_t& idx) const override{
-            return (*nodes[idx / node_size])[idx % node_size];
+            return nodes[idx / node_size][idx % node_size];
         }
 };
 

@@ -131,7 +131,7 @@ void TreeParty::addition(const std::vector<Element>& elems) {
         Poly a = Poly(std::move(vole.first));
         OPRFValueVec oprf_values;
         oprf_poly.receiver(cur_elems[i], ind[i], a, oprf_values, ro_seed);
-        if(support_deletion) *(my_tree_vole.binary_tree.nodes[ind[i]]) = std::move(a);
+        if(support_deletion) my_tree_vole.binary_tree.nodes[ind[i]] = std::move(a);
         oprf_data.remove(cur_elems[i]);
         oprf_data.insert(cur_elems[i], oprf_values);
     }
@@ -166,7 +166,7 @@ void TreeParty::addition(const std::vector<Element>& elems) {
         //     throw std::runtime_error("!!!");
         // }
         diffs[i] += vole_sender.get(diffs[i].n);
-        other_tree.binary_tree.nodes[other_ind[i]]->copy(diffs[i]);
+        other_tree.binary_tree.nodes[other_ind[i]].copy(diffs[i]);
     }
 
     // t0.setTimePoint("other's polynomial oprf");
@@ -204,7 +204,7 @@ void TreeParty::deletion(const std::vector<Element>& elems) {
         if(index == 0) continue;
         std::vector<Element> tmp;
         BlockVec tmp_values;
-        my_tree.binary_tree.nodes[index]->getElements(tmp);
+        my_tree.binary_tree.nodes[index].getElements(tmp);
         cur_elems.push_back(tmp);
         for (auto& x: tmp) {
             tmp_values.push_back(random_oracle(x, ro_seed));
@@ -223,12 +223,12 @@ void TreeParty::deletion(const std::vector<Element>& elems) {
     size_t ind_size = ind.size();
     for (int i = 0, j = 0; i < ind_size; ++i) {
         if(ind[i] == 0) continue;
-        ASE diff = polys[j] - *(my_tree_vole.binary_tree.nodes[ind[i]]);
+        ASE diff = polys[j] - my_tree_vole.binary_tree.nodes[ind[i]];
         for (int k = 0; k < DEFAULT_NODE_SIZE; ++k) {
             points.push_back(ind[i] * DEFAULT_NODE_SIZE + k);
             values.push_back(diff[k]);
         }
-        my_tree_vole.binary_tree.nodes[ind[i]] = std::make_shared<Poly>(polys[j]);
+        my_tree_vole.binary_tree.nodes[ind[i]] = std::move(polys[j]);
         ++j;
     }
     int pad_cnt = DEFAULT_NODE_SIZE * cnt - points.size();
@@ -319,10 +319,10 @@ void TreeParty::refresh_oprfs() {
     int cnt = my_tree.binary_tree.nodes.size();
 
     for (int i = 1; i < cnt; ++i) {
-        my_tree.binary_tree.nodes[i]->getElements(cur_elems);
+        my_tree.binary_tree.nodes[i].getElements(cur_elems);
         if(cur_elems.size() > 0) {
             elems.insert(elems.end(), cur_elems.begin(), cur_elems.end());
-            oprf_poly.receiver(cur_elems, i, *(my_tree_vole.binary_tree.nodes[i]), values, ro_seed);
+            oprf_poly.receiver(cur_elems, i, my_tree_vole.binary_tree.nodes[i], values, ro_seed);
             cur_elems.clear();
         }
     }

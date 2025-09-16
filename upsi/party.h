@@ -85,7 +85,7 @@ class Party{
 
         Party(int _party, oc::Socket* _chl, int _total_days, std::string fn, bool deletion = false);
 
-        void setup() {
+        virtual void setup() {
             addition(dataset.initial_set);
             // intersection = dataset.intersection;
             for (const auto& cur_elem: dataset.intersection) intersection[cur_elem] = true;
