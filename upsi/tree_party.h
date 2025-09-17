@@ -16,8 +16,8 @@ class TreeParty : public Party{
         oc::PRNG tree_prng, tree_vole_prng, other_tree_prng;
         oc::block tree_seed;
 
-        TreeParty(int _party, oc::Socket* _chl, int _total_days, std::string fn, bool deletion = false):
-                Party(_party, _chl, _total_days, fn, deletion){
+        TreeParty(int _party, oc::Socket* _chl, int _total_days, std::string fn, bool deletion = false, bool daily_vole = false):
+                Party(_party, _chl, _total_days, fn, deletion, daily_vole){
 
             oc::block prng_seed, other_prng_seed;
 
@@ -57,9 +57,9 @@ class TreeParty : public Party{
         void setup() override{
             addition(dataset.initial_set);
             for (const auto& cur_elem: dataset.intersection) intersection[cur_elem] = true;
-            my_tree.binary_tree.addNewLayer();
-            other_tree.binary_tree.addNewLayer();
-            if(support_deletion) my_tree_vole.binary_tree.addNewLayer();
+            // my_tree.binary_tree.addNewLayer();
+            // other_tree.binary_tree.addNewLayer();
+            // if(support_deletion) my_tree_vole.binary_tree.addNewLayer();
             std::cout << "[VOLE] setup used: " << vole_receiver.idx << "\n";
         }
 

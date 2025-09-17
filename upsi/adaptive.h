@@ -27,6 +27,7 @@ class Adaptive : public ASE
             start_size = _start_size;
             elem_cnt = 0;
             node_cnt = 0;
+            n = 0;
             std::shared_ptr<BaseType> cur_node;
             if constexpr (std::is_same_v<BaseType, rb_okvs>) {
                 cur_node = std::make_shared<rb_okvs>(rb_okvs_size_table::get(start_size));

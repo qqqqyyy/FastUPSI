@@ -20,6 +20,7 @@ class Party{
         int party; // 0 / 1
         bool support_deletion = false;
         bool refresh_seeds = false;
+        bool daily_vole = false;
 
         Dataset dataset;
 
@@ -31,6 +32,8 @@ class Party{
         oc::PRNG prng_del;
 
         oc::block ro_seed;
+
+        size_t cur_vole_size;
 
         std::unordered_map<Element, bool> intersection;
 
@@ -83,7 +86,7 @@ class Party{
             }
         }oprf_data;
 
-        Party(int _party, oc::Socket* _chl, int _total_days, std::string fn, bool deletion = false);
+        Party(int _party, oc::Socket* _chl, int _total_days, std::string fn, bool deletion = false, bool daily_vole = false);
 
         virtual void setup() {
             addition(dataset.initial_set);
@@ -93,22 +96,40 @@ class Party{
         }
 
         void run() {
-            int vole_idx = vole_receiver.idx;
-            int max_daily_vole = 0;
-            int sum_vole = 0;
+            size_t vole_idx = vole_receiver.idx;
+            size_t max_daily_vole = 0;
+            size_t sum_vole = 0;
+            size_t last_comm = chl->bytesSent() + chl->bytesReceived();
+            size_t max_comm = 0;
+            size_t sum_comm = 0;
             oc::Timer timer("party");
             timer.setTimePoint("begin");
             for (int i = 0; i < total_days; ++i) {
+
+                if(daily_vole) cur_vole_size = 0;
+
                 one_day();
+
                 if(total_days <= 8) timer.setTimePoint("day " + std::to_string(i));
-                int cur_vole = vole_receiver.idx - vole_idx;
-                max_daily_vole = std::fmax(max_daily_vole, cur_vole);
-                sum_vole += cur_vole;
-                vole_idx += cur_vole;
+
+                if(!daily_vole) cur_vole_size = vole_receiver.idx - vole_idx;
+                max_daily_vole = std::fmax(max_daily_vole, cur_vole_size);
+                sum_vole += cur_vole_size;
+                vole_idx += cur_vole_size;
+
+                size_t cur_comm = chl->bytesSent() + chl->bytesReceived() - last_comm;
+                max_comm = std::fmax(max_comm, cur_comm);
+                sum_comm += cur_comm;
+                last_comm += cur_comm;
             }
+
             if(total_days > 8) timer.setTimePoint("end");
-            std::cout << "\n[VOLE] total used = " << sum_vole << ", amortized = " << sum_vole / total_days + 1 << ", max = " << max_daily_vole << "\n"; 
-            std::cout << "Time: \n" << timer << "\n";
+
+            std::cout << "\n[VOLE] (receiver) used = " << sum_vole << ", amortized = " << sum_vole / total_days + 1 << ", max = " << max_daily_vole << "\n\n"; 
+            std::cout << "[Time] \n" << timer << "\n\n";
+            std::cout << "[Comm.(MB)] (both parties) total = " << sum_comm / 1024.0 / 1024.0
+                << ", amortized = " << sum_comm / total_days / 1024.0 / 1024.0
+                << ", max = " << max_comm / 1024.0 / 1024.0 << "\n\n";
         }
 
         void one_day() {

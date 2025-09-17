@@ -21,6 +21,7 @@ int main(int argc, char** argv)
     int days = clp.get<int>("days");
     std::string ip = clp.get<std::string>("ip");
     bool del = clp.isSet("del");
+    bool daily_vole = clp.isSet("daily_vole");
     
     if(party < 0 || party > 1) throw std::runtime_error("party should be 0 or 1");
 
@@ -33,7 +34,7 @@ int main(int argc, char** argv)
 
     if(func == "tree") {
         std::cout << "[Tree] constructor...\n";
-        TreeParty tree_party(party, &chl, days, fn, del);
+        TreeParty tree_party(party, &chl, days, fn, del, daily_vole);
         std::cout << "[Tree] setup initial sets...\n";
         tree_party.setup();
         std::cout << "[Tree] setup done.\n\n";
@@ -50,7 +51,7 @@ int main(int argc, char** argv)
         if(del) throw std::runtime_error("deletion for adaptive protocol not implemented");
 
         std::cout << "[Adaptive] constructor...\n";
-        AdaptiveParty adaptive_party(party, &chl, days, fn);
+        AdaptiveParty adaptive_party(party, &chl, days, fn, daily_vole);
         adaptive_party.refresh_seeds = true;
         std::cout << "[Adaptive] setup initial sets...\n";
         adaptive_party.setup();

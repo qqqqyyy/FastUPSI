@@ -40,13 +40,33 @@ void AdaptiveParty::addition(const std::vector<Element>& elems) {
     size_t other_new_elem_cnt;
     oc::cp::sync_wait(chl->send(elems.size()));
     oc::cp::sync_wait(chl->recv(other_new_elem_cnt));
+    // COMM += sizeof(size_t) * 2;
 
 
     std::vector<int> other_ind = other_adaptive.update(other_new_elem_cnt);
     int other_cnt = other_ind.size();
 
-
     // t0.setTimePoint("other party's adaptive insert");
+
+    if(daily_vole) {
+        size_t my_vole_size = 0;
+        size_t other_vole_size = 0;
+        for(const auto& cur_node: nodes) my_vole_size += rb_okvs_size_table::get(cur_node->n);
+        for(int index: other_ind) other_vole_size += other_adaptive.nodes[index]->n;
+        oc::Timer t_vole("adaptive vole");
+        t_vole.setTimePoint("begin");
+        if(party == 0) {
+            vole_receiver.generate(my_vole_size);
+            vole_sender.generate(other_vole_size);
+        }
+        else {
+            vole_sender.generate(other_vole_size);
+            vole_receiver.generate(my_vole_size);
+        }
+        cur_vole_size += my_vole_size;
+        t_vole.setTimePoint("adaptive vole");
+        if(total_days <= 8) std::cout << t_vole << "\n";
+    }
 
 
     // std::cout << "[my_addition] nodes...\n";
@@ -83,6 +103,7 @@ void AdaptiveParty::addition(const std::vector<Element>& elems) {
     BlockVec other_new_seeds(other_cnt);
     oc::cp::sync_wait(chl->send(new_seeds));
     oc::cp::sync_wait(chl->recv(other_new_seeds));
+    // COMM += (new_seeds.size() + other_new_seeds.size()) * sizeof(oc::block);
     auto diffs = oc::cp::sync_wait(send_recv_ASEs(okvs, chl));
 
     // std::cout << cnt << " " << other_cnt << "\n";

@@ -2,18 +2,20 @@
 
 namespace upsi{
 
-Party::Party(int _party, oc::Socket* _chl, int _total_days, std::string fn, bool deletion) {
+Party::Party(int _party, oc::Socket* _chl, int _total_days, std::string fn, bool deletion, bool daily_vole) {
 
     this->party = _party;
     this->chl = _chl;
     this->total_days = _total_days;
     this->support_deletion = deletion;
+    this->daily_vole = daily_vole;
 
     dataset.Read(fn);
 
     if(dataset.start_size <= 64) dataset.print();
     
     if(total_days > dataset.days) throw std::runtime_error("dataset days error");
+    if(support_deletion != (dataset.del_size > 0)) throw std::runtime_error("dataset number of deletions error");
     this->max_data_size = dataset.start_size + dataset.add_size * total_days;
     
     my_prng.SetSeed(oc::sysRandomSeed());
@@ -36,26 +38,29 @@ Party::Party(int _party, oc::Socket* _chl, int _total_days, std::string fn, bool
     oc::cp::sync_wait(chl->flush());
     oc::cp::sync_wait(chl->recv(tmp));
 
-    
-    // TODO: max_vole_size?
-    size_t max_vole_size = (1 << oc::log2ceil(max_data_size)) * 4 + rb_okvs_size_table::get(DEFAULT_STASH_SIZE);
-    max_vole_size += total_days * ( dataset.add_size * (4 * (oc::log2ceil(max_data_size) + 1)) + rb_okvs_size_table::get(DEFAULT_STASH_SIZE) );
-    if(support_deletion) max_vole_size += total_days * (dataset.del_size * 4 + rb_okvs_size_table::get(DEFAULT_STASH_SIZE) + 1) + total_days * (1 << oc::log2ceil(max_data_size)) * 4 * 2;
-    
-    std::cout << "[VOLE] generate " << max_vole_size << " ...\n";
-    oc::Timer t1("vole");
-    t1.setTimePoint("vole begin");
-    if(party == 0) {
-        vole_sender.generate(max_vole_size);
-        vole_receiver.generate(max_vole_size);
+    if(!daily_vole) {
+        size_t max_vole_size = (1 << oc::log2ceil(max_data_size)) * 4 + rb_okvs_size_table::get(DEFAULT_STASH_SIZE);
+        max_vole_size += total_days * ( dataset.add_size * (4 * (oc::log2ceil(max_data_size) + 1)) + rb_okvs_size_table::get(DEFAULT_STASH_SIZE) );
+        if(support_deletion) max_vole_size += total_days * (dataset.del_size * 4 + rb_okvs_size_table::get(DEFAULT_STASH_SIZE) + 1) + total_days * (1 << oc::log2ceil(max_data_size)) * 4 * 2;
+        
+        size_t last_comm = chl->bytesSent() + chl->bytesReceived();
+        std::cout << "[VOLE] generate " << max_vole_size << " ...\n";
+        oc::Timer t1("vole");
+        t1.setTimePoint("vole begin");
+        if(party == 0) {
+            vole_sender.generate(max_vole_size);
+            vole_receiver.generate(max_vole_size);
+        }
+        else {
+            vole_receiver.generate(max_vole_size);
+            vole_sender.generate(max_vole_size);
+        }    
+        t1.setTimePoint("vole generation end");
+        std::cout << t1 << "\n";
+        size_t cur_comm = chl->bytesSent() + chl->bytesReceived() - last_comm;
+        std::cout << "[VOLE] Comm.(both parties) = " << cur_comm / 1024.0 / 1024.0 << " MB\n";
+        std::cout << "[VOLE] done.\n\n";
     }
-    else {
-        vole_receiver.generate(max_vole_size);
-        vole_sender.generate(max_vole_size);
-    }    
-    t1.setTimePoint("vole generation end");
-    std::cout << t1 << "\n";
-    std::cout << "[VOLE] done.\n\n";
 }
 
 int Party::addition_part(const std::vector<Element>& addition_set) {
@@ -103,17 +108,17 @@ int Party::addition_part(const std::vector<Element>& addition_set) {
 
 int Party::deletion_part(const std::vector<Element>& deletion_set) {
 
-    std::cout << "[deletion part] deletion ...\n";
+    // std::cout << "[deletion part] deletion ...\n";
 
     deletion(deletion_set);
 
     std::vector<Element> I_minus;
 
     if(party == 0) {
-        std::cout << "[deletion part] query ...\n";
+        // std::cout << "[deletion part] query ...\n";
         I_minus = query(std::vector<Element>());
 
-        std::cout << "[deletion part] I_minus ...\n";
+        // std::cout << "[deletion part] I_minus ...\n";
 
         for (const auto& cur_elem: deletion_set) {
             if(intersection[cur_elem]) I_minus.push_back(cur_elem);
@@ -123,10 +128,10 @@ int Party::deletion_part(const std::vector<Element>& deletion_set) {
         oc::cp::sync_wait(send_blocks(I_minus, chl));
     }
     else {
-        std::cout << "[deletion part] query ...\n";
+        // std::cout << "[deletion part] query ...\n";
         query(deletion_set);
 
-        std::cout << "[deletion part] I_minus ...\n";
+        // std::cout << "[deletion part] I_minus ...\n";
         I_minus = oc::cp::sync_wait(recv_blocks(chl));
     }
 
@@ -144,6 +149,17 @@ std::vector<Element> Party::PSI_receiver(const std::vector<Element>& my_set) {
     rb_okvs okvs(rb_okvs_size_table::get(cnt));
     okvs.build(my_set, ro_seed);
 
+    if(daily_vole) {
+        oc::cp::sync_wait(chl->send(okvs.n));
+        size_t my_vole_size = rb_okvs_size_table::get(cnt);
+        oc::Timer t_vole("PSI vole");
+        t_vole.setTimePoint("begin");
+        vole_receiver.generate(my_vole_size);
+        cur_vole_size += my_vole_size;
+        t_vole.setTimePoint("PSI vole");
+        if(total_days <= 8) std::cout << t_vole << "\n";
+    }
+
     auto vole = vole_receiver.get(okvs.n);
     ASE c = okvs - vole.second;
     oc::cp::sync_wait(send_ASE(c, chl));
@@ -159,6 +175,17 @@ std::vector<Element> Party::PSI_receiver(const std::vector<Element>& my_set) {
 }
 
 void Party::PSI_sender(const std::vector<Element>& my_set) {
+
+    if(daily_vole) {
+        size_t other_vole_size;
+        oc::cp::sync_wait(chl->recv(other_vole_size));
+        oc::Timer t_vole("PSI vole");
+        t_vole.setTimePoint("begin");
+        vole_sender.generate(other_vole_size);
+        t_vole.setTimePoint("PSI vole");
+        if(total_days <= 8) std::cout << t_vole << "\n";
+    }
+
     ASE diff = oc::cp::sync_wait(recv_ASE(chl));
     diff *= vole_sender.delta;
     diff += vole_sender.get(diff.n);

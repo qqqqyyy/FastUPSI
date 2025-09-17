@@ -40,7 +40,8 @@ namespace upsi {
 	#define DEFAULT_NODE_SIZE 4
     #define DEFAULT_STASH_SIZE 89
     #define DEFAULT_CUCKOO_SIZE 200 //TODO
-    #define DEFAULT_ADAPTIVE_SIZE 1 << 7
+    #define DEFAULT_ADAPTIVE_SIZE (1 << 7)
+    #define DEFAULT_VOLE_SIZE (1 << 14)
 
     // type of elements in each party's sets
     // TODO
@@ -52,6 +53,8 @@ namespace upsi {
     typedef std::vector<BlockPtr> PtrVec;
     typedef std::pair<oc::block, oc::block> OPRFValue;
     typedef std::vector<OPRFValue> OPRFValueVec;
+
+    // inline size_t COMM = 0; //communication, number of bytes
 
     // protocol functionality options
     // enum Functionality { PSI };

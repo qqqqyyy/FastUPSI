@@ -90,6 +90,7 @@ void TreeParty::addition(const std::vector<Element>& elems) {
     size_t other_new_elem_cnt;
     oc::cp::sync_wait(chl->send(elems.size()));
     oc::cp::sync_wait(chl->recv(other_new_elem_cnt));
+    // COMM += sizeof(size_t) * 2;
 
 
     std::vector<int> other_ind = other_tree.update(other_new_elem_cnt);
@@ -98,6 +99,24 @@ void TreeParty::addition(const std::vector<Element>& elems) {
     // std::cout << cnt << " " << other_cnt << "\n";
 
     // t0.setTimePoint("other party's tree insert");
+
+    if(daily_vole) {
+        size_t my_vole_size = cnt * DEFAULT_NODE_SIZE + rb_okvs_size_table::get(DEFAULT_STASH_SIZE);
+        size_t other_vole_size = other_cnt * DEFAULT_NODE_SIZE + rb_okvs_size_table::get(DEFAULT_STASH_SIZE);
+        oc::Timer t_vole("addition vole");
+        t_vole.setTimePoint("begin");
+        if(party == 0) {
+            vole_receiver.generate(my_vole_size);
+            vole_sender.generate(other_vole_size);
+        }
+        else {
+            vole_sender.generate(other_vole_size);
+            vole_receiver.generate(my_vole_size);
+        }
+        cur_vole_size += my_vole_size;
+        t_vole.setTimePoint("addition vole");
+        if(total_days <= 8) std::cout << t_vole << "\n";
+    }
 
 
     // std::cout << "[my_addition] polys...\n";
@@ -182,21 +201,40 @@ void TreeParty::addition(const std::vector<Element>& elems) {
 
 void TreeParty::deletion(const std::vector<Element>& elems) {
 
-    oc::Timer t0("deletion");
-    t0.setTimePoint("begin");
+    // oc::Timer t0("deletion");
+    // t0.setTimePoint("begin");
 
     int cnt = elems.size();
 
     size_t other_del_elem_cnt;
     oc::cp::sync_wait(chl->send(elems.size()));
     oc::cp::sync_wait(chl->recv(other_del_elem_cnt));
+    // COMM += sizeof(size_t) * 2;
+
+    if(daily_vole) {
+        size_t my_vole_size = cnt * DEFAULT_NODE_SIZE + rb_okvs_size_table::get(DEFAULT_STASH_SIZE);
+        size_t other_vole_size = other_del_elem_cnt * DEFAULT_NODE_SIZE + rb_okvs_size_table::get(DEFAULT_STASH_SIZE);
+        oc::Timer t_vole("deletion vole");
+        t_vole.setTimePoint("begin");
+        if(party == 0) {
+            vole_receiver.generate(my_vole_size);
+            vole_sender.generate(other_vole_size);
+        }
+        else {
+            vole_sender.generate(other_vole_size);
+            vole_receiver.generate(my_vole_size);
+        }
+        cur_vole_size += my_vole_size;
+        t_vole.setTimePoint("deletion vole");
+        if(total_days <= 8) std::cout << t_vole << "\n";
+    }
 
     auto ind = my_tree.find(elems, true);
     std::sort(ind.begin(), ind.end());
     ind.erase(std::unique(ind.begin(), ind.end()), ind.end());
 
     // std::cout << "[deletion] polys...\n";
-    t0.setTimePoint("find");
+    // t0.setTimePoint("find");
 
     std::vector<BlockVec> cur_elems;
     std::vector<BlockVec> cur_values;
@@ -214,7 +252,7 @@ void TreeParty::deletion(const std::vector<Element>& elems) {
     std::vector<Poly> polys(cur_elems.size());
     batchInterpolation(polys, cur_elems, cur_values);
 
-    t0.setTimePoint("polys");
+    // t0.setTimePoint("polys");
 
     // std::cout << "[deletion] polys diff...\n";
 
@@ -237,7 +275,7 @@ void TreeParty::deletion(const std::vector<Element>& elems) {
         values.push_back(oc::ZeroBlock);
     }
 
-    t0.setTimePoint("polys diff");
+    // t0.setTimePoint("polys diff");
 
     
     // std::cout << "[deletion] pprf...\n";
@@ -258,12 +296,12 @@ void TreeParty::deletion(const std::vector<Element>& elems) {
         my_tree_vole.binary_tree += my_diff;
     }
 
-    t0.setTimePoint("pprf");
+    // t0.setTimePoint("pprf");
 
 
     update_stash();
 
-    t0.setTimePoint("stash");
+    // t0.setTimePoint("stash");
 
 
     // std::cout << "[deletion] update oprf values...\n";
@@ -275,9 +313,9 @@ void TreeParty::deletion(const std::vector<Element>& elems) {
 
     refresh_oprfs();
 
-    t0.setTimePoint("recompute oprf values");
+    // t0.setTimePoint("recompute oprf values");
 
-    std::cout << t0 << "\n";
+    // std::cout << t0 << "\n";
 
 
     // std::cout << "[deletion] done.\n\n";

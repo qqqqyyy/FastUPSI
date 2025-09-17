@@ -22,17 +22,26 @@ class VOLE{
         oc::Socket* chl;
         oc::PRNG* prng;
 
-        size_t n = 1 << 14; 
+        size_t n = DEFAULT_VOLE_SIZE; 
         size_t m = n - 128; //TODO
 
         size_t idx = 0;
+
+        bool has_base = false;
+
         VOLE(oc::Socket* _chl = nullptr, oc::PRNG* _prng = nullptr):chl(_chl), prng(_prng){}
 
-        void setup(oc::Socket* _chl, oc::PRNG* _prng = nullptr){
+        virtual void setup(oc::Socket* _chl, oc::PRNG* _prng = nullptr){
             this->chl = _chl;
             this->prng = _prng;
             idx = 0;
         }
+
+        // void compute_parameters(size_t vole_size) {
+        //     if(vole_size <= 1 << 18) n = vole_size + 128;
+        //     else n = 1 << 18;
+        //     m = n - 128;
+        // }
 
         virtual void generate(size_t vole_size) = 0;
     
@@ -41,6 +50,7 @@ class VOLE{
 class VoleSender : public VOLE{
     public:
         VecF b;
+        VecF base_b = VecF(128);
         oc::block delta;
 
         oc::SilentVoleSender<oc::block, oc::block, oc::CoeffCtxGF128> sender;
@@ -51,12 +61,21 @@ class VoleSender : public VOLE{
 
         using VOLE::VOLE;
 
+        void setup(oc::Socket* _chl, oc::PRNG* _prng = nullptr) override{
+            this->chl = _chl;
+            this->prng = _prng;
+            idx = 0;
+            delta = prng->get<oc::block>();
+            sender.configure(n, oc::SilentSecType::SemiHonest, oc::DefaultMultType, oc::SilentBaseType::BaseExtend, oc::SdNoiseDistribution::Stationary);
+        }
+
         // generate random vole correlations
         void generate(size_t vole_size) override;
 
         ASE get(int vole_size) { //get b
             ASE cur_b = ASE(b.subspan(idx, vole_size));
             idx += vole_size;
+            if(idx > b.size()) throw std::runtime_error("vole get() out of range");
             return cur_b;
         }
 
@@ -68,6 +87,7 @@ class VoleSender : public VOLE{
 class VoleReceiver: public VOLE{
     public:
         VecF a, c;
+        VecF base_a = VecF(128), base_c = VecF(128);
 
         oc::SilentVoleReceiver<oc::block, oc::block, oc::CoeffCtxGF128> receiver;
 
@@ -77,6 +97,13 @@ class VoleReceiver: public VOLE{
 
         using VOLE::VOLE;
 
+        void setup(oc::Socket* _chl, oc::PRNG* _prng = nullptr) override{
+            this->chl = _chl;
+            this->prng = _prng;
+            idx = 0;
+            receiver.configure(n, oc::SilentSecType::SemiHonest, oc::DefaultMultType, oc::SilentBaseType::BaseExtend, oc::SdNoiseDistribution::Stationary);
+        }
+
         // generate random vole correlations
         void generate(size_t vole_size) override;
 
@@ -84,6 +111,7 @@ class VoleReceiver: public VOLE{
             ASE cur_a = ASE(a.subspan(idx, vole_size));
             ASE cur_c = ASE(c.subspan(idx, vole_size));
             idx += vole_size;
+            if(idx > a.size()) throw std::runtime_error("vole get() out of range");
             return std::make_pair(cur_a, cur_c);
         }
 
