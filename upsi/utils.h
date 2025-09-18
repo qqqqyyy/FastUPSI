@@ -39,8 +39,7 @@ namespace upsi {
     // #define CURVE_ID NID_X9_62_prime256v1
 	#define DEFAULT_NODE_SIZE 4
     #define DEFAULT_STASH_SIZE 89
-    #define DEFAULT_CUCKOO_SIZE 200 //TODO
-    #define DEFAULT_ADAPTIVE_SIZE (1 << 7)
+    #define DEFAULT_ADAPTIVE_SIZE (1 << 10)
     #define DEFAULT_VOLE_SIZE (1 << 14)
 
     // type of elements in each party's sets

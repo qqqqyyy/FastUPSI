@@ -192,7 +192,7 @@ namespace upsi {
     
     oc::block rb_okvs::eval1(Element elem) {
         if (n == 0) return oc::ZeroBlock;
-        if (band_width_ == 0) band_width_ = rb_okvs::default_band_width(n);
+        if (band_width_ == 0) band_width_ = default_band_width(n);
 
         // recompute band placement (must match build)
         std::size_t start = hash_to_index(elem, r1_, n - band_width_);

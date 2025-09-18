@@ -45,7 +45,7 @@ class TreeParty : public Party{
             }
             other_tree.setup(&other_tree_prng, tree_seed, rb_okvs_size_table::get(DEFAULT_STASH_SIZE), DEFAULT_NODE_SIZE);
 
-            int max_node_cnt = 1 << oc::log2ceil(dataset.start_size + total_days * dataset.add_size);
+            int max_node_cnt = 1 << oc::log2ceil(dataset.start_size + total_days * dataset.add_size + 1);
             // int max_ase_size = max_node_cnt * DEFAULT_NODE_SIZE;
             // my_tree.binary_tree.ase.reserve(max_ase_size);
             my_tree.binary_tree.nodes.reserve(max_node_cnt);

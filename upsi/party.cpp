@@ -152,12 +152,12 @@ std::vector<Element> Party::PSI_receiver(const std::vector<Element>& my_set) {
     if(daily_vole) {
         oc::cp::sync_wait(chl->send(okvs.n));
         size_t my_vole_size = rb_okvs_size_table::get(cnt);
-        oc::Timer t_vole("PSI vole");
-        t_vole.setTimePoint("begin");
+        // oc::Timer t_vole("PSI vole");
+        // t_vole.setTimePoint("begin");
         vole_receiver.generate(my_vole_size);
         cur_vole_size += my_vole_size;
-        t_vole.setTimePoint("PSI vole");
-        if(total_days <= 8) std::cout << t_vole << "\n";
+        // t_vole.setTimePoint("PSI vole");
+        // if(total_days <= 8) std::cout << t_vole << "\n";
     }
 
     auto vole = vole_receiver.get(okvs.n);
@@ -179,11 +179,11 @@ void Party::PSI_sender(const std::vector<Element>& my_set) {
     if(daily_vole) {
         size_t other_vole_size;
         oc::cp::sync_wait(chl->recv(other_vole_size));
-        oc::Timer t_vole("PSI vole");
-        t_vole.setTimePoint("begin");
+        // oc::Timer t_vole("PSI vole");
+        // t_vole.setTimePoint("begin");
         vole_sender.generate(other_vole_size);
-        t_vole.setTimePoint("PSI vole");
-        if(total_days <= 8) std::cout << t_vole << "\n";
+        // t_vole.setTimePoint("PSI vole");
+        // if(total_days <= 8) std::cout << t_vole << "\n";
     }
 
     ASE diff = oc::cp::sync_wait(recv_ASE(chl));

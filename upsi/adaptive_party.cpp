@@ -53,8 +53,8 @@ void AdaptiveParty::addition(const std::vector<Element>& elems) {
         size_t other_vole_size = 0;
         for(const auto& cur_node: nodes) my_vole_size += rb_okvs_size_table::get(cur_node->n);
         for(int index: other_ind) other_vole_size += other_adaptive.nodes[index]->n;
-        oc::Timer t_vole("adaptive vole");
-        t_vole.setTimePoint("begin");
+        // oc::Timer t_vole("adaptive vole");
+        // t_vole.setTimePoint("begin");
         if(party == 0) {
             vole_receiver.generate(my_vole_size);
             vole_sender.generate(other_vole_size);
@@ -64,8 +64,8 @@ void AdaptiveParty::addition(const std::vector<Element>& elems) {
             vole_receiver.generate(my_vole_size);
         }
         cur_vole_size += my_vole_size;
-        t_vole.setTimePoint("adaptive vole");
-        if(total_days <= 8) std::cout << t_vole << "\n";
+        // t_vole.setTimePoint("adaptive vole");
+        // if(total_days <= 8) std::cout << t_vole << "\n";
     }
 
 

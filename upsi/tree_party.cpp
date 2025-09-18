@@ -103,8 +103,8 @@ void TreeParty::addition(const std::vector<Element>& elems) {
     if(daily_vole) {
         size_t my_vole_size = cnt * DEFAULT_NODE_SIZE + rb_okvs_size_table::get(DEFAULT_STASH_SIZE);
         size_t other_vole_size = other_cnt * DEFAULT_NODE_SIZE + rb_okvs_size_table::get(DEFAULT_STASH_SIZE);
-        oc::Timer t_vole("addition vole");
-        t_vole.setTimePoint("begin");
+        // oc::Timer t_vole("addition vole");
+        // t_vole.setTimePoint("begin");
         if(party == 0) {
             vole_receiver.generate(my_vole_size);
             vole_sender.generate(other_vole_size);
@@ -114,8 +114,8 @@ void TreeParty::addition(const std::vector<Element>& elems) {
             vole_receiver.generate(my_vole_size);
         }
         cur_vole_size += my_vole_size;
-        t_vole.setTimePoint("addition vole");
-        if(total_days <= 8) std::cout << t_vole << "\n";
+        // t_vole.setTimePoint("addition vole");
+        // if(total_days <= 8) std::cout << t_vole << "\n";
     }
 
 
@@ -214,8 +214,8 @@ void TreeParty::deletion(const std::vector<Element>& elems) {
     if(daily_vole) {
         size_t my_vole_size = cnt * DEFAULT_NODE_SIZE + rb_okvs_size_table::get(DEFAULT_STASH_SIZE);
         size_t other_vole_size = other_del_elem_cnt * DEFAULT_NODE_SIZE + rb_okvs_size_table::get(DEFAULT_STASH_SIZE);
-        oc::Timer t_vole("deletion vole");
-        t_vole.setTimePoint("begin");
+        // oc::Timer t_vole("deletion vole");
+        // t_vole.setTimePoint("begin");
         if(party == 0) {
             vole_receiver.generate(my_vole_size);
             vole_sender.generate(other_vole_size);
@@ -225,8 +225,8 @@ void TreeParty::deletion(const std::vector<Element>& elems) {
             vole_receiver.generate(my_vole_size);
         }
         cur_vole_size += my_vole_size;
-        t_vole.setTimePoint("deletion vole");
-        if(total_days <= 8) std::cout << t_vole << "\n";
+        // t_vole.setTimePoint("deletion vole");
+        // if(total_days <= 8) std::cout << t_vole << "\n";
     }
 
     auto ind = my_tree.find(elems, true);

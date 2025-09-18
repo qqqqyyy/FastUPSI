@@ -19,10 +19,14 @@ class ASE{
     }
     ASE(int _n, bool build = true) : n(_n) {
         ase.reserve(n);
-        for (int i = 0; i < n; ++i) {
-            // if(build) ase.push_back(std::make_shared<oc::block>(oc::ZeroBlock));
-            // else ase.push_back(nullptr);
-            ase.push_back(oc::ZeroBlock);
+        // if(build) std::fill(ase.begin(), ase.end(), oc::ZeroBlock);
+        // if(build) std::memset(ase.data(), 0, ase.size() * sizeof(oc::block));
+        if(build) {
+            for (int i = 0; i < n; ++i) {
+                // if(build) ase.push_back(std::make_shared<oc::block>(oc::ZeroBlock));
+                // else ase.push_back(nullptr);
+                ase.push_back(oc::block(0));
+            }
         }
     }
 

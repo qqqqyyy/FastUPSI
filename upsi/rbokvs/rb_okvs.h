@@ -5,6 +5,15 @@
 
 namespace upsi {
 
+inline size_t default_band_width(size_t n)
+{
+    // heuristic: between 16 and 256
+    size_t bw = n / 64;
+    if (bw < 16) bw = 16;
+    if (bw > 256) bw = 256;
+    return bw;
+}
+
 class rb_okvs : public ASE {
 public:
     // n = number of GF(128) table slots
@@ -59,28 +68,14 @@ private:
 };
 
 struct rb_okvs_size_table final{
-    // inline static const int cnt = 8;
-    // inline static size_t input_size[cnt] = {1 << 7, 1 << 8, 1 << 9, 1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14};
-    // inline static size_t okvs_size[cnt] = {1 << 9, 1 << 10, 3 << 9, 3 << 10, 1 << 12, 1 << 13, size_t(1.5*(1<<13)), size_t(1.1*(1<<14)+1)}; //TODO
     static size_t get(size_t x) {
-        // for (int i = 0; i < cnt; ++i) if(input_size[i] >= x) return okvs_size[i];
-        // return (1.1 * x) + 1;
+        x = std::fmax(x, 1 << 10);
         size_t lambda = 40;
-        size_t w = default_band_width(x);
-        size_t epsilon = lambda/(2.751 * w);
-
-        return (1 + epsilon) * x;
+        size_t w = default_band_width(x); //smaller than the real band_width
+        double epsilon = lambda/(2.751 * w);
+        return (1.0 + epsilon) * x;
     }
 };
-
-static size_t default_band_width(size_t n)
-{
-    // heuristic: between 16 and 256
-    size_t bw = n / 64;
-    if (bw < 16) bw = 16;
-    if (bw > 256) bw = 256;
-    return bw;
-}
 
 } // namespace upsi
 
