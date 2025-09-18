@@ -48,7 +48,7 @@ void BinaryTree<NodeType>::addNewLayer() {
 template<typename NodeType>
 int BinaryTree<NodeType>::computeIndex(BinaryHash binary_hash) {//TODO
 	int x = 1;
-	for (u64 i = 0; i < this->depth; ++i) {
+	for (int i = 0; i < this->depth; ++i) {
         if (binary_hash[i] == false) x = (x << 1);
         else if (binary_hash[i] == true) x = ((x << 1) | 1);
     }
@@ -61,7 +61,7 @@ void BinaryTree<NodeType>::extractPathIndices(int* leaf_ind, int leaf_cnt, std::
 	assert(ind.size() == 0);
 
 	// add the indicies of leaves
-	for (u64 i = 0; i < leaf_cnt; ++i)
+	for (int i = 0; i < leaf_cnt; ++i)
 		ind.push_back(leaf_ind[i]);
 
 	// erase duplicates and sort in decreasing order
@@ -69,7 +69,7 @@ void BinaryTree<NodeType>::extractPathIndices(int* leaf_ind, int leaf_cnt, std::
 	ind.erase(std::unique(ind.begin(), ind.end()), ind.end());
 
 	int node_cnt = ind.size();
-	for (u64 i = 0; i < node_cnt; ++i) {
+	for (int i = 0; i < node_cnt; ++i) {
 		if(ind[i] == 0) break; // stash
 		int tmp = (ind[i] >> 1); // find its parent
 		assert(ind[node_cnt - 1] >= tmp);
@@ -86,7 +86,7 @@ int* BinaryTree<NodeType>::generateRandomPaths(int cnt, std::vector<int> &ind, s
 
 	// compute leaf indices of the paths
 	int *leaf_ind = new int[cnt];
-	for (u64 i = 0; i < cnt; ++i) leaf_ind[i] = computeIndex(hsh[i]);
+	for (int i = 0; i < cnt; ++i) leaf_ind[i] = computeIndex(hsh[i]);
 
 	// extract indices of nodes in these paths (including stash)
 	extractPathIndices(leaf_ind, cnt, ind);
@@ -134,7 +134,7 @@ std::pair<std::vector<PlainASE* >, std::vector<int> > BinaryTree<PlainASE>::inse
 			nodes[u].getElements(cur);
 			int cur_size = cur.size();
 
-			for (u64 i = 0; i < cur_size; ++i) {
+			for (int i = 0; i < cur_size; ++i) {
 				int x = computeIndex(computeBinaryHash(cur[i], seed));
 				int steps = 0;
 				if(x != leaf_ind[o]) steps = 32 - __builtin_clz(x ^ leaf_ind[o]);
@@ -148,7 +148,7 @@ std::pair<std::vector<PlainASE* >, std::vector<int> > BinaryTree<PlainASE>::inse
 		stash.getElements(cur);
 		cur.push_back(elem[o]);
 		int cur_size = cur.size();
-		for (u64 i = 0; i < cur_size; ++i) {
+		for (int i = 0; i < cur_size; ++i) {
 			int x = computeIndex(computeBinaryHash(cur[i], seed));
 			int steps = 0;
 			if(x != leaf_ind[o]) steps = 32 - __builtin_clz(x ^ leaf_ind[o]);
@@ -191,7 +191,7 @@ std::pair<std::vector<PlainASE* >, std::vector<int> > BinaryTree<PlainASE>::inse
 
 	int node_cnt = ind.size();
 	std::vector<PlainASE* > rs;
-	for (u64 i = 0; i < node_cnt; ++i) {
+	for (int i = 0; i < node_cnt; ++i) {
         rs.push_back(&(nodes[ind[i]]));
     }
 	return std::make_pair(rs, ind);
@@ -232,10 +232,10 @@ std::vector<int> BinaryTree<NodeType>::update(int new_elem_cnt) {
 
 	// assert(node_cnt == ind.size());
 
-	//for (u64 i = 0; i < node_cnt; ++i) std::cerr << ind[i] << std::endl;
+	//for (int i = 0; i < node_cnt; ++i) std::cerr << ind[i] << std::endl;
 
 	// replace nodes (including stash)
-	// for (u64 i = 0; i < node_cnt; ++i) {
+	// for (int i = 0; i < node_cnt; ++i) {
 	// 	assert(nodes[ind[i]]->ase.size() == new_nodes[i]->ase.size());
 	// 	nodes[ind[i]]->copy(*(new_nodes[i]));
 	// }

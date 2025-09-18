@@ -120,7 +120,7 @@ ASE VoleSender::generate(int domain_size, int point_cnt) {
         // std::cout << domain_size << " " << leafs.size() << std::endl;
         // if(treeIdx > point_cnt || leafs.size() > tmp_domain_size) throw std::runtime_error("!!!");
         for (uint o = 0; o < 8 && o < point_cnt - treeIdx; ++o) {
-            for (u64 i = 0; i < domain_size; ++i) rs[i] ^= leafs[(i << 3) + o];
+            for (int i = 0; i < domain_size; ++i) rs[i] ^= leafs[(i << 3) + o];
         }
     };
     VecF dummy;
@@ -148,7 +148,7 @@ ASE VoleReceiver::generate(int domain_size, BlockVec values, std::vector<size_t>
     
     int tmp_domain_size = domain_size;
     if(tmp_domain_size & 1) ++tmp_domain_size;
-    u64 point_cnt = points.size();
+    int point_cnt = points.size();
 
     // generate secret shares of delta * v
     auto base_vole = get(point_cnt);
@@ -195,7 +195,7 @@ ASE VoleReceiver::generate(int domain_size, BlockVec values, std::vector<size_t>
         // std::cout << domain_size << " " << leafs.size() << std::endl;
         // if(treeIdx > point_cnt || leafs.size() > tmp_domain_size) throw std::runtime_error("!!!");
         for (uint o = 0; o < 8 && o < point_cnt - treeIdx; ++o) {
-            for (u64 i = 0; i < domain_size; ++i) rs[i] ^= leafs[(i << 3) + o];
+            for (int i = 0; i < domain_size; ++i) rs[i] ^= leafs[(i << 3) + o];
         }
     };
     VecF dummy;
@@ -222,11 +222,11 @@ ASE VoleReceiver::generate(int domain_size, BlockVec values, std::vector<size_t>
 }
 
 BitVector Points2Bits(const std::vector<size_t>& points, int depth) {
-    u64 point_cnt = points.size();
+    int point_cnt = points.size();
     BitVector ans(point_cnt * depth);
-    for (u64 i = 0; i < point_cnt; ++i) {
-        u64 x = points[i];
-        for (u64 j = 0; j < depth; ++j) ans[i * depth + j] = (x >> j) & 1;
+    for (int i = 0; i < point_cnt; ++i) {
+        size_t x = points[i];
+        for (int j = 0; j < depth; ++j) ans[i * depth + j] = (x >> j) & 1;
     }
     return ans;
 }

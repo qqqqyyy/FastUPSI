@@ -7,7 +7,7 @@ using namespace upsi;
 
 void test_correctness(ASE a, ASE b, ASE c, block delta, int n) {
     CoeffCtxGF128 ctx;
-    for (u64 i = 0; i < n; ++i) {
+    for (int i = 0; i < n; ++i) {
         block exp;
         ctx.mul(exp, delta, c.ase[i]);
         ctx.plus(exp, exp, b.ase[i]);
@@ -21,7 +21,7 @@ void test_correctness(ASE a, ASE b, ASE c, block delta, int n) {
 void test_generate_new(VoleSender& vole_sender, VoleReceiver& vole_receiver, int _n = 0) {
     std::cout << "test VOLE correlations ...\n";
 
-    u64 n = _n? _n : (1 << 15) + rand() % (1 << 15);
+    int n = _n? _n : (1 << 15) + rand() % (1 << 15);
     Timer timer;
     timer.setTimePoint("start");
 
@@ -43,7 +43,7 @@ void test_doerner_shelat(VoleSender& vole_sender, VoleReceiver& vole_receiver) {
 
     int n = 20, point_cnt = 100;
     PRNG prng(CCBlock);
-    u64 domain_size = (1 << (n - 1)) + prng.get<u64>() % (1 << (n - 1));
+    int domain_size = (1 << (n - 1)) + prng.get<u64>() % (1 << (n - 1));
 
     auto t0 = std::thread([&] { vole_sender.generate(1 << 20); });
     vole_receiver.generate(1 << 20);
