@@ -107,6 +107,10 @@ std::pair<Dataset, Dataset> GenerateSets(int start_size, int days, int add_size,
     random_shuffle<oc::block>(X.initial_set);
     random_shuffle<oc::block>(Y.initial_set);
 
+
+    assert(X.initial_set.size() == start_size);
+    assert(Y.initial_set.size() == start_size);
+
     std::cout << "[Generate Dataset] done.\n\n";
 
     return std::make_pair(X, Y);

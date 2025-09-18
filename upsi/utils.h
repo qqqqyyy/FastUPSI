@@ -66,11 +66,11 @@ namespace upsi {
     BinaryHash block2binary(oc::block x);
 	BinaryHash computeBinaryHash(oc::block elem, oc::block seed);
     BinaryHash generateRandomHash(oc::PRNG* prng);
-	std::vector<BinaryHash> generateRandomHash(oc::PRNG* prng, size_t cnt);
+	std::vector<BinaryHash> generateRandomHash(oc::PRNG* prng, int cnt);
 
     Element GetRandomSetElement(oc::PRNG* prng);
     // Element GetRandomPadElement(oc::PRNG* prng);
-    std::vector<Element> GetRandomSet(oc::PRNG* prng, size_t set_size);
+    std::vector<Element> GetRandomSet(oc::PRNG* prng, int set_size);
 
     //random oracle
     oc::block random_oracle(oc::block x, oc::block seed = oc::ZeroBlock);

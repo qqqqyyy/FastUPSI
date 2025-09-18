@@ -10,7 +10,7 @@ namespace upsi {
 ////////////////////////////////////////////////////////////////////////////////
 
 template<typename NodeType, typename StashType>
-void Tree<NodeType, StashType>::setup(oc::PRNG* prng, oc::block seed, size_t stash_size, size_t node_size) {
+void Tree<NodeType, StashType>::setup(oc::PRNG* prng, oc::block seed, int stash_size, int node_size) {
     this->node_size = node_size;
     this->stash_size = stash_size;
 

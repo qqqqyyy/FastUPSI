@@ -88,8 +88,8 @@ public:
 
         std::cout << "[Dataset] Reading daily sets...\n";
 
-        for (std::size_t i = 0; i < days; ++i) read_vec(file, daily_addition[i]);
-        for (std::size_t i = 0; i < days; ++i) read_vec(file, daily_deletion[i]);
+        for (int i = 0; i < days; ++i) read_vec(file, daily_addition[i]);
+        for (int i = 0; i < days; ++i) read_vec(file, daily_deletion[i]);
 
         std::cout << "[Dataset] done.\n\n";
 

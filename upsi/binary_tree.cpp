@@ -10,7 +10,7 @@ namespace upsi {
 ////////////////////////////////////////////////////////////////////////////////
 
 template<typename NodeType>
-void BinaryTree<NodeType>::setup(oc::PRNG* prng, oc::block seed, size_t node_size) {
+void BinaryTree<NodeType>::setup(oc::PRNG* prng, oc::block seed, int node_size) {
     this->node_size = node_size;
 	this->seed = seed;
 	this->prng = prng;
@@ -36,7 +36,7 @@ inline void BinaryTree<NodeType>::addNode() {
 template<typename NodeType>
 void BinaryTree<NodeType>::addNewLayer() {
     this->depth += 1;
-    size_t new_size = (1 << (this->depth + 1));
+    int new_size = (1 << (this->depth + 1));
 	// std::cout << new_size << "\n";
     while (this->nodes.size() < new_size) {
 		addNode();
@@ -82,7 +82,7 @@ void BinaryTree<NodeType>::extractPathIndices(int* leaf_ind, int leaf_cnt, std::
 
 // Generate random paths, return the indices of leaves and nodes(including stash)
 template<typename NodeType>
-int* BinaryTree<NodeType>::generateRandomPaths(size_t cnt, std::vector<int> &ind, std::vector<BinaryHash> &hsh) { //ind: node indices
+int* BinaryTree<NodeType>::generateRandomPaths(int cnt, std::vector<int> &ind, std::vector<BinaryHash> &hsh) { //ind: node indices
 
 	// compute leaf indices of the paths
 	int *leaf_ind = new int[cnt];

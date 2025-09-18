@@ -31,9 +31,9 @@ BinaryHash generateRandomHash(oc::PRNG* prng) {
 }
 
 // generate random binary hash for cnt paths
-std::vector<BinaryHash> generateRandomHash(oc::PRNG* prng, size_t cnt) {
+std::vector<BinaryHash> generateRandomHash(oc::PRNG* prng, int cnt) {
     std::vector<BinaryHash> hsh;
-	for (u64 i = 0; i < cnt; ++i) {
+	for (int i = 0; i < cnt; ++i) {
 		hsh.push_back(generateRandomHash(prng));
 	}
     return hsh;
@@ -50,10 +50,10 @@ Element GetRandomSetElement(oc::PRNG* prng) {
 //     return elem | oc::OneBlock;
 // }
 
-std::vector<Element> GetRandomSet(oc::PRNG* prng, size_t set_size) {
+std::vector<Element> GetRandomSet(oc::PRNG* prng, int set_size) {
     std::vector<Element> elems;
     elems.reserve(set_size);
-    for (u64 i = 0; i < set_size; ++i) elems.push_back(GetRandomSetElement(prng));
+    for (int i = 0; i < set_size; ++i) elems.push_back(GetRandomSetElement(prng));
     return elems;
 }
 

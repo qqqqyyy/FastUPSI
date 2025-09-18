@@ -6,8 +6,8 @@ using namespace upsi;
 int main(int argc, char** argv)
 {
     oc::CLP clp(argc, argv);
-    clp.setDefault("days", 4);
-    clp.setDefault("start_size", 1044479);
+    clp.setDefault("days", 1024);
+    clp.setDefault("start_size", 0);
     clp.setDefault("add_size", 1024);
     // clp.setDefault("start_size", 49);
     // clp.setDefault("add_size", 4);

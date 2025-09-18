@@ -16,12 +16,12 @@ class BinaryTree : public ASE
     protected:
 
         // The node and stash size of the tree
-        size_t node_size;
+        int node_size;
 
         /// @brief Helper Methods
         int computeIndex(BinaryHash binary_hash);
         void extractPathIndices(int* leaf_ind, int leaf_cnt, std::vector<int> &ind);
-        int* generateRandomPaths(size_t cnt, std::vector<int> &ind, std::vector<BinaryHash> &hsh);
+        int* generateRandomPaths(int cnt, std::vector<int> &ind, std::vector<BinaryHash> &hsh);
 
     public:
 
@@ -39,7 +39,7 @@ class BinaryTree : public ASE
         int depth = 0;
 
         // setup before insert
-        void setup(oc::PRNG* prng, oc::block seed = oc::ZeroBlock, size_t node_size = DEFAULT_NODE_SIZE);
+        void setup(oc::PRNG* prng, oc::block seed = oc::ZeroBlock, int node_size = DEFAULT_NODE_SIZE);
         // void clear() override;
 
         inline void addNode();

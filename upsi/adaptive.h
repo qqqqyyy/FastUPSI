@@ -20,10 +20,10 @@ class Adaptive : public ASE
         BlockVec seeds;
         //TODO: hash
 
-        size_t start_size;
-        size_t node_cnt;
+        int start_size;
+        int node_cnt;
 
-        void setup(size_t _start_size = DEFAULT_ADAPTIVE_SIZE) {
+        void setup(int _start_size = DEFAULT_ADAPTIVE_SIZE) {
             start_size = _start_size;
             elem_cnt = 0;
             node_cnt = 0;

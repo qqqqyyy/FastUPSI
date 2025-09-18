@@ -14,6 +14,7 @@ int main(int argc, char** argv)
     clp.setDefault("func", "tree");
     clp.setDefault("days", 4);
     clp.setDefault("ip", "localhost:5001");
+    clp.setDefault("daily_vole", true);
 
 
     int party = clp.get<int>("party");
@@ -21,7 +22,7 @@ int main(int argc, char** argv)
     int days = clp.get<int>("days");
     std::string ip = clp.get<std::string>("ip");
     bool del = clp.isSet("del");
-    bool daily_vole = clp.isSet("daily_vole");
+    bool daily_vole = clp.get<bool>("daily_vole");
     
     if(party < 0 || party > 1) throw std::runtime_error("party should be 0 or 1");
 

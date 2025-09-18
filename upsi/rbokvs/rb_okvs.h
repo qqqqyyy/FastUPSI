@@ -17,9 +17,9 @@ inline size_t default_band_width(size_t n)
 class rb_okvs : public ASE {
 public:
     // n = number of GF(128) table slots
-    explicit rb_okvs(size_t n, size_t band_width = 0)
-        : ASE(static_cast<int>(n), /*build*/true),
-          band_width_(band_width ? band_width : default_band_width(n)) {}
+    explicit rb_okvs(int n, size_t band_width = 0)
+        : ASE(n, /*build*/true),
+          band_width_(default_band_width(n)) {}
 
     // “convert” ctor from an already-allocated ASE
     explicit rb_okvs(ASE&& other_ASE)

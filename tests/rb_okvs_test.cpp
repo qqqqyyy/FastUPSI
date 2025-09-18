@@ -7,10 +7,9 @@
 
 using namespace upsi;
 
-static void one_run(size_t set_size, size_t n_columns)
+static void one_run(size_t set_size)
 {
-    std::cout << "\n=== rb_okvs test: set=" << set_size
-              << "  n=" << n_columns << " ===\n";
+    std::cout << "\n=== rb_okvs test: set=" << set_size << " ===\n";
 
     // --- make a random element set ---
     oc::PRNG prng(oc::toBlock(0xDEADBEEF, 0x01234567));
@@ -20,12 +19,12 @@ static void one_run(size_t set_size, size_t n_columns)
     oc::block ro_seed = prng.get<oc::block>();
 
     // --- build the OKVS ---
-    rb_okvs okvs(n_columns);
+    rb_okvs okvs(rb_okvs_size_table::get(set_size));
     okvs.build(elems, ro_seed);
 
     // quick sanity
     assert(!okvs.isEmpty());
-    assert(okvs.n == n_columns);
+    // assert(okvs.n == n_columns);
 
     ASE tmp = (ASE)okvs;
     rb_okvs okvs2 = rb_okvs(std::move(tmp));
@@ -57,14 +56,13 @@ int main()
 {
     // A couple of sizes; you can tweak these depending on your build speed.
     // Heuristic: n should be comfortably larger than |set|; band_width in [16, 256].
-    const size_t set_size = 200;           // number of key/value pairs to encode
-    const size_t n1       = 2048;          // number of GF(128) slots (columns)
+    // const size_t set_size = 200;           // number of key/value pairs to encode
     // const size_t bw1      = 64;            // local band width per row
-    const size_t n2       = 4096;
+    // const size_t n2       = 4096;
     // const size_t bw2      = 128;
 
-    one_run(set_size, n1);
-    one_run(set_size, n2);
+    for (int i = 7; i <= 22; ++i) 
+        one_run(1 << i);
 
     std::cout << "\nAll rb_okvs tests passed\n";
     return 0;

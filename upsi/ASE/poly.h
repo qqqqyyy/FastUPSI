@@ -7,7 +7,7 @@ namespace upsi {
 class Poly : public ASE{
     public:
 
-        Poly(size_t _n = DEFAULT_NODE_SIZE):ASE(_n, true){}
+        Poly(int _n = DEFAULT_NODE_SIZE):ASE(_n, true){}
 
         Poly(ASE&& other_ASE) { //move
             ase = std::move(other_ASE.ase);

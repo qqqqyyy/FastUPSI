@@ -4,7 +4,7 @@ namespace upsi{
     
 template<typename BaseType>
 void Adaptive<BaseType>::addASE() {
-    size_t node_size = start_size * (1 << node_cnt);
+    int node_size = start_size * (1 << node_cnt);
     ++node_cnt;
     std::shared_ptr<BaseType> cur_node;
     if constexpr (std::is_same_v<BaseType, rb_okvs>) {

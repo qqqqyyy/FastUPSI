@@ -7,7 +7,7 @@
 namespace upsi{
 
 inline oc::cp::task<> send_ASE(const ASE& ase, oc::Socket* chl) {
-    co_await chl->send(ase.n);
+    co_await chl->send((size_t)ase.n);
     // co_await chl->send(ase.elem_cnt);
     BlockVec data;
     ase.write(data);
@@ -40,7 +40,7 @@ inline oc::cp::task<> send_ASEs(const std::vector<ASEType>& ases, oc::Socket* ch
     // COMM += sizeof(size_t);
 
     std::vector<size_t> ase_sizes(n);
-    for (int i = 0; i < n; ++i) ase_sizes[i] = ases[i].n;
+    for (size_t i = 0; i < n; ++i) ase_sizes[i] = ases[i].n;
     co_await chl->send(ase_sizes);
     // COMM += ase_sizes.size() * sizeof(size_t);
 
@@ -63,13 +63,13 @@ inline oc::cp::task<std::vector<ASE> > recv_ASEs(oc::Socket* chl) {
     // COMM += ase_sizes.size() * sizeof(size_t);
 
     size_t sum = 0;
-    for (int i = 0; i < n; ++i) sum += ase_sizes[i];
+    for (size_t i = 0; i < n; ++i) sum += ase_sizes[i];
     BlockVec data(sum);
     co_await chl->recv(data);
     // COMM += data.size() * sizeof(oc::block);
 
     auto data_span = std::span{data};
-    for (int i = 0, idx = 0; i < n; ++i) {
+    for (size_t i = 0, idx = 0; i < n; ++i) {
         ASE ase(data_span.subspan(idx, ase_sizes[i]));
         ase.elem_cnt = 1; //non_empty
         idx += ase_sizes[i];
@@ -127,9 +127,9 @@ inline oc::cp::task<OPRFValueVec> recv_OPRF(oc::Socket* chl) {
         BlockVec tmp;
         co_await chl->recvResize(tmp);
         // COMM += sizeof(size_t) + tmp.size() * sizeof(oc::block);
-        int cnt = tmp.size() >> 1;
+        size_t cnt = tmp.size() >> 1;
         rs.reserve(cnt);
-        for (int i = 0; i < cnt; ++i) rs.push_back(std::make_pair(tmp[i << 1], tmp[i << 1 | 1]));
+        for (size_t i = 0; i < cnt; ++i) rs.push_back(std::make_pair(tmp[i << 1], tmp[i << 1 | 1]));
     }
     co_return rs;
 }

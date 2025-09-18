@@ -12,7 +12,7 @@ Party::Party(int _party, oc::Socket* _chl, int _total_days, std::string fn, bool
 
     dataset.Read(fn);
 
-    if(dataset.start_size <= 64) dataset.print();
+    if(dataset.start_size <= 64 && dataset.days <= 8 && dataset.add_size <= 8) dataset.print();
     
     if(total_days > dataset.days) throw std::runtime_error("dataset days error");
     if(support_deletion != (dataset.del_size > 0)) throw std::runtime_error("dataset number of deletions error");
@@ -150,7 +150,7 @@ std::vector<Element> Party::PSI_receiver(const std::vector<Element>& my_set) {
     okvs.build(my_set, ro_seed);
 
     if(daily_vole) {
-        oc::cp::sync_wait(chl->send(okvs.n));
+        oc::cp::sync_wait(chl->send((size_t)okvs.n));
         size_t my_vole_size = rb_okvs_size_table::get(cnt);
         // oc::Timer t_vole("PSI vole");
         // t_vole.setTimePoint("begin");

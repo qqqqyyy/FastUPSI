@@ -7,8 +7,8 @@ namespace upsi {
 class ASE{
     public:
     BlockVec ase;
-    size_t n; //size of ase
-    size_t elem_cnt = 0; //number of elements
+    int n; //size of ase
+    int elem_cnt = 0; //number of elements
 
     ASE(){}
     ASE(const BlockSpan& vec) {
@@ -43,7 +43,7 @@ class ASE{
 
     oc::AlignedUnVector<oc::block> VecF() {
         oc::AlignedUnVector<oc::block> out(n);
-        for (size_t i = 0; i < n; ++i) out[i] = (*this)[i];
+        for (int i = 0; i < n; ++i) out[i] = (*this)[i];
         return out;
     }
 

@@ -104,8 +104,10 @@ int main(int argc, char** argv) {
     auto chl = cp::LocalAsyncSocket::makePair();
     PRNG prng0(ZeroBlock), prng1(OneBlock);
 
-    VoleSender vole_sender(&chl[0], &prng0);
-    VoleReceiver vole_receiver(&chl[1], &prng1);
+    VoleSender vole_sender;
+    vole_sender.setup(&chl[0], &prng0);
+    VoleReceiver vole_receiver;
+    vole_receiver.setup(&chl[1], &prng1);
 
     if(n) {
         test_generate_new(vole_sender, vole_receiver, n);

@@ -89,10 +89,12 @@ class Party{
         Party(int _party, oc::Socket* _chl, int _total_days, std::string fn, bool deletion = false, bool daily_vole = false);
 
         virtual void setup() {
-            addition(dataset.initial_set);
-            // intersection = dataset.intersection;
-            for (const auto& cur_elem: dataset.intersection) intersection[cur_elem] = true;
-            std::cout << "[VOLE] setup used: " << vole_receiver.idx << "\n";
+            if(dataset.start_size) {
+                addition(dataset.initial_set);
+                // intersection = dataset.intersection;
+                for (const auto& cur_elem: dataset.intersection) intersection[cur_elem] = true;
+                std::cout << "[VOLE] setup used: " << vole_receiver.idx << "\n";
+            }
         }
 
         void run() {

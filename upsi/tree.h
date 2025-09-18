@@ -14,13 +14,13 @@ class Tree
 
     public:
         
-        size_t node_size;
-        size_t stash_size;
+        int node_size;
+        int stash_size;
         BinaryTree<NodeType> binary_tree;
         StashType stash = StashType(DEFAULT_STASH_SIZE);
 
         // setup before insert
-        void setup(oc::PRNG* prng, oc::block seed = oc::ZeroBlock, size_t stash_size = DEFAULT_STASH_SIZE, size_t node_size = DEFAULT_NODE_SIZE);
+        void setup(oc::PRNG* prng, oc::block seed = oc::ZeroBlock, int stash_size = DEFAULT_STASH_SIZE, int node_size = DEFAULT_NODE_SIZE);
 
         void addNode();
         // insert is only for plaintext tree

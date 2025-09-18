@@ -14,7 +14,7 @@ void VoleSender::generate(size_t vole_size){
     b = VecF(m * q);
     VecF tmp(n);
 
-    for (u64 i = 0; i < q; ++i) {
+    for (size_t i = 0; i < q; ++i) {
         if(has_base) {
             auto count = sender.baseCount();
             int t = count.mBaseVoleCount;
@@ -45,7 +45,7 @@ void VoleReceiver::generate(size_t vole_size) {
     c = VecF(m * q);
     VecF tmp_a(n), tmp_c(n);
 
-    for (u64 i = 0; i < q; ++i) {
+    for (size_t i = 0; i < q; ++i) {
         if(has_base) {
             auto count = receiver.baseCount();
             int t = count.mBaseVoleCount;

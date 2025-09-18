@@ -27,14 +27,6 @@ class AdaptiveParty : public Party{
         }
 
 
-        // void setup() override{
-        //     addition(dataset.initial_set);
-        //     for (const auto& cur_elem: dataset.intersection) intersection[cur_elem] = true;
-        //     my_adaptive.addASE();
-        //     other_adaptive.addASE();
-        //     std::cout << "[VOLE] setup used: " << vole_receiver.idx << "\n";
-        // }
-
 
         std::vector<Element> query(const std::vector<Element>& elems) override; // query for elems
         

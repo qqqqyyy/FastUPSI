@@ -259,7 +259,7 @@ void TreeParty::deletion(const std::vector<Element>& elems) {
     std::vector<size_t> points;
     BlockVec values;
     size_t ind_size = ind.size();
-    for (int i = 0, j = 0; i < ind_size; ++i) {
+    for (size_t i = 0, j = 0; i < ind_size; ++i) {
         if(ind[i] == 0) continue;
         ASE diff = polys[j] - my_tree_vole.binary_tree.nodes[ind[i]];
         for (int k = 0; k < DEFAULT_NODE_SIZE; ++k) {

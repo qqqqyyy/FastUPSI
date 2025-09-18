@@ -29,7 +29,8 @@ class VOLE{
 
         bool has_base = false;
 
-        VOLE(oc::Socket* _chl = nullptr, oc::PRNG* _prng = nullptr):chl(_chl), prng(_prng){}
+        // VOLE(oc::Socket* _chl = nullptr, oc::PRNG* _prng = nullptr):chl(_chl), prng(_prng){}
+        VOLE(){};
 
         virtual void setup(oc::Socket* _chl, oc::PRNG* _prng = nullptr){
             this->chl = _chl;
