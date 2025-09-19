@@ -12,7 +12,7 @@ int main(int argc, char** argv)
     oc::CLP clp(argc, argv);
     clp.setDefault("party", 0);
     clp.setDefault("func", "tree");
-    clp.setDefault("days", 4);
+    clp.setDefault("days", 8);
     clp.setDefault("ip", "localhost:5001");
     clp.setDefault("daily_vole", true);
 
@@ -40,10 +40,18 @@ int main(int argc, char** argv)
         tree_party.setup();
         std::cout << "[Tree] setup done.\n\n";
 
-        oc::u8 tmp = 0;
-        oc::cp::sync_wait(chl.send(tmp));
-        oc::cp::sync_wait(chl.flush());
-        oc::cp::sync_wait(chl.recv(tmp));
+        if(party == 0) {
+            int tmp = 0;
+            oc::cp::sync_wait(chl.send(tmp));
+            oc::cp::sync_wait(chl.flush());
+            oc::cp::sync_wait(chl.recv(tmp));
+        }
+        else {
+            int tmp = 0;
+            oc::cp::sync_wait(chl.recv(tmp));
+            oc::cp::sync_wait(chl.send(tmp));
+            oc::cp::sync_wait(chl.flush());
+        }
 
         tree_party.run();
         oc::cp::sync_wait(chl.close());
@@ -57,6 +65,7 @@ int main(int argc, char** argv)
         std::cout << "[Adaptive] setup initial sets...\n";
         adaptive_party.setup();
         std::cout << "[Adaptive] setup done.\n\n";
+
         if(party == 0) {
             int tmp = 0;
             oc::cp::sync_wait(chl.send(tmp));
@@ -69,6 +78,7 @@ int main(int argc, char** argv)
             oc::cp::sync_wait(chl.send(tmp));
             oc::cp::sync_wait(chl.flush());
         }
+
         adaptive_party.run();
         oc::cp::sync_wait(chl.close());
     }
