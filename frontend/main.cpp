@@ -16,13 +16,18 @@ int main(int argc, char** argv)
     clp.setDefault("ip", "localhost:5001");
     clp.setDefault("daily_vole", true);
 
-
     int party = clp.get<int>("party");
     std::string func = clp.get<std::string>("func");
     int days = clp.get<int>("days");
     std::string ip = clp.get<std::string>("ip");
     bool del = clp.isSet("del");
     bool daily_vole = clp.get<bool>("daily_vole");
+
+    bool LAN = clp.isSet("LAN");
+    bool WAN = clp.isSet("WAN");
+    if(LAN && WAN) throw std::runtime_error("LAN & WAN");
+    int bandwidth = 200;
+    if(WAN) bandwidth = clp.get<int>("WAN");
     
     if(party < 0 || party > 1) throw std::runtime_error("party should be 0 or 1");
 
@@ -39,6 +44,12 @@ int main(int argc, char** argv)
         std::cout << "[Tree] setup initial sets...\n";
         tree_party.setup();
         std::cout << "[Tree] setup done.\n\n";
+
+        // if(LAN && party == 0) std::system("./../network_setup.sh on 0.2 1000");
+        // if(WAN && party == 0) {
+        //     std::string cmd = "./../network_setup.sh on 80 " + std::to_string(bandwidth);
+        //     std::system(cmd.c_str());
+        // }
 
         if(party == 0) {
             int tmp = 0;
@@ -66,6 +77,12 @@ int main(int argc, char** argv)
         adaptive_party.setup();
         std::cout << "[Adaptive] setup done.\n\n";
 
+        // if(LAN && party == 0) std::system("./../network_setup.sh on 0.2 1000");
+        // if(WAN && party == 0) {
+        //     std::string cmd = "./../network_setup.sh on 80 " + std::to_string(bandwidth);
+        //     std::system(cmd.c_str());
+        // }
+
         if(party == 0) {
             int tmp = 0;
             oc::cp::sync_wait(chl.send(tmp));
@@ -83,6 +100,8 @@ int main(int argc, char** argv)
         oc::cp::sync_wait(chl.close());
     }
     else throw std::runtime_error("functionality error");
+
+    if(LAN || WAN) std::system("./../network_setup.sh off");
 
     return 0;
 }
