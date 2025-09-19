@@ -347,6 +347,7 @@ void TreeParty::refresh_oprfs() {
 
     std::vector<Element> elems;
     elems.reserve(dataset.start_size + (dataset.add_size - dataset.del_size) * current_day);
+    values.reserve(dataset.start_size + (dataset.add_size - dataset.del_size) * current_day);
 
     std::vector<Element> cur_elems;
     my_tree.stash.getElements(cur_elems);

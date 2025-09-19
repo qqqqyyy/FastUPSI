@@ -1,7 +1,9 @@
 This project can be built on ubuntu24.04-amd64
+
 Instance type: c5.18xlarge
 
 ### setup
+
 ```bash
 sudo apt update
 sudo apt install -y cmake build-essential
@@ -21,8 +23,11 @@ cd build
 cmake ..
 make
 ```
+
 ### run
+
 Examples:
+
 ```bash
 # generate datasets, 1024 days
 ./frontend/setup -start_size 1048576 -add_size 1024 -del_size 0 -days 1024
