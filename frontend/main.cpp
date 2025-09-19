@@ -101,7 +101,7 @@ int main(int argc, char** argv)
     }
     else throw std::runtime_error("functionality error");
 
-    if(LAN || WAN) std::system("./../network_setup.sh off");
+    if((LAN || WAN) && party == 0) std::system("./../network_setup.sh off");
 
     return 0;
 }
