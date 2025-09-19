@@ -2,7 +2,6 @@
 set -euo pipefail
 G=("20:8" "20:10" "20:12" "22:8" "22:10" "22:12") 
 LOG=logs
-mkdir -p "$LOG"
 ts(){ date '+%F %T'; }
 
 for P in "${G[@]}"; do
