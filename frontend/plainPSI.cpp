@@ -37,7 +37,7 @@ int main(int argc, char** argv)
 
     if(LAN && party == 0) std::system("./../network_setup.sh on 0.2 1000");
     if(WAN && party == 0) {
-        std::string cmd = "./../network_setup.sh on 80 " + std::to_string(bandwidth);
+        std::string cmd = "./../network_setup.sh on 40 " + std::to_string(bandwidth);
         std::system(cmd.c_str());
     }
 
