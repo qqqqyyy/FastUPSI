@@ -47,4 +47,4 @@ for P in "${G[@]}"; do
 done
 
 echo "adaptive done"
-echl ""
+echo ""
