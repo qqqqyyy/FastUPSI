@@ -35,7 +35,7 @@ int main(int argc, char** argv)
     // int n = plainPSI_party.dataset.start_size;
     // int vole_size = 1.06 * n + 1;
 
-    if(LAN && party == 0) std::system("./../network_setup.sh on 0.2 1000");
+    if(LAN && party == 0) std::system("./../network_setup.sh on 0.1 1000");
     if(WAN && party == 0) {
         std::string cmd = "./../network_setup.sh on 40 " + std::to_string(bandwidth);
         std::system(cmd.c_str());

@@ -45,7 +45,7 @@ int main(int argc, char** argv)
         tree_party.setup();
         std::cout << "[Tree] setup done.\n\n";
 
-        if(LAN && party == 0) std::system("./../network_setup.sh on 0.2 1000");
+        if(LAN && party == 0) std::system("./../network_setup.sh on 0.1 1000");
         if(WAN && party == 0) {
             std::string cmd = "./../network_setup.sh on 40 " + std::to_string(bandwidth);
             std::system(cmd.c_str());
@@ -77,7 +77,7 @@ int main(int argc, char** argv)
         adaptive_party.setup();
         std::cout << "[Adaptive] setup done.\n\n";
 
-        if(LAN && party == 0) std::system("./../network_setup.sh on 0.2 1000");
+        if(LAN && party == 0) std::system("./../network_setup.sh on 0.1 1000");
         if(WAN && party == 0) {
             std::string cmd = "./../network_setup.sh on 40 " + std::to_string(bandwidth);
             std::system(cmd.c_str());
