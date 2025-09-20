@@ -27,14 +27,14 @@ class TreeParty : public Party{
 
             if(party == 0) {
                 tree_seed = oc::sysRandomSeed();
-                ro_seed = oc::sysRandomSeed();
+                // ro_seed = oc::sysRandomSeed();
                 coproto::sync_wait(chl->send(tree_seed));
-                coproto::sync_wait(chl->send(ro_seed));
+                // coproto::sync_wait(chl->send(ro_seed));
                 coproto::sync_wait(chl->flush());
             }
             else {
                 coproto::sync_wait(chl->recv(tree_seed));
-                coproto::sync_wait(chl->recv(ro_seed));
+                // coproto::sync_wait(chl->recv(ro_seed));
             }
             tree_prng.SetSeed(prng_seed);
             other_tree_prng.SetSeed(other_prng_seed);

@@ -9,9 +9,9 @@ std::pair<Dataset, Dataset> GenerateSets(int start_size, int days, int add_size,
     Dataset X(start_size, days, add_size, del_size), Y(start_size, days, add_size, del_size);
 
 
-    int initial_I_size = start_size / 4;
-    int initial_daily_I = std::fmin((start_size - initial_I_size) / 2, ((add_size - del_size) * days) / 5);
-    int I_size = ((add_size - del_size) * days) / 40;
+    int initial_I_size = start_size / 16;
+    int initial_daily_I = std::fmin((start_size - initial_I_size) / 16, ((add_size - del_size) * days) / 16);
+    int I_size = ((add_size - del_size) * days) / 80;
 
 
     auto universe = GetRandomSet(&prng, start_size * 2 + add_size * days * 2 - initial_I_size - I_size + 100);

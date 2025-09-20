@@ -7,3 +7,7 @@ target_link_libraries(setup upsi)
 
 add_executable(main main.cpp)
 target_link_libraries(main upsi)
+
+
+add_executable(plainPSI plainPSI.cpp)
+target_link_libraries(plainPSI upsi)

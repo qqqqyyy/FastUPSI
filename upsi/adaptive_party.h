@@ -15,13 +15,6 @@ class AdaptiveParty : public Party{
 
         AdaptiveParty(int _party, oc::Socket* _chl, int _total_days, std::string fn, bool daily_vole = false):
                 Party(_party, _chl, _total_days, fn, false, daily_vole){
-            if(party == 0) {
-                ro_seed = oc::sysRandomSeed();
-                coproto::sync_wait(chl->send(ro_seed));
-            }
-            else {
-                coproto::sync_wait(chl->recv(ro_seed));
-            }
             my_adaptive.setup(DEFAULT_ADAPTIVE_SIZE);
             other_adaptive.setup(DEFAULT_ADAPTIVE_SIZE);
         }

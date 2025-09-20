@@ -39,9 +39,8 @@ class Party{
 
         struct OPRFValueHash {
             size_t operator()(const OPRFValue& p) const noexcept {
-                size_t h1 = std::hash<oc::block>{}(p.first);
-                size_t h2 = std::hash<oc::block>{}(p.second);
-                return h1 ^ (h2 + 0x9e3779b97f4a7c15ULL + (h1<<6) + (h1>>2)); //TODO?
+                return std::hash<std::string_view>{}(
+                    std::string_view(reinterpret_cast<const char*>(p.data()), p.size()));
             }
         };
         struct OPRFData{
@@ -155,9 +154,13 @@ class Party{
 
         int deletion_part(const std::vector<Element>& deletion_set);
 
-        virtual std::vector<Element> query(const std::vector<Element>& elems) = 0; // query for elems
+        virtual std::vector<Element> query(const std::vector<Element>& elems) {
+            throw std::runtime_error("query not implemented");
+        }
         
-        virtual void addition(const std::vector<Element>& elems) = 0;
+        virtual void addition(const std::vector<Element>& elems) {
+            throw std::runtime_error("addition not implemented");
+        }
 
         virtual void deletion(const std::vector<Element>& elems) {
             throw std::runtime_error("deletion not supported");

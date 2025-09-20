@@ -46,11 +46,13 @@ namespace upsi {
     // TODO
 	typedef oc::block Element;
     typedef oc::u64 u64;
+    typedef oc::u8 u8;
     typedef std::vector<oc::block> BlockVec;
     typedef std::span<oc::block> BlockSpan;
     typedef std::shared_ptr<oc::block> BlockPtr;
     typedef std::vector<BlockPtr> PtrVec;
-    typedef std::pair<oc::block, oc::block> OPRFValue;
+    // typedef std::pair<oc::block, oc::block> OPRFValue;
+    typedef std::array<u8, 12> OPRFValue;
     typedef std::vector<OPRFValue> OPRFValueVec;
 
     // inline size_t COMM = 0; //communication, number of bytes
@@ -74,7 +76,8 @@ namespace upsi {
 
     //random oracle
     oc::block random_oracle(oc::block x, oc::block seed = oc::ZeroBlock);
-    OPRFValue random_oracle_256(oc::block x, size_t index, oc::block seed = oc::ZeroBlock);
+    std::pair<oc::block, oc::block> random_oracle_256(oc::block x, size_t index, oc::block seed = oc::ZeroBlock);
+    OPRFValue random_oracle_oprf(oc::block x, size_t index, oc::block seed);
 
     template<typename type> void random_shuffle(std::vector<type>& vec);
 

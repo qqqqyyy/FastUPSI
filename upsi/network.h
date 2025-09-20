@@ -23,8 +23,8 @@ inline oc::cp::task<ASE> recv_ASE(oc::Socket* chl) {
     co_await chl->recv(n);
     ASE ase(n, true);
     // co_await chl->recv(ase.elem_cnt);
-    BlockVec data;
-    co_await chl->recvResize(data);
+    BlockVec data(n);
+    co_await chl->recv(data);
     ase.read(data);
     ase.elem_cnt = 1; //non_empty
 
@@ -96,9 +96,9 @@ inline oc::cp::task<> send_blocks(const BlockVec& blocks, oc::Socket* chl) {
 
 inline oc::cp::task<BlockVec> recv_blocks(oc::Socket* chl) {
     size_t n;
-    BlockVec rs;
     co_await chl->recv(n);
-    if(n) co_await chl->recvResize(rs);
+    BlockVec rs(n);
+    if(n) co_await chl->recv(rs);
     // COMM += sizeof(size_t) + rs.size() * sizeof(oc::block);
     co_return rs;
 }
@@ -107,13 +107,8 @@ inline oc::cp::task<> send_OPRF(const OPRFValueVec& values, oc::Socket* chl) {
     co_await chl->send(values.size());
     // COMM += sizeof(size_t);
     if(values.size() > 0) {
-        BlockVec tmp;
-        for (auto x: values) {
-            tmp.push_back(x.first);
-            tmp.push_back(x.second);
-        }
-        co_await chl->send(tmp);
-        // COMM += sizeof(size_t) + tmp.size() * sizeof(oc::block);
+        co_await chl->send(values);
+        co_await chl->flush();
     }
     co_return;
 }
@@ -122,14 +117,9 @@ inline oc::cp::task<OPRFValueVec> recv_OPRF(oc::Socket* chl) {
     size_t values_size;
     co_await chl->recv(values_size);
     // COMM += sizeof(size_t);
-    OPRFValueVec rs;
+    OPRFValueVec rs(values_size);
     if(values_size) {
-        BlockVec tmp;
-        co_await chl->recvResize(tmp);
-        // COMM += sizeof(size_t) + tmp.size() * sizeof(oc::block);
-        size_t cnt = tmp.size() >> 1;
-        rs.reserve(cnt);
-        for (size_t i = 0; i < cnt; ++i) rs.push_back(std::make_pair(tmp[i << 1], tmp[i << 1 | 1]));
+        co_await chl->recv(rs);
     }
     co_return rs;
 }

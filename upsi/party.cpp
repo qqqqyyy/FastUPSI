@@ -32,6 +32,15 @@ Party::Party(int _party, oc::Socket* _chl, int _total_days, std::string fn, bool
         else coproto::sync_wait(chl->recv(del_seed));
         prng_del.SetSeed(del_seed);
     }
+
+
+    if(party == 0) {
+        ro_seed = oc::sysRandomSeed();
+        coproto::sync_wait(chl->send(ro_seed));
+    }
+    else {
+        coproto::sync_wait(chl->recv(ro_seed));
+    }
     
     oc::u8 tmp = 0;
     oc::cp::sync_wait(chl->send(tmp));
@@ -196,8 +205,8 @@ void Party::PSI_sender(const std::vector<Element>& my_set) {
     OPRF<rb_okvs> oprf_okvs;
     oprf_okvs.sender(my_set, 0, b, vole_sender.delta, oprf_values, ro_seed);
     
-    std::mt19937_64 rng{std::random_device{}()};
-    std::shuffle(oprf_values.begin(), oprf_values.end(), rng);
+    // std::mt19937_64 rng{std::random_device{}()};
+    // std::shuffle(oprf_values.begin(), oprf_values.end(), rng);
     oc::cp::sync_wait(send_OPRF(oprf_values, chl));
 }
 

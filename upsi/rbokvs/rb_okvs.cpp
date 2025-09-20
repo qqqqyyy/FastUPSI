@@ -20,7 +20,7 @@ namespace upsi {
         1ull<<56,1ull<<57,1ull<<58,1ull<<59,1ull<<60,1ull<<61,1ull<<62,1ull<<63
     };
 
-    static inline U256 split256(const OPRFValue& H) {
+    static inline U256 split256(const std::pair<oc::block, oc::block>& H) {
         U256 m{};
         auto lo = H.first.get<oc::u64>();
         auto hi = H.second.get<oc::u64>();
