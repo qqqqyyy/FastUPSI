@@ -145,7 +145,8 @@ class Party{
             }
             int cnt_del = 0;
             if(support_deletion) cnt_del = deletion_part(dataset.daily_deletion[current_day]);
-            int cnt_add = addition_part(dataset.daily_addition[current_day]);
+            int cnt_add = 0;
+            if(dataset.add_size) cnt_add = addition_part(dataset.daily_addition[current_day]);
             if(total_days <= 8) std::cout << "[Day " << current_day << "]: " << "-" << cnt_del << ", +" << cnt_add << std::endl;
             ++current_day;
         }
