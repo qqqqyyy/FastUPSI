@@ -101,27 +101,10 @@ void AdaptiveParty::addition(const std::vector<Element>& elems) {
     // t0.setTimePoint("my okvs oprf");
 
     BlockVec other_new_seeds(other_cnt);
-    if(party == 0) {
-        oc::cp::sync_wait(chl->send(new_seeds));
-        oc::cp::sync_wait(chl->recv(other_new_seeds));
-    }
-    else {
-        oc::cp::sync_wait(chl->recv(other_new_seeds));
-        oc::cp::sync_wait(chl->send(new_seeds));
-    }
+    oc::cp::sync_wait(chl->send(new_seeds));
+    oc::cp::sync_wait(chl->recv(other_new_seeds));
     // COMM += (new_seeds.size() + other_new_seeds.size()) * sizeof(oc::block);
-
-    // auto diffs = oc::cp::sync_wait(send_recv_ASEs(okvs, chl));
-
-    std::vector<ASE> diffs;
-    if(party == 0) {
-        oc::cp::sync_wait(send_ASEs(okvs, chl));
-        diffs = oc::cp::sync_wait(recv_ASEs(chl));
-    }
-    else {
-        diffs = oc::cp::sync_wait(recv_ASEs(chl));
-        oc::cp::sync_wait(send_ASEs(okvs, chl));
-    }
+    auto diffs = oc::cp::sync_wait(send_recv_ASEs(okvs, chl));
 
     // std::cout << cnt << " " << other_cnt << "\n";
 
