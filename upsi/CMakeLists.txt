@@ -3,6 +3,7 @@ set(TREE_SRCS
     "ASE/ASE.h"
     "ASE/plain_ASE.cpp"
     "ASE/poly.cpp"
+    "ASE/HashTable.cpp"
     "rbokvs/rb_okvs.cpp"
     "network.h"
     "vole.cpp"

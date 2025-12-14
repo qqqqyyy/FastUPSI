@@ -87,11 +87,7 @@ class ASE{
     // Insert an element to ASE, return true if success, false if it's already full, only for plain_ASE
     virtual bool insertElement(const Element &elem) {throw std::runtime_error("Adding element not supported");}
 
-    // virtual std::vector<std::shared_ptr<ASE> > insert(const std::vector<Element>& elem, oc::PRNG* prng = nullptr) {
-    //     throw std::runtime_error("Adding elements not supported");
-    // }
-    // // pad ASE with padding elements
-    // virtual void pad(oc::PRNG* prng) {throw std::runtime_error("Padding not supported");}
+    virtual int findPos(const Element& elem) {throw std::runtime_error("Find position not supported");}
 
     // output k values (relaxed)
     virtual void eval(Element elem, BlockVec& values) {

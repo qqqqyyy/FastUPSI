@@ -21,6 +21,22 @@ void OPRF<ASEType>::sender(const std::vector<Element>& input, size_t index, ASET
 }
 
 template<typename ASEType>
+void OPRF<ASEType>::sender_relaxed(const Element& x, size_t index, ASEType& b, oc::block delta,
+    OPRFValueVec& values, oc::block ro_seed){
+
+    // for (const auto& x : input) {
+        auto kx   = random_oracle(x, ro_seed);
+        BlockVec ASE_values;
+        b.eval(x, ASE_values);
+        for(auto bx : ASE_values) {
+            auto prod = kx.gf128Mul(delta);             
+            auto y    = bx ^ prod;                        // b(x) + delta*H(x)
+            values.push_back(random_oracle_oprf(y, index, ro_seed));
+        }
+    // }
+}
+
+template<typename ASEType>
 OPRFValue OPRF<ASEType>::sender(const Element& x, size_t index, ASEType& b, oc::block delta, oc::block ro_seed){
     
     // a = b + delta * okvs
@@ -48,12 +64,37 @@ void OPRF<ASEType>::receiver(const std::vector<Element>& input, size_t index, AS
 }
 
 template<typename ASEType>
+void OPRF<ASEType>::receiver_plain(const std::vector<Element>& input, size_t index, ASEType& a, ASEType& original_ASE,
+    OPRFValueVec& values, oc::block ro_seed){
+
+    // values[i] = random_oracle_256(a.eval(input[i]), ro_seed)
+    // values.reserve(values.size() + input.size());
+    for (const auto& x : input) {
+        int pos = original_ASE.findPos(x);
+        auto ax = a[pos];
+        values.push_back(random_oracle_oprf(ax, index, ro_seed)); // a(x)
+    }
+
+}
+
+template<typename ASEType>
 OPRFValue OPRF<ASEType>::receiver(const Element& x, size_t index, ASEType& a, oc::block ro_seed) {
     auto ax = a.eval1(x);
     return random_oracle_oprf(ax, index, ro_seed); // a(x)
 }
 
+template<typename ASEType>
+OPRFValue OPRF<ASEType>::receiver_plain(const Element& x, size_t index, oc::block ax, oc::block ro_seed){
+
+    // values[i] = random_oracle_256(a.eval(input[i]), ro_seed)
+    // values.reserve(values.size() + input.size());
+    
+    return random_oracle_oprf(ax, index, ro_seed); // a(x)
+
+}
+
 template class OPRF<Poly>;
 template class OPRF<rb_okvs>;
+template class OPRF<HashTable>;
 
 } // namespace upsi

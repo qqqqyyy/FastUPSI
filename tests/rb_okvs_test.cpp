@@ -19,7 +19,7 @@ static void one_run(size_t set_size)
     oc::block ro_seed = prng.get<oc::block>();
 
     // --- build the OKVS ---
-    rb_okvs okvs(rb_okvs_size_table::get(set_size));
+    rb_okvs okvs(set_size);
     okvs.build(elems, ro_seed);
 
     // quick sanity

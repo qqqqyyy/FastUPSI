@@ -9,9 +9,10 @@ namespace upsi{
 
 class TreeParty : public Party{
     public: 
-        Tree<PlainASE, PlainASE> my_tree;
-        Tree<Poly, rb_okvs> my_tree_vole;
-        Tree<Poly, rb_okvs> other_tree;
+        Tree<PlainASE, PlainASE> my_tree; //elements in plaintext
+        Tree<Poly, rb_okvs> my_tree_encrypted; //for deletions
+        Tree<Poly, rb_okvs> my_tree_vole; //for deletions
+        Tree<Poly, rb_okvs> other_tree; //VOLE
 
         oc::PRNG tree_prng, tree_vole_prng, other_tree_prng;
         oc::block tree_seed;
@@ -41,15 +42,19 @@ class TreeParty : public Party{
             my_tree.setup(&tree_prng, tree_seed, DEFAULT_STASH_SIZE, DEFAULT_NODE_SIZE);
             if(support_deletion) {
                 tree_vole_prng.SetSeed(prng_seed);
-                my_tree_vole.setup(&tree_vole_prng, tree_seed, rb_okvs_size_table::get(DEFAULT_STASH_SIZE), DEFAULT_NODE_SIZE);
+                my_tree_encrypted.setup(&tree_prng, tree_seed, DEFAULT_STASH_SIZE, DEFAULT_NODE_SIZE);
+                my_tree_vole.setup(&tree_vole_prng, tree_seed, DEFAULT_STASH_SIZE, DEFAULT_NODE_SIZE);
             }
-            other_tree.setup(&other_tree_prng, tree_seed, rb_okvs_size_table::get(DEFAULT_STASH_SIZE), DEFAULT_NODE_SIZE);
+            other_tree.setup(&other_tree_prng, tree_seed, DEFAULT_STASH_SIZE, DEFAULT_NODE_SIZE);
 
             int max_node_cnt = 1 << oc::log2ceil(dataset.start_size + total_days * dataset.add_size + 1);
             // int max_ase_size = max_node_cnt * DEFAULT_NODE_SIZE;
             // my_tree.binary_tree.ase.reserve(max_ase_size);
             my_tree.binary_tree.nodes.reserve(max_node_cnt);
-            if(support_deletion) my_tree_vole.binary_tree.nodes.reserve(max_node_cnt);
+            if(support_deletion) {
+                my_tree_encrypted.binary_tree.nodes.reserve(max_node_cnt);
+                my_tree_vole.binary_tree.nodes.reserve(max_node_cnt);
+            }
             // other_tree.binary_tree.ase.reserve(max_ase_size);
             other_tree.binary_tree.nodes.reserve(max_node_cnt);
         }

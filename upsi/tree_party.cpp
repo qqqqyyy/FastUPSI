@@ -27,11 +27,12 @@ void TreeParty::update_stash() {
     // oc::Timer t0("stash");
     // t0.setTimePoint("begin");
 
-    rb_okvs stash(rb_okvs_size_table::get(DEFAULT_STASH_SIZE));
+    rb_okvs stash(DEFAULT_STASH_SIZE);
 
     std::vector<Element> tmp;
     my_tree.stash.getElements(tmp);
     stash.build(tmp, ro_seed);
+    if(support_deletion) my_tree_encrypted.stash = stash;
 
     // t0.setTimePoint("okvs encode");
 
@@ -80,7 +81,10 @@ void TreeParty::addition(const std::vector<Element>& elems) {
     int cnt = nodes.size();
 
     // std::cout << "[addition] my tree vole insert ...\n";
-    if(support_deletion) my_tree_vole.insert(elems);
+    if(support_deletion) {
+        my_tree_encrypted.insert(elems);
+        my_tree_vole.insert(elems);
+    }
 
     // t0.setTimePoint("tree insert");
 
@@ -146,6 +150,7 @@ void TreeParty::addition(const std::vector<Element>& elems) {
     OPRF<Poly> oprf_poly;
     for (int i = 0; i < cnt; ++i) {
         auto vole = vole_receiver.get(polys[i].n);
+        if(support_deletion) my_tree_encrypted.binary_tree.nodes[ind[i]] = polys[i];
         polys[i] -= vole.second;
         Poly a = Poly(std::move(vole.first));
         OPRFValueVec oprf_values;
@@ -261,12 +266,12 @@ void TreeParty::deletion(const std::vector<Element>& elems) {
     size_t ind_size = ind.size();
     for (size_t i = 0, j = 0; i < ind_size; ++i) {
         if(ind[i] == 0) continue;
-        ASE diff = polys[j] - my_tree_vole.binary_tree.nodes[ind[i]];
+        ASE diff = polys[j] - my_tree_encrypted.binary_tree.nodes[ind[i]];
         for (int k = 0; k < DEFAULT_NODE_SIZE; ++k) {
             points.push_back(ind[i] * DEFAULT_NODE_SIZE + k);
             values.push_back(diff[k]);
         }
-        my_tree_vole.binary_tree.nodes[ind[i]] = std::move(polys[j]);
+        my_tree_encrypted.binary_tree.nodes[ind[i]] = std::move(polys[j]);
         ++j;
     }
     int pad_cnt = DEFAULT_NODE_SIZE * cnt - points.size();

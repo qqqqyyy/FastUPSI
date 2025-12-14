@@ -9,7 +9,7 @@ void Adaptive<BaseType>::addASE() {
     std::shared_ptr<BaseType> cur_node;
     if constexpr (std::is_same_v<BaseType, rb_okvs>) {
         cur_node = std::make_shared<rb_okvs>(rb_okvs_size_table::get(node_size));
-    }
+    }//TODO: hash table
     else cur_node = std::make_shared<BaseType>(node_size);
     nodes.push_back(cur_node);
     seeds.push_back(oc::sysRandomSeed());
@@ -78,6 +78,56 @@ std::vector<int> Adaptive<BaseType>::update(int new_elem_cnt) {
     return rs;
 }
 
+template<>
+std::pair<std::vector<int>, std::vector<size_t> > Adaptive<PlainASE>::findPos2(
+    const std::vector<Element>& elems,
+    bool remove
+) {
+    throw std::runtime_error("findPos for PlainASE adaptive structure not supported");
+    return std::pair<std::vector<int>, std::vector<size_t> >();
+}
+
+template<>
+std::pair<std::vector<int>, std::vector<size_t> > Adaptive<rb_okvs>::findPos2(
+    const std::vector<Element>& elems,
+    bool remove
+) {
+    throw std::runtime_error("findPos for rb_okvs adaptive structure not supported");
+    return std::pair<std::vector<int>, std::vector<size_t> >();
+}
+
+
+
+template<>
+std::pair<std::vector<int>, std::vector<size_t> > Adaptive<HashTable>::findPos2(
+    const std::vector<Element>& elems,
+    bool remove
+) {
+    std::vector<int> node_indices;
+    std::vector<size_t> global_positions;
+    
+    for (const Element& elem : elems) {
+        size_t offset = 0;
+        bool found = false;
+        
+        for (int i = 0; i <= node_cnt; ++i) {
+            if (!nodes[i]->isEmpty()) {
+                int local_pos = nodes[i]->findPos(elem);
+                if (local_pos >= 0) {
+                    node_indices.push_back(i);
+                    global_positions.push_back(offset + local_pos);
+                    found = true;
+                    break;
+                }
+            }
+            offset += nodes[i]->n;
+        }
+        if (!found) throw std::runtime_error("Element not found in HashTable adaptive structure");
+    }
+    
+    return std::make_pair(node_indices, global_positions);
+}
+
 
 template<> 
 void Adaptive<rb_okvs>::eval_oprf(Element elem, oc::block delta, OPRFValueVec& values) {
@@ -89,6 +139,16 @@ void Adaptive<rb_okvs>::eval_oprf(Element elem, oc::block delta, OPRFValueVec& v
         }
 }
 
+template<> 
+void Adaptive<HashTable>::eval_oprf(Element elem, oc::block delta, OPRFValueVec& values) {
+    OPRF<HashTable> oprf_hash; 
+    for (int i = 0; i <= node_cnt; ++i) 
+        if(!nodes[i]->isEmpty()) {
+            oprf_hash.sender_relaxed(elem, i, *nodes[i], delta, values, seeds[i]);
+            // std::cout << elem << "\t" << i << "\t" << seeds[i] << std::endl;
+        }
+}
+
 template<>
 void Adaptive<PlainASE>::eval_oprf(Element elem, oc::block delta, OPRFValueVec& values) {
 	throw std::runtime_error("eval for PlainASE adaptive structure");
@@ -96,5 +156,5 @@ void Adaptive<PlainASE>::eval_oprf(Element elem, oc::block delta, OPRFValueVec& 
 
 template class Adaptive<PlainASE>;
 template class Adaptive<rb_okvs>;
-
+template class Adaptive<HashTable>;
 }

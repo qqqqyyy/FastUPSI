@@ -4,6 +4,7 @@
 #include "ASE/ASE.h"
 #include "ASE/plain_ASE.h"
 #include "ASE/poly.h"
+#include "ASE/HashTable.h"
 #include "rbokvs/rb_okvs.h"
 #include "oprf.h"
 
@@ -18,7 +19,6 @@ class Adaptive : public ASE
     public:
         std::vector<std::shared_ptr<BaseType> > nodes;
         BlockVec seeds;
-        //TODO: hash
 
         int start_size;
         int node_cnt;
@@ -30,9 +30,9 @@ class Adaptive : public ASE
             n = 0;
             std::shared_ptr<BaseType> cur_node;
             if constexpr (std::is_same_v<BaseType, rb_okvs>) {
-                cur_node = std::make_shared<rb_okvs>(rb_okvs_size_table::get(start_size));
-            }
-            else cur_node = std::make_shared<BaseType>(start_size);
+                cur_node = std::make_shared<rb_okvs>(start_size);
+            }//TODO: hash table
+            else cur_node = std::make_shared<BaseType>(start_size); //plaintext
             nodes.push_back(cur_node);
             seeds.push_back(oc::sysRandomSeed());
             n += cur_node->n;
@@ -47,6 +47,11 @@ class Adaptive : public ASE
         );
 
         std::vector<int> update(int new_elem_cnt);
+
+        std::pair<std::vector<int>, std::vector<size_t> > findPos2(
+            const std::vector<Element>& elems,
+            bool remove = false
+        );
 
         // void replaceASEs(
         //     int new_elem_cnt,

@@ -155,12 +155,12 @@ int Party::deletion_part(const std::vector<Element>& deletion_set) {
 
 std::vector<Element> Party::PSI_receiver(const std::vector<Element>& my_set) {
     int cnt = my_set.size();
-    rb_okvs okvs(rb_okvs_size_table::get(cnt));
+    rb_okvs okvs(cnt);
     okvs.build(my_set, ro_seed);
 
     if(daily_vole) {
         oc::cp::sync_wait(chl->send((size_t)okvs.n));
-        size_t my_vole_size = rb_okvs_size_table::get(cnt);
+        size_t my_vole_size = okvs.n;
         // oc::Timer t_vole("PSI vole");
         // t_vole.setTimePoint("begin");
         vole_receiver.generate(my_vole_size);

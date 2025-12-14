@@ -28,6 +28,10 @@ int main(int argc, char** argv)
     if(LAN && WAN) throw std::runtime_error("LAN & WAN");
     int bandwidth = 200;
     if(WAN) bandwidth = clp.get<int>("WAN");
+
+    bool okvs = clp.isSet("okvs");
+    bool hash = clp.isSet("hash");
+    if(okvs && hash) throw std::runtime_error("okvs & hash");
     
     if(party < 0 || party > 1) throw std::runtime_error("party should be 0 or 1");
 
@@ -68,35 +72,67 @@ int main(int argc, char** argv)
         oc::cp::sync_wait(chl.close());
     }
     else if(func == "adaptive") {
-        if(del) throw std::runtime_error("deletion for adaptive protocol not implemented");
+        if(del && okvs) throw std::runtime_error("deletion for adaptive okvs protocol not supported");
+        if(!okvs && !hash) throw std::runtime_error("please specify okvs or hash for adaptive protocol");
 
-        std::cout << "[Adaptive] constructor...\n";
-        AdaptiveParty adaptive_party(party, &chl, days, fn, daily_vole);
-        adaptive_party.refresh_seeds = true;
-        std::cout << "[Adaptive] setup initial sets...\n";
-        adaptive_party.setup();
-        std::cout << "[Adaptive] setup done.\n\n";
+        if(hash) {
+            std::cout << "[Adaptive] constructor...\n";
+            AdaptiveParty<HashTable> adaptive_party(party, &chl, days, fn, del, daily_vole);
+            adaptive_party.refresh_seeds = true;
+            std::cout << "[Adaptive] setup initial sets...\n";
+            adaptive_party.setup();
+            std::cout << "[Adaptive] setup done.\n\n";
 
-        if(LAN && party == 0) std::system("./../network_setup.sh on 0.1 1000");
-        if(WAN && party == 0) {
-            std::string cmd = "./../network_setup.sh on 40 " + std::to_string(bandwidth);
-            std::system(cmd.c_str());
-        }
+            if(LAN && party == 0) std::system("./../network_setup.sh on 0.1 1000");
+            if(WAN && party == 0) {
+                std::string cmd = "./../network_setup.sh on 40 " + std::to_string(bandwidth);
+                std::system(cmd.c_str());
+            }
 
-        if(party == 0) {
-            int tmp = 0;
-            oc::cp::sync_wait(chl.send(tmp));
-            oc::cp::sync_wait(chl.flush());
-            oc::cp::sync_wait(chl.recv(tmp));
+            if(party == 0) {
+                int tmp = 0;
+                oc::cp::sync_wait(chl.send(tmp));
+                oc::cp::sync_wait(chl.flush());
+                oc::cp::sync_wait(chl.recv(tmp));
+            }
+            else {
+                int tmp = 0;
+                oc::cp::sync_wait(chl.recv(tmp));
+                oc::cp::sync_wait(chl.send(tmp));
+                oc::cp::sync_wait(chl.flush());
+            }
+
+            adaptive_party.run();
         }
         else {
-            int tmp = 0;
-            oc::cp::sync_wait(chl.recv(tmp));
-            oc::cp::sync_wait(chl.send(tmp));
-            oc::cp::sync_wait(chl.flush());
-        }
+            std::cout << "[Adaptive] constructor...\n";
+            AdaptiveParty<rb_okvs> adaptive_party(party, &chl, days, fn, del, daily_vole);
+            adaptive_party.refresh_seeds = true;
+            std::cout << "[Adaptive] setup initial sets...\n";
+            adaptive_party.setup();
+            std::cout << "[Adaptive] setup done.\n\n";
 
-        adaptive_party.run();
+            if(LAN && party == 0) std::system("./../network_setup.sh on 0.1 1000");
+            if(WAN && party == 0) {
+                std::string cmd = "./../network_setup.sh on 40 " + std::to_string(bandwidth);
+                std::system(cmd.c_str());
+            }
+
+            if(party == 0) {
+                int tmp = 0;
+                oc::cp::sync_wait(chl.send(tmp));
+                oc::cp::sync_wait(chl.flush());
+                oc::cp::sync_wait(chl.recv(tmp));
+            }
+            else {
+                int tmp = 0;
+                oc::cp::sync_wait(chl.recv(tmp));
+                oc::cp::sync_wait(chl.send(tmp));
+                oc::cp::sync_wait(chl.flush());
+            }
+
+            adaptive_party.run();
+        }
         oc::cp::sync_wait(chl.close());
     }
     else throw std::runtime_error("functionality error");

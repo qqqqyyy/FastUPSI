@@ -14,12 +14,23 @@ inline size_t default_band_width(size_t n)
     return bw;
 }
 
+
+struct rb_okvs_size_table final{
+    static size_t get(size_t x) {
+        x = std::fmax(x, 1 << 10);
+        size_t lambda = 40;
+        size_t w = default_band_width(x); //smaller than the real band_width
+        double epsilon = lambda/(2.751 * w);
+        return (1.0 + epsilon) * x;
+    }
+};
+
 class rb_okvs : public ASE {
 public:
     // n = number of GF(128) table slots
     explicit rb_okvs(int n, size_t band_width = 0)
-        : ASE(n, /*build*/true),
-          band_width_(default_band_width(n)) {}
+        : ASE(rb_okvs_size_table::get(n), /*build*/true),
+          band_width_(default_band_width(rb_okvs_size_table::get(n))) {}
 
     // “convert” ctor from an already-allocated ASE
     explicit rb_okvs(ASE&& other_ASE)
@@ -67,15 +78,6 @@ private:
 
 };
 
-struct rb_okvs_size_table final{
-    static size_t get(size_t x) {
-        x = std::fmax(x, 1 << 10);
-        size_t lambda = 40;
-        size_t w = default_band_width(x); //smaller than the real band_width
-        double epsilon = lambda/(2.751 * w);
-        return (1.0 + epsilon) * x;
-    }
-};
 
 } // namespace upsi
 
