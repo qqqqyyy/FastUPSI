@@ -19,7 +19,7 @@ void test_correctness(ASE a, ASE b, ASE c, block delta, int n) {
 }
 
 void test_generate_new(VoleSender& vole_sender, VoleReceiver& vole_receiver, int _n = 0) {
-    std::cout << "test VOLE correlations ...\n";
+    std::cout << "VOLE correlations ...\n";
 
     int n = _n? _n : (1 << 15) + rand() % (1 << 15);
     Timer timer;
@@ -35,11 +35,11 @@ void test_generate_new(VoleSender& vole_sender, VoleReceiver& vole_receiver, int
     auto tmp = vole_receiver.get(n);
     test_correctness(tmp.first, vole_sender.get(n), tmp.second, vole_sender.delta, n);
 
-    std::cout << "test ok\n\n";
+    std::cout << "passed\n\n";
 }
 
 void test_doerner_shelat(VoleSender& vole_sender, VoleReceiver& vole_receiver) {
-    std::cout << "test Doerner-Shelat\n";
+    std::cout << "Doerner-Shelat ...\n";
 
     int n = 20, point_cnt = 100;
     PRNG prng(CCBlock);
@@ -93,7 +93,7 @@ void test_doerner_shelat(VoleSender& vole_sender, VoleReceiver& vole_receiver) {
         }
     }
 
-    std::cout << "test passed\n\n";
+    std::cout << "passed\n\n";
 }
 
 int main(int argc, char** argv) {

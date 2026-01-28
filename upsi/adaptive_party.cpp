@@ -27,6 +27,7 @@ template<typename BaseType>
 void AdaptiveParty<BaseType>::addition(const std::vector<Element>& elems) {
     // oc::Timer t0("addition");
     // t0.setTimePoint("begin");
+    // std::cout << "[addition] insert...\n";
 
     BlockVec new_seeds;
     auto ins = my_adaptive.insert(elems, new_seeds);
@@ -34,7 +35,7 @@ void AdaptiveParty<BaseType>::addition(const std::vector<Element>& elems) {
     auto ind = ins.second;
     int cnt = nodes.size();
 
-
+    // std::cout << "[my_addition] update...\n";
     if(support_deletion) {
         auto ind_tmp = my_vole.update(elems.size());
         ind_tmp = my_adaptive_encrypted.update(elems.size());
@@ -90,6 +91,7 @@ void AdaptiveParty<BaseType>::addition(const std::vector<Element>& elems) {
         // if(total_days <= 8) std::cout << t_vole << "\n";
     }
 
+    // std::cout << "[my_addition] oprf...\n";
 
     OPRF<BaseType> oprfs;
 
@@ -99,7 +101,9 @@ void AdaptiveParty<BaseType>::addition(const std::vector<Element>& elems) {
             my_adaptive_encrypted.nodes[ind[i]] = std::make_shared<BaseType>(base_ASEs[i]);
         base_ASEs[i] -= vole.second;
         BaseType a = BaseType(std::move(vole.first));
-        a.setup(new_seeds[i]);
+        if constexpr (std::is_same_v<BaseType, rb_okvs>) a.setup(new_seeds[i]);
+        else if constexpr (std::is_same_v<BaseType, HashTable>)
+            a.setup(new_seeds[i], my_adaptive.nodes[ind[i]]->n);
         OPRFValueVec oprf_values;
         if constexpr (std::is_same_v<BaseType, rb_okvs>) oprfs.receiver(cur_elems[i], ind[i], a, oprf_values, new_seeds[i]);
         else if constexpr (std::is_same_v<BaseType, HashTable>) 
@@ -125,7 +129,11 @@ void AdaptiveParty<BaseType>::addition(const std::vector<Element>& elems) {
         diffs[i] *= vole_sender.delta;
         diffs[i] += vole_sender.get(diffs[i].n);
         other_adaptive.nodes[other_ind[i]]->copy(diffs[i]);
-        other_adaptive.nodes[other_ind[i]]->setup(other_new_seeds[i]);
+        //check this
+        if constexpr (std::is_same_v<BaseType, rb_okvs>) 
+            other_adaptive.nodes[other_ind[i]]->setup(other_new_seeds[i]);
+        else if constexpr (std::is_same_v<BaseType, HashTable>)
+            other_adaptive.nodes[other_ind[i]]->setup(other_new_seeds[i], DEFAULT_ADAPTIVE_SIZE << std::max(0, other_ind[i] - 1));
         other_adaptive.seeds[other_ind[i]] = other_new_seeds[i];
     }
 
@@ -165,17 +173,20 @@ void AdaptiveParty<BaseType>::deletion(const std::vector<Element>& elems) {
         // if(total_days <= 8) std::cout << t_vole << "\n";
     }
 
-    auto pos = my_adaptive_encrypted.findPos2(elems, true); 
+    auto pos = my_adaptive_encrypted.findPos2(elems, true); //fake deletion
     auto ASE_ind = pos.first;
     auto points = pos.second;
     BlockVec values;
-    //also remove them from plaintext ASE
-    for(int i = 0; i < cnt; ++i) my_adaptive.nodes[ASE_ind[i]]->find(elems[i], true);
+    //also remove them from plaintext ASE (real deletion)
+    for(int i = 0; i < cnt; ++i) {
+        my_adaptive.nodes[ASE_ind[i]]->find(elems[i], true);
+    }
+    //TODO: make it faster?
     
-    //TODO: calculate the diffs
+    //calculate the diffs
     for (int i = 0; i < cnt; ++i) {
         values.push_back(my_adaptive_encrypted[points[i]]);
-        my_adaptive_encrypted[points[i]] = oc::ZeroBlock;
+        my_adaptive_encrypted[points[i]] = oc::ZeroBlock; //replace with zero
     }
 
     
@@ -239,6 +250,12 @@ void AdaptiveParty<BaseType>::refresh_oprfs() {
     elems.reserve(dataset.start_size + (dataset.add_size - dataset.del_size) * current_day);
     values.reserve(dataset.start_size + (dataset.add_size - dataset.del_size) * current_day);
     
+    for (int i = 0; i <= my_adaptive.node_cnt; ++i) {
+        std::vector<Element> tmp;
+        my_adaptive.nodes[i]->getElements(tmp);
+        elems.insert(elems.end(), tmp.begin(), tmp.end());
+    }
+
     auto pos = my_adaptive_encrypted.findPos2(elems, false);
     auto ASE_ind = pos.first;
     auto points = pos.second;

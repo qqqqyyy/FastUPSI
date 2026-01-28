@@ -20,8 +20,8 @@ class Adaptive : public ASE
         std::vector<std::shared_ptr<BaseType> > nodes;
         BlockVec seeds;
 
-        int start_size;
-        int node_cnt;
+        size_t start_size;
+        size_t node_cnt;
 
         void setup(int _start_size = DEFAULT_ADAPTIVE_SIZE) {
             start_size = _start_size;
@@ -31,7 +31,10 @@ class Adaptive : public ASE
             std::shared_ptr<BaseType> cur_node;
             if constexpr (std::is_same_v<BaseType, rb_okvs>) {
                 cur_node = std::make_shared<rb_okvs>(start_size);
-            }//TODO: hash table
+            }
+            else if constexpr (std::is_same_v<BaseType, HashTable>) {
+                cur_node = std::make_shared<HashTable>(start_size);
+            }
             else cur_node = std::make_shared<BaseType>(start_size); //plaintext
             nodes.push_back(cur_node);
             seeds.push_back(oc::sysRandomSeed());

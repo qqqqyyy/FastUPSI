@@ -8,8 +8,11 @@ void Adaptive<BaseType>::addASE() {
     ++node_cnt;
     std::shared_ptr<BaseType> cur_node;
     if constexpr (std::is_same_v<BaseType, rb_okvs>) {
-        cur_node = std::make_shared<rb_okvs>(rb_okvs_size_table::get(node_size));
-    }//TODO: hash table
+        cur_node = std::make_shared<rb_okvs>(node_size);
+    }
+    else if constexpr (std::is_same_v<BaseType, HashTable>) {
+        cur_node = std::make_shared<HashTable>(node_size);
+    }
     else cur_node = std::make_shared<BaseType>(node_size);
     nodes.push_back(cur_node);
     seeds.push_back(oc::sysRandomSeed());
@@ -36,16 +39,26 @@ std::pair<std::vector<std::shared_ptr<BaseType> >, std::vector<int> > Adaptive<B
     int start = 0;
     for (int i = node_cnt - 1; i >= 0; --i) 
         if(((last >> i) & 1) == 0 && ((now >> i) & 1) == 1) {
-            int cur_size = start_size * (1 << i);
-            std::vector<Element> tmp(all_elems.begin() + start, all_elems.begin() + start + cur_size);
-            nodes[i + 1]->build(tmp, seeds[i + 1] = oc::sysRandomSeed());
-            start += cur_size;
+            size_t cur_size = start_size * (1 << i);
+            size_t end = std::min(start + cur_size, (size_t)all_elems.size());
+            if(start < end) {
+                std::vector<Element> tmp(all_elems.begin() + start, all_elems.begin() + end);
+                nodes[i + 1]->build(tmp, seeds[i + 1] = oc::sysRandomSeed());
+            }
+            else 
+                nodes[i + 1]->build(std::vector<Element>(), seeds[i + 1] = oc::sysRandomSeed());
+            start = end;
         }
-    std::vector<Element> tmp(all_elems.begin() + start, all_elems.end());
-    nodes[0]->build(tmp, seeds[0] = oc::sysRandomSeed());
+    if(start < all_elems.size()) {
+        std::vector<Element> tmp(all_elems.begin() + start, all_elems.end());
+        nodes[0]->build(tmp, seeds[0] = oc::sysRandomSeed());
+    }
+    else {
+        nodes[0]->build(std::vector<Element>(), seeds[0] = oc::sysRandomSeed());
+    }
     // nodes[0]->pad();
     elem_cnt += new_elem_cnt;
-
+    
     std::vector<std::shared_ptr<BaseType> > rs;
     std::vector<int> ind;
     rs.push_back(nodes[0]);
@@ -112,12 +125,13 @@ std::pair<std::vector<int>, std::vector<size_t> > Adaptive<HashTable>::findPos2(
         
         for (int i = 0; i <= node_cnt; ++i) {
             if (!nodes[i]->isEmpty()) {
-                int local_pos = nodes[i]->findPos(elem);
+                int local_pos = nodes[i]->findPos(elem, remove);
                 if (local_pos >= 0) {
                     node_indices.push_back(i);
                     global_positions.push_back(offset + local_pos);
                     found = true;
                     break;
+                    //we do not change elem_cnt here, because in insert() we assume we never remove elements
                 }
             }
             offset += nodes[i]->n;

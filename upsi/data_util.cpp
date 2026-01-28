@@ -10,11 +10,14 @@ std::pair<Dataset, Dataset> GenerateSets(int start_size, int days, int add_size,
 
 
     int initial_I_size = start_size / 16;
-    int initial_daily_I = std::fmin((start_size - initial_I_size) / 16, ((add_size - del_size) * days) / 16);
-    int I_size = ((add_size - del_size) * days) / 80;
+    int initial_daily_I = std::min((start_size - initial_I_size) / 32, ((add_size - del_size) * days) / 32);
+    int I_size = std::max((add_size * days) / 128, (add_size - del_size) * days / 64);
 
-
-    auto universe = GetRandomSet(&prng, start_size * 2 + add_size * days * 2 - initial_I_size - I_size + 100);
+    int total_needed = start_size * 2 + add_size * days * 2 - initial_I_size - initial_daily_I - I_size;
+    // std::cout << "[Generate Dataset] initial intersection size = " << initial_I_size 
+    //     << ", initial daily intersection size = " << initial_daily_I 
+    //     << ", daily intersection size = " << I_size << "\n";
+    auto universe = GetRandomSet(&prng, total_needed + std::min(100, total_needed / 64));
     std::sort(universe.begin(), universe.end());
     universe.erase(std::unique(universe.begin(), universe.end()), universe.end());
     random_shuffle<oc::block>(universe);

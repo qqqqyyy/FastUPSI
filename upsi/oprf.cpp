@@ -70,7 +70,7 @@ void OPRF<ASEType>::receiver_plain(const std::vector<Element>& input, size_t ind
     // values[i] = random_oracle_256(a.eval(input[i]), ro_seed)
     // values.reserve(values.size() + input.size());
     for (const auto& x : input) {
-        int pos = original_ASE.findPos(x);
+        int pos = original_ASE.findPos(x, false);
         auto ax = a[pos];
         values.push_back(random_oracle_oprf(ax, index, ro_seed)); // a(x)
     }

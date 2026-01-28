@@ -18,6 +18,7 @@
 #include <tuple>
 #include <utility>
 #include <vector>
+#include <map>
 
 #include "cryptoTools/Common/Defines.h"
 #include "cryptoTools/Crypto/PRNG.h"
@@ -42,9 +43,8 @@ namespace upsi {
     #define DEFAULT_ADAPTIVE_SIZE (1 << 10)
     #define DEFAULT_VOLE_SIZE (1 << 14)
 
-    // type of elements in each party's sets
-    // TODO
-	typedef oc::block Element;
+    
+	typedef oc::block Element; // set elements
     typedef oc::u64 u64;
     typedef oc::u8 u8;
     typedef std::vector<oc::block> BlockVec;

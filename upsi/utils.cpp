@@ -59,8 +59,6 @@ std::vector<Element> GetRandomSet(oc::PRNG* prng, int set_size) {
 
 oc::block random_oracle(oc::block x, oc::block seed) {
     oc::RandomOracle ro(16);
-    oc::u8 type = 0;
-    ro.Update(&type, 1);
     ro.Update(&seed, 1);
     ro.Update(&x, 1);
     oc::block rs;
@@ -70,8 +68,6 @@ oc::block random_oracle(oc::block x, oc::block seed) {
 
 std::pair<oc::block, oc::block> random_oracle_256(oc::block x, size_t index, oc::block seed){
     oc::RandomOracle ro(32);
-    oc::u8 type = 1;
-    ro.Update(&type, 1);
     ro.Update(&seed, 1);
     ro.Update(&x, 1);
     ro.Update(&index, 1);
@@ -82,8 +78,6 @@ std::pair<oc::block, oc::block> random_oracle_256(oc::block x, size_t index, oc:
 
 OPRFValue random_oracle_oprf(oc::block x, size_t index, oc::block seed){
     oc::RandomOracle ro(12);
-    oc::u8 type = 1;
-    ro.Update(&type, 1);
     ro.Update(&seed, 1);
     ro.Update(&x, 1);
     ro.Update(&index, 1);

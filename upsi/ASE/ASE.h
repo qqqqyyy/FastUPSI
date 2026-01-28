@@ -87,7 +87,7 @@ class ASE{
     // Insert an element to ASE, return true if success, false if it's already full, only for plain_ASE
     virtual bool insertElement(const Element &elem) {throw std::runtime_error("Adding element not supported");}
 
-    virtual int findPos(const Element& elem) {throw std::runtime_error("Find position not supported");}
+    virtual int findPos(const Element& elem, bool remove) {throw std::runtime_error("Find position not supported");}
 
     // output k values (relaxed)
     virtual void eval(Element elem, BlockVec& values) {
