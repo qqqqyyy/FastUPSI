@@ -6,13 +6,11 @@ namespace upsi {
 
 struct hash_size_table final{
     static size_t bucket_size(size_t x) {
-        if(x < 1 << 13) return 6;
-        else if(x < 1 << 17) return 5;
-        else return 4;
+        return 1;
     }
     static size_t bucket_cnt(size_t x) {
         x = std::fmax(x, 1 << 10);
-        return 1.2 * x;
+        return 1.6 * x;
     }
     static size_t get(size_t x) {
         return bucket_cnt(x) * bucket_size(x);
@@ -67,17 +65,20 @@ class HashTable : public ASE{
             return (size_t)result;
         }
 
-        std::pair<size_t, size_t> getBuckets(const Element& elem) {
+        std::vector<size_t> getBuckets(const Element& elem) {
             auto hash_pair1 = random_oracle_256(elem, 0, hash_seed);
             auto hash_pair2 = random_oracle_256(elem, 1, hash_seed);
-            return std::make_pair(
+            auto hash_pair3 = random_oracle_256(elem, 2, hash_seed);
+            return std::vector<size_t>{
                 mod_256(hash_pair1.first, hash_pair1.second, table_size),
-                mod_256(hash_pair2.first, hash_pair2.second, table_size)
-            );
+                mod_256(hash_pair2.first, hash_pair2.second, table_size),
+                mod_256(hash_pair3.first, hash_pair3.second, table_size)
+            };
         }
 
         void clear() override {elem_cnt = 0;}
         bool isEmpty() override {return elem_cnt == 0;}
+        void insert(Element elem, oc::block ro_seed, int last_pos);
         void build(const std::vector<Element>& elems, oc::block ro_seed = oc::ZeroBlock) override; //TODO
         int findPos(const Element& elem, bool remove) override; 
             //remove=true means: 

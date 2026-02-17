@@ -97,8 +97,9 @@ void AdaptiveParty<BaseType>::addition(const std::vector<Element>& elems) {
 
     for (int i = 0; i < cnt; ++i) {
         auto vole = vole_receiver.get(base_ASEs[i].n);
-        if(support_deletion) 
+        if(support_deletion) {
             my_adaptive_encrypted.nodes[ind[i]] = std::make_shared<BaseType>(base_ASEs[i]);
+        }
         base_ASEs[i] -= vole.second;
         BaseType a = BaseType(std::move(vole.first));
         if constexpr (std::is_same_v<BaseType, rb_okvs>) a.setup(new_seeds[i]);
@@ -156,19 +157,17 @@ void AdaptiveParty<BaseType>::deletion(const std::vector<Element>& elems) {
     // COMM += sizeof(size_t) * 2;
 
     if(daily_vole) {
-        size_t my_vole_size = my_vole.n;
-        size_t other_vole_size = other_adaptive.n;
         // oc::Timer t_vole("deletion vole");
         // t_vole.setTimePoint("begin");
         if(party == 0) {
-            vole_receiver.generate(my_vole_size);
-            vole_sender.generate(other_vole_size);
+            vole_receiver.generate(cnt);
+            vole_sender.generate(other_del_elem_cnt);
         }
         else {
-            vole_sender.generate(other_vole_size);
-            vole_receiver.generate(my_vole_size);
+            vole_sender.generate(other_del_elem_cnt);
+            vole_receiver.generate(cnt);
         }
-        cur_vole_size += my_vole_size;
+        cur_vole_size += cnt;
         // t_vole.setTimePoint("deletion vole");
         // if(total_days <= 8) std::cout << t_vole << "\n";
     }
@@ -181,7 +180,6 @@ void AdaptiveParty<BaseType>::deletion(const std::vector<Element>& elems) {
     for(int i = 0; i < cnt; ++i) {
         my_adaptive.nodes[ASE_ind[i]]->find(elems[i], true);
     }
-    //TODO: make it faster?
     
     //calculate the diffs
     for (int i = 0; i < cnt; ++i) {
@@ -189,25 +187,85 @@ void AdaptiveParty<BaseType>::deletion(const std::vector<Element>& elems) {
         my_adaptive_encrypted[points[i]] = oc::ZeroBlock; //replace with zero
     }
 
+    size_t my_size = 0, other_size = 0;
+    for (int i = 0; i <= my_adaptive_encrypted.node_cnt; ++i) {
+        // if (i == 0) std::cout << my_adaptive_encrypted.nodes[i]->elem_cnt << "\n";
+        if(!my_adaptive_encrypted.nodes[i]->isEmpty()) {
+            // std::cout << i << " " << my_adaptive_encrypted.nodes[i]->n << "\n";
+            my_size += my_adaptive_encrypted.nodes[i]->n;
+        }
+    }
+    for (int i = 0; i <= other_adaptive.node_cnt; ++i) 
+        if(!other_adaptive.nodes[i]->isEmpty()) {
+            // std::cout << i << " " << other_adaptive.nodes[i]->n << "\n";
+            other_size += other_adaptive.nodes[i]->n;
+        }
     
+
+        // std::cout << my_size << " " << other_size << "\n";
+    
+    
+    for (int i = 0; i < cnt; ++i) {
+        for (int j = 0; j < ASE_ind[i]; ++j) 
+        if(my_adaptive_encrypted.nodes[j]->isEmpty())
+            points[i] -= my_adaptive_encrypted.nodes[j]->n;
+    }
     // std::cout << "[deletion] pprf...\n";
-    // std::cout << my_tree_vole.binary_tree.n << " " << other_tree.binary_tree.n << "\n";
 
     if(party == 0) {
-        ASE my_diff = vole_receiver.generate(my_vole.n, values, points);
-        my_vole += my_diff;
+        ASE my_diff = vole_receiver.generate(my_size, values, points);
+        int my_vole_idx = 0, idx = 0;
+        for (int i = 0; i <= my_adaptive_encrypted.node_cnt; ++i) {
+            if(!my_adaptive_encrypted.nodes[i]->isEmpty()) {
+                for (int j = 0; j < my_adaptive_encrypted.nodes[i]->n; ++j) {
+                    my_vole.nodes[i]->ase[j] ^= my_diff[idx + j];
+                }
+                idx += my_adaptive_encrypted.nodes[i]->n;
+            }
+            my_vole_idx += my_adaptive_encrypted.nodes[i]->n;
+        }
+        // my_vole += my_diff;
 
-        ASE other_diff = vole_sender.generate(other_adaptive.n, other_del_elem_cnt);
-        other_adaptive += other_diff;
+
+        ASE other_diff = vole_sender.generate(other_size, other_del_elem_cnt);
+        int other_vole_idx = 0; idx = 0;
+        for (int i = 0; i <= other_adaptive.node_cnt; ++i) {
+            if(!other_adaptive.nodes[i]->isEmpty()) {
+                for (int j = 0; j < other_adaptive.nodes[i]->n; ++j) {
+                    other_adaptive.nodes[i]->ase[j] ^= other_diff[idx + j];
+                }
+                idx += other_adaptive.nodes[i]->n;
+            }
+            other_vole_idx += other_adaptive.nodes[i]->n;
+        }
+        // other_adaptive += other_diff;
     }
     else {
-        ASE other_diff = vole_sender.generate(other_adaptive.n, other_del_elem_cnt);
-        other_adaptive += other_diff;
+        ASE other_diff = vole_sender.generate(other_size, other_del_elem_cnt);
+        int other_vole_idx = 0, idx = 0;
+        for (int i = 0; i <= other_adaptive.node_cnt; ++i) {
+            if(!other_adaptive.nodes[i]->isEmpty()) {
+                for (int j = 0; j < other_adaptive.nodes[i]->n; ++j) {
+                    other_adaptive.nodes[i]->ase[j] ^= other_diff[idx + j];
+                }
+                idx += other_adaptive.nodes[i]->n;
+            }
+            other_vole_idx += other_adaptive.nodes[i]->n;
+        }
+        // other_adaptive += other_diff;
 
-        ASE my_diff = vole_receiver.generate(my_vole.n, values, points);
-        my_vole += my_diff;
+        ASE my_diff = vole_receiver.generate(my_size, values, points);
+        int my_vole_idx = 0; idx = 0;
+        for (int i = 0; i <= my_adaptive_encrypted.node_cnt; ++i) {
+            if(!my_adaptive_encrypted.nodes[i]->isEmpty()) {
+                for (int j = 0; j < my_adaptive_encrypted.nodes[i]->n; ++j) {
+                    my_vole.nodes[i]->ase[j] ^= my_diff[idx + j];
+                }
+                idx += my_adaptive_encrypted.nodes[i]->n;
+            }
+            my_vole_idx += my_adaptive_encrypted.nodes[i]->n;
+        }
     }
-
     // t0.setTimePoint("pprf");
 
 

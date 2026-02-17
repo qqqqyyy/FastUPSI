@@ -56,7 +56,6 @@ std::pair<std::vector<std::shared_ptr<BaseType> >, std::vector<int> > Adaptive<B
     else {
         nodes[0]->build(std::vector<Element>(), seeds[0] = oc::sysRandomSeed());
     }
-    // nodes[0]->pad();
     elem_cnt += new_elem_cnt;
     
     std::vector<std::shared_ptr<BaseType> > rs;

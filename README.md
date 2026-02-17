@@ -32,9 +32,11 @@ Examples:
 # generate datasets, 1024 days
 ./frontend/setup -start_size 1048576 -add_size 1024 -del_size 0 -days 1024
 # tree, 1024 days, LAN
-./frontend/main -party 1 -days 1024 -LAN & ./frontend/main -party 0 -days 1024 -LAN
-# tree, 8 days, support deletion, WAN 50Mbps
-./frontend/main -party 1 -del -WAN 50 & ./frontend/main -party 0 -del -WAN 50
-# adaptive, 1024 days, WAN 200Mbps
-./frontend/main -party 1 -func adaptive -days 1024 -WAN 200 & ./frontend/main -party 0 -func adaptive -days 1024 -WAN 200
+./frontend/main -party 1 -days 1024 -prot tree -LAN & ./frontend/main -party 0 -days 1024 -prot tree -LAN
+# tree, 8 days, deletion, WAN 50Mbps
+./frontend/main -party 1 -prot tree -del -WAN 50 & ./frontend/main -party 0 -prot tree -del -WAN 50
+# okvs(adaptive), 1024 days, WAN 200Mbps
+./frontend/main -party 1 -prot okvs -days 1024 -WAN 200 & ./frontend/main -party 0 -prot okvs -days 1024 -WAN 200
+# cuckoo hashing(adaptive), 8 days, deletion, WAN 5Mbps
+./frontend/main -party 1 -prot hash -WAN 5 & ./frontend/main -party 0 -prot hash -WAN 5
 ```

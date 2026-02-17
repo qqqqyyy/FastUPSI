@@ -147,6 +147,5 @@ class ASE{
     }
 
 };
-
 } //namespace upsi
 #endif
