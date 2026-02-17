@@ -4,7 +4,7 @@ G=("18:8" "18:10" "18:12" "20:8" "20:10" "20:12" "22:8" "22:10" "22:12")
 LOG=logs
 ts(){ date '+%F %T'; }
 
-mkdir -p -- "$LOG/tree" "$LOG/adaptive" "$LOG/del"
+mkdir -p -- "$LOG/tree" "$LOG/okvs" "$LOG/tree-del" "$LOG/hash" "$LOG/hash-del"
 
 for P in "${G[@]}"; do
   IFS=: read -r Ne ne <<<"$P"
@@ -85,7 +85,7 @@ for P in "${G[@]}"; do
     echo "$(ts) [RUN(hash addition)] N=2^$Ne n=2^$ne $L"
     stdbuf -oL -eL ./frontend/main -party 0 -prot hash -days $d $A >"$LOG/hash/${Ne}_${ne}_${L}.log" 2>&1 & p0=$!
     sleep 0.03
-    stdbuf -oL -eL ./frontend/main -party 1 -prot hash -days $d >/dev/null 2>&1 & p1=$!
+    stdbuf -oL -eL ./frontend/main -party 1 -prot hash -days $d >"$LOG/hash/${Ne}_${ne}_${L}_p1.log" 2>&1 & p1=$!
     wait "$p0" "$p1"
     echo "[DONE]"
   done
@@ -106,7 +106,7 @@ for P in "${D[@]}"; do
 
   for C in "LAN:-LAN" "WAN_200:-WAN 200" "WAN_50:-WAN 50" "WAN_5:-WAN 5"; do
     IFS=: read -r L A <<<"$C"; ./../network_setup.sh off >/dev/null 2>&1 || true
-    echo "$(ts) [RUN(gasg deletion)] N=2^$Ne n=2^$ne $L"
+    echo "$(ts) [RUN(hash deletion)] N=2^$Ne n=2^$ne $L"
     stdbuf -oL -eL ./frontend/main -party 0 -prot hash -del -days $d $A >"$LOG/hash-del/${Ne}_${ne}_${L}.log" 2>&1 & p0=$!
     sleep 0.03
     stdbuf -oL -eL ./frontend/main -party 1 -prot hash -del -days $d >/dev/null 2>&1 & p1=$!
