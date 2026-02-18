@@ -318,15 +318,23 @@ void AdaptiveParty<BaseType>::refresh_oprfs() {
     elems.reserve(dataset.start_size + (dataset.add_size - dataset.del_size) * current_day);
     values.reserve(dataset.start_size + (dataset.add_size - dataset.del_size) * current_day);
     
+    std::vector<int> ASE_ind;
+    std::vector<size_t> points;
+    int offset = 0;
+
     for (int i = 0; i <= my_adaptive.node_cnt; ++i) {
         std::vector<Element> tmp;
         my_adaptive.nodes[i]->getElements(tmp);
+        for (const Element& cur_elem: tmp) {
+            ASE_ind.push_back(i);
+            points.push_back(my_adaptive_encrypted.nodes[i]->findPos(cur_elem, false) + offset);
+        }
         elems.insert(elems.end(), tmp.begin(), tmp.end());
+        offset += my_adaptive_encrypted.nodes[i]->n;
     }
 
-    auto pos = my_adaptive_encrypted.findPos2(elems, false);
-    auto ASE_ind = pos.first;
-    auto points = pos.second;
+    // auto pos = my_adaptive_encrypted.findPos2(elems, false);
+    
     for (int i = 0; i < elems.size(); ++i)
         values.push_back(oprf.receiver_plain(elems[i], ASE_ind[i], my_vole[points[i]], my_adaptive.seeds[ASE_ind[i]]));
 

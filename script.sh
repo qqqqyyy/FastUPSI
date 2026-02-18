@@ -54,7 +54,7 @@ D=("18:4" "18:5" "18:6" "20:4" "20:5" "20:6" "22:4" "22:5" "22:6")
 for P in "${D[@]}"; do
   IFS=: read -r Ne ne <<<"$P"
   n=$((1<<ne))
-  d=2
+  d=8
   start=$(((1<<Ne)-1))
   echo "$(ts) [SETUP] N=2^$Ne n=2^$ne days=$d start_size=$start"
   ./frontend/setup -add_size 0 -del_size "$n" -days "$d" -start_size "$start"
@@ -99,7 +99,7 @@ D=("18:4" "18:5" "18:6" "20:4" "20:5" "20:6" "22:4" "22:5" "22:6")
 for P in "${D[@]}"; do
   IFS=: read -r Ne ne <<<"$P"
   n=$((1<<ne))
-  d=2
+  d=8
   start=$(((1<<Ne)-1))
   echo "$(ts) [SETUP] N=2^$Ne n=2^$ne days=$d start_size=$start"
   ./frontend/setup -add_size 0 -del_size "$n" -days "$d" -start_size "$start"
