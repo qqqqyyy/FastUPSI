@@ -66,7 +66,7 @@ void AdaptiveParty<BaseType>::addition(const std::vector<Element>& elems) {
         cur_elems.push_back(tmp);
         BaseType cur_ASE(nodes[i]->n);
         cur_ASE.build(tmp, new_seeds[i]);
-        base_ASEs.push_back(cur_ASE);
+        base_ASEs.push_back(std::move(cur_ASE));
     }
 
     // t0.setTimePoint("ASE encode");

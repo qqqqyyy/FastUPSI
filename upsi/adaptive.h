@@ -64,9 +64,9 @@ class Adaptive : public ASE
         void eval_oprf(Element elem, oc::block delta, OPRFValueVec& values);
 
         oc::block& operator [] (const size_t& idx) override{
-            int tmp = idx;
+            size_t tmp = idx;
             for (int i = 0; i <= node_cnt; ++i) {
-                if(tmp <= nodes[i]->n) return (*nodes[i])[tmp];
+                if(tmp < nodes[i]->n) return (*nodes[i])[tmp];
                 tmp -= nodes[i]->n;
             }
             throw std::runtime_error("adaptive [] index out of range");
@@ -74,9 +74,9 @@ class Adaptive : public ASE
         }
 
         const oc::block& operator [] (const size_t& idx) const override{
-            int tmp = idx;
+            size_t tmp = idx;
             for (int i = 0; i <= node_cnt; ++i) {
-                if(tmp <= nodes[i]->n) return (*nodes[i])[tmp];
+                if(tmp < nodes[i]->n) return (*nodes[i])[tmp];
                 tmp -= nodes[i]->n;
             }
             throw std::runtime_error("adaptive [] index out of range");
