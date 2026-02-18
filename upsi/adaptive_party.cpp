@@ -120,7 +120,17 @@ void AdaptiveParty<BaseType>::addition(const std::vector<Element>& elems) {
     oc::cp::sync_wait(chl->send(new_seeds));
     oc::cp::sync_wait(chl->recv(other_new_seeds));
     // COMM += (new_seeds.size() + other_new_seeds.size()) * sizeof(oc::block);
-    auto diffs = oc::cp::sync_wait(send_recv_ASEs(base_ASEs, chl));
+    // auto diffs = oc::cp::sync_wait(send_recv_ASEs(base_ASEs, chl));
+
+    std::vector<ASE> diffs;
+    if(party == 0) {
+        oc::cp::sync_wait(send_ASEs(base_ASEs, chl));
+        diffs = oc::cp::sync_wait(recv_ASEs(chl));
+    }
+    else {
+        diffs = oc::cp::sync_wait(recv_ASEs(chl));
+        oc::cp::sync_wait(send_ASEs(base_ASEs, chl));
+    }
 
     // std::cout << cnt << " " << other_cnt << "\n";
 

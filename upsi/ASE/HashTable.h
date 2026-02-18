@@ -78,7 +78,7 @@ class HashTable : public ASE{
 
         void clear() override {elem_cnt = 0;}
         bool isEmpty() override {return elem_cnt == 0;}
-        void insert(Element elem, oc::block ro_seed, int last_pos);
+        void insert(Element elem, oc::block ro_seed, int last_pos, int max_iterations = 1000);
         void build(const std::vector<Element>& elems, oc::block ro_seed = oc::ZeroBlock) override;
         int findPos(const Element& elem, bool remove) override; 
             //remove=true means: 

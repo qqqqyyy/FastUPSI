@@ -2,7 +2,11 @@
 
 namespace upsi {
 
-void HashTable::insert(Element elem, oc::block ro_seed, int last_pos) {
+void HashTable::insert(Element elem, oc::block ro_seed, int last_pos, int max_iterations) {
+    if(max_iterations <= 0) {
+        throw std::runtime_error("HashTable insert failed: max iterations reached.");
+    }
+    
     auto buckets = getBuckets(elem);
     int idx = -1;
     for (int i = 0; i < buckets.size(); ++i) {
@@ -28,7 +32,7 @@ void HashTable::insert(Element elem, oc::block ro_seed, int last_pos) {
     ase[kickout_pos] = elem;
     elem_pos_map[elem] = kickout_pos;
 
-    insert(kickout_elem, ro_seed, buckets[kickout_idx]);
+    insert(kickout_elem, ro_seed, buckets[kickout_idx], max_iterations - 1);
 }
 
 void HashTable::build(const std::vector<Element>& elems, oc::block ro_seed) {

@@ -112,6 +112,7 @@ class Party{
                 one_day();
 
                 if(total_days <= 8) timer.setTimePoint("day " + std::to_string(i));
+                if(total_days >= 1024 && (i & 255) == 0) std::cout << "[Day " << i << "] done.\n";
 
                 if(!daily_vole) cur_vole_size = vole_receiver.idx - vole_idx;
                 max_daily_vole = std::fmax(max_daily_vole, cur_vole_size);
