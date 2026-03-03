@@ -4,7 +4,8 @@ FROM --platform=$TARGETPLATFORM ubuntu:24.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install dependencies
-RUN apt update && apt install -y \
+RUN apt-get update && apt-get install -y \
+    sudo iproute2\
     cmake build-essential\
     pkg-config curl \
     autoconf automake libtool libtool-bin m4 \
@@ -21,7 +22,7 @@ COPY . .
 RUN git clone https://github.com/osu-crypto/libOTe.git && \
     cd libOTe && \
     git checkout d0e499206d1d4d16c6b4ca6c0e712490e0632f80 && \
-    python3 build.py --all --boost --sodium && \
+    python3 build.py --all --boost --sodium -D ENABLE_MR_KYBER=OFF && \
     cd ..
 
 # Build FastUPSI

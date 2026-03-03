@@ -27,8 +27,8 @@
 
 We implement three UPSI protocols, each using different Affine Set Encoding (ASE) constructions with distinct trade-offs in efficiency, security, and functionality. See Section 6.1 of the paper for details.
 
-| Protocol | ASE Construction | Addition | Deletion | Security Against Adaptive Inputs|
-|----------|------------------|----------|----------|-------------------|
+| Protocol | ASE Construction | Addition | Deletion | Security Against Adaptive Inputs |
+|:--------:|:----------------:|:--------:|:--------:|:--------------------------------:|
 | `tree` | Path-ORAM-based | ✓ | ✓ | ✗ |
 | `okvs` | Adaptive + RB-OKVS | ✓ | ✗ | ✓ |
 | `cuckoo` | Adaptive + Cuckoo Hashing | ✓ | ✓ | ✓ |
@@ -49,19 +49,18 @@ docker pull --platform=linux/amd64 ghcr.io/qqqqyyy/fastupsi:latest
 
 To run the container:
 ```bash
-docker run --rm -it --platform=linux/amd64 ghcr.io/qqqqyyy/fastupsi:latest
+docker run -it --platform=linux/amd64 ghcr.io/qqqqyyy/fastupsi:latest
 ```
 
-Inside the container, go to the build directory:
-```bash
-cd build
-```
+> [!WARNING]
+> If you run into an error `RTNETLINK answers: Operation not permitted`, add `--cap-add=NET_ADMIN` to the `docker run` command.
+
 
 ### Building Locally
 
-> [!WARNING]
-> This project can be built locally on Ubuntu 24.04 (x86_64/amd64).
-> Other environments (e.g., macOS / Apple Silicon) may work, but are **not guaranteed**.
+> [!IMPORTANT]
+> This project should be built locally on Ubuntu 24.04 (x86_64/amd64).
+> Other environments (e.g., macOS / Apple Silicon) may work by using similar commands provided in `build.sh`, but are **not guaranteed**.
 
 Clone the repository and run the build script:
 
@@ -73,6 +72,11 @@ chmod +x build.sh
 ```
 
 ## Running the Experiments
+
+From the repository root, cd into the `build` directory:
+```bash
+cd build
+```
 
 Run the experiments by using `setup` and `main` under `frontend` folder.
 
@@ -86,23 +90,27 @@ Before running experiments, use the `setup` binary to generate both parties' pri
 ```
 
 **Options:**
-- `-start_size`: Initial set size
-- `-add_size`: Number of elements added per day
-- `-del_size`: Number of elements deleted per day (set to `0` if no deletions)
+- `-start_size`: Initial set size (for each party)
+- `-add_size`: Number of elements added per day (for each party)
+- `-del_size`: Number of elements deleted per day (for each party)
 - `-days`: Number of update days to simulate (default: 8)
+
+> [!WARNING]
+> To run experiments with addition-only updates, disable deletions by setting `-del_size` to `0`.
 
 #### Examples
 ```bash
-# Generate datasets with 64 initial elements, 32 additions and 16 deletions per day, over 128 days
-./frontend/setup -start_size 64 -add_size 32 -del_size 16 -days 128
+# Generate datasets with 1024 initial elements, 128 additions and 16 deletions per day, over 8 days
+./frontend/setup -start_size 1024 -add_size 128 -del_size 16 -days 8
+# Generate datasets with 0 initial elements, 1024 additions per day and no deletions, over 128 days
+./frontend/setup -start_size 0 -add_size 1024 -del_size 0 -days 128
 ```
 
 ### Run UPSI
 
-Run each party using `main` binary under `frontend` folder:
+Make sure you are in the `build` directory, and then run each party using `main` binary:
 
 ```bash
-# Make sure you are in the build directory
 ./frontend/main -party <0|1> -prot <tree|okvs|cuckoo> -days <num> [-del]
 ```
 
@@ -111,7 +119,10 @@ Run each party using `main` binary under `frontend` folder:
 - `-party <0|1>`: Party ID (must run both party 0 and party 1)
 - `-prot <tree|okvs|cuckoo>`: Protocol to be used in the experiment.
 - `-days <num>`: Number of update days (default: 8)
-- `-del`: Enable deletion
+- `-del`: Enable deletion. If deletions are not needed, omit the `-del` flag.
+
+> [!WARNING]
+> The `okvs` protocol does not support deletion; therefore, it can only be evaluated on addition-only datasets.
 
 #### Network Settings
 
@@ -128,7 +139,7 @@ The paper explains the network conditions used for experiments, which follow the
   - Run `main` with `-WAN <200|50|5>` to use WAN network settings with specified bandwidth (200, 50, or 5 Mbps)
 
 To set up a specific network setting that is not used in the paper, use [network_setup.sh](network_setup.sh) script:
-- **Enable a Specific Network Setting:** 
+1. **Enable a Specific Network Setting:** 
 ```bash
 ./network_setup.sh on <latency> <bandwidth>
 ```
@@ -141,21 +152,20 @@ Examples:
   ```bash
   ./network_setup.sh on 40 200
   ```
-
-- **Disable Network Emulation: ** After completing the experiments under the specified network condition, disable the network emulation by running:
+2. **Disable Network Emulation:** After completing the experiments under the specified network condition, disable the network emulation by running:
   ```bash
   ./network_setup.sh off
   ```
 
-#### Examples
+#### Example Commands
 
 ```bash
-# Make sure you are in the build directory
-# tree, 8 days, deletion
+# Make sure you are in the build directory, and have generated the dateset using the setup binary
+# tree protocol, 8 days, deletion
 ./frontend/main -party 1 -prot tree -del & ./frontend/main -party 0 -prot tree -del
-# okvs(adaptive), 128 days, LAN
+# okvs(adaptive) protocol, 128 days, LAN
 ./frontend/main -party 1 -prot okvs -days 128 -LAN & ./frontend/main -party 0 -prot okvs -days 128 -LAN
-# cuckoo hashing(adaptive), 8 days, deletion, WAN 200Mbps
+# cuckoo hashing(adaptive) protocol, 8 days, deletion, WAN 200Mbps
 ./frontend/main -party 1 -prot cuckoo -del -WAN 200 & ./frontend/main -party 0 -prot cuckoo -del -WAN 200
 ```
 

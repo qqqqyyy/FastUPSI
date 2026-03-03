@@ -15,12 +15,12 @@ case "$1" in
     # cribbed from http://serverfault.com/questions/507658/limit-incoming-and-outgoing-bandwidth-and-latency-in-linux
 
     if [ ! -z "$3" ] ; then
-      sudo tc qdisc add dev lo handle 1: root htb default 11
-      sudo tc class add dev lo parent 1: classid 1:1 htb rate 1000Mbps
-      sudo tc class add dev lo parent 1:1 classid 1:11 htb rate "$3"Mbit
-      sudo tc qdisc add dev lo parent 1:11 handle 10: netem delay "$2"ms limit 100000
+      sudo tc qdisc replace dev lo handle 1: root htb default 11 r2q 1000
+      sudo tc class replace dev lo parent 1: classid 1:1 htb rate 1000Mbps
+      sudo tc class replace dev lo parent 1:1 classid 1:11 htb rate "$3"Mbit
+      sudo tc qdisc replace dev lo parent 1:11 handle 10: netem delay "$2"ms limit 100000
     else
-      sudo tc qdisc add dev lo handle 1: root netem delay "$2"ms limit 100000
+      sudo tc qdisc replace dev lo handle 1: root netem delay "$2"ms limit 100000
     fi
 
     ;;

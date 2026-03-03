@@ -26,4 +26,3 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/fastupsi:latest
-            ghcr.io/${{ github.repository_owner }}/fastupsi:${{ github.sha }}
