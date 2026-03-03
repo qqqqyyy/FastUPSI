@@ -18,4 +18,4 @@ set(TREE_SRCS
 )
 
 add_library(upsi STATIC ${TREE_SRCS})
-target_link_libraries(upsi oc::libOTe)
+target_link_libraries(upsi PUBLIC oc::libOTe)

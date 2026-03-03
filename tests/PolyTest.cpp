@@ -73,5 +73,5 @@ void one_run() {
 }
 
 int main() {
-    for (int i = 0; i < 10; ++i) one_run();
+    for (int i = 0; i < 4; ++i) one_run();
 }

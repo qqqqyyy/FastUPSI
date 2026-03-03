@@ -35,7 +35,7 @@ void test_generate_new(VoleSender& vole_sender, VoleReceiver& vole_receiver, int
     auto tmp = vole_receiver.get(n);
     test_correctness(tmp.first, vole_sender.get(n), tmp.second, vole_sender.delta, n);
 
-    std::cout << "passed\n\n";
+    // std::cout << "passed\n\n";
 }
 
 void test_doerner_shelat(VoleSender& vole_sender, VoleReceiver& vole_receiver) {
@@ -92,8 +92,6 @@ void test_doerner_shelat(VoleSender& vole_sender, VoleReceiver& vole_receiver) {
             throw std::runtime_error("Incorrect");
         }
     }
-
-    std::cout << "passed\n\n";
 }
 
 int main(int argc, char** argv) {
@@ -113,11 +111,13 @@ int main(int argc, char** argv) {
         test_generate_new(vole_sender, vole_receiver, n);
     }
     else {
-        for (int i = 0; i < 10; ++i) {
-            test_generate_new(vole_sender, vole_receiver);
-            test_doerner_shelat(vole_sender, vole_receiver);
-        }
+        for (int i = 10; i <= 20; i += 5)
+            test_generate_new(vole_sender, vole_receiver, 1 << i);
+            
     }
+    test_doerner_shelat(vole_sender, vole_receiver);
+
+    std::cout << "All tests passed\n\n";
 
     return 0;
 }

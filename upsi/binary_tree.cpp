@@ -107,7 +107,7 @@ std::pair<std::vector<PlainASE* >, std::vector<int> > BinaryTree<PlainASE>::inse
 	// add new layer when tree is full
 	// oc::Timer t1("New Layer");
 	// t1.setTimePoint("begin");
-	while(new_elem_cnt + this->elem_cnt >= (1 << (this->depth + 1))) addNewLayer();
+	while(new_elem_cnt + this->elem_cnt > (1 << (this->depth + 1))) addNewLayer();
 	// t1.setTimePoint("end");
 	// std::cout << t1 << "\n";
 	// no need to tell the receiver the new depth of tree?
@@ -200,7 +200,7 @@ std::pair<std::vector<PlainASE* >, std::vector<int> > BinaryTree<PlainASE>::inse
 template<>
 std::pair<std::vector<Poly* >, std::vector<int> > BinaryTree<Poly>::insert(const std::vector<Element> &elem, PlainASE &stash) {
 	int new_elem_cnt = elem.size();
-	while(new_elem_cnt + this->elem_cnt >= (1 << (this->depth + 1))) {
+	while(new_elem_cnt + this->elem_cnt > (1 << (this->depth + 1))) {
 		// std::cout << this->depth << "\n";
 		addNewLayer();
 	}
@@ -217,7 +217,7 @@ std::vector<int> BinaryTree<NodeType>::update(int new_elem_cnt) {
 	// add new layer when tree is full
 	// oc::Timer t1("New Layer");
 	// t1.setTimePoint("begin");
-	while(new_elem_cnt + this->elem_cnt >= (1 << (this->depth + 1))) addNewLayer();
+	while(new_elem_cnt + this->elem_cnt > (1 << (this->depth + 1))) addNewLayer();
 	// t1.setTimePoint("end");
 	// std::cout << t1 << "\n";
 	//std::cerr << "new depth: " << this->depth << std::endl;

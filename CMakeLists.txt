@@ -12,7 +12,11 @@ set(CMAKE_CXX_FLAGS "-O3 -DNDEBUG")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS}")
 
-find_package(libOTe REQUIRED HINTS ${CMAKE_CURRENT_SOURCE_DIR}/libOTe)
+find_package(libOTe REQUIRED HINTS 
+    ${CMAKE_CURRENT_SOURCE_DIR}/libOTe
+    ${CMAKE_CURRENT_SOURCE_DIR}/libOTe/out/build/linux
+    ${CMAKE_CURRENT_SOURCE_DIR}/libOTe/out/build/osx
+)
 
 if (ENABLE_SOFTSPOKEN_OT)
     message(STATUS "SoftSpokenOT enabled")

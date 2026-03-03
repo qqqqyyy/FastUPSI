@@ -1,0 +1,8 @@
+build/
+libOTe/
+*.o
+*.a
+*.so
+.git/
+.gitignore
+*.pdf

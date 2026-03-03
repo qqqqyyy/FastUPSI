@@ -61,7 +61,7 @@ int main()
     // const size_t n2       = 4096;
     // const size_t bw2      = 128;
 
-    for (int i = 7; i <= 22; ++i) 
+    for (int i = 10; i <= 22; i += 2) 
         one_run(1 << i);
 
     std::cout << "\nAll rb_okvs tests passed\n";

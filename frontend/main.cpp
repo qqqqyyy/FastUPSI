@@ -100,7 +100,7 @@ int main(int argc, char** argv)
 
         oc::cp::sync_wait(chl.close());
     }
-    else if (prot == "hash") {
+    else if (prot == "cuckoo") {
         std::cout << "[Adaptive] constructor...\n";
         AdaptiveParty<HashTable> adaptive_party(party, &chl, days, fn, del, daily_vole);
         adaptive_party.refresh_seeds = true;

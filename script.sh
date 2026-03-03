@@ -4,7 +4,7 @@ G=("18:8" "18:10" "18:12" "20:8" "20:10" "20:12" "22:8" "22:10" "22:12")
 LOG=logs
 ts(){ date '+%F %T'; }
 
-mkdir -p -- "$LOG/tree" "$LOG/okvs" "$LOG/tree-del" "$LOG/hash" "$LOG/hash-del"
+mkdir -p -- "$LOG/tree" "$LOG/okvs" "$LOG/tree-del" "$LOG/cuckoo" "$LOG/cuckoo-del"
 
 for P in "${G[@]}"; do
   IFS=: read -r Ne ne <<<"$P"
@@ -16,9 +16,10 @@ for P in "${G[@]}"; do
 
   for C in "LAN:-LAN" "WAN_200:-WAN 200" "WAN_50:-WAN 50" "WAN_5:-WAN 5"; do
     IFS=: read -r L A <<<"$C"; ./../network_setup.sh off >/dev/null 2>&1 || true
+    sleep 0.3
     echo "$(ts) [RUN(tree)] N=2^$Ne n=2^$ne $L"
     stdbuf -oL -eL ./frontend/main -party 0 -days $d $A >"$LOG/tree/${Ne}_${ne}_${L}.log" 2>&1 & p0=$!
-    sleep 0.03
+    sleep 0.3
     stdbuf -oL -eL ./frontend/main -party 1 -days $d >/dev/null 2>&1 & p1=$!
     wait "$p0" "$p1"
     echo "[DONE]"
@@ -37,9 +38,10 @@ for P in "${G[@]}"; do
 
   for C in "LAN:-LAN" "WAN_200:-WAN 200" "WAN_50:-WAN 50" "WAN_5:-WAN 5"; do
     IFS=: read -r L A <<<"$C"; ./../network_setup.sh off >/dev/null 2>&1 || true
+    sleep 0.3
     echo "$(ts) [RUN(okvs)] N=2^$Ne n=2^$ne $L"
     stdbuf -oL -eL ./frontend/main -party 0 -prot okvs -days $d $A >"$LOG/okvs/${Ne}_${ne}_${L}.log" 2>&1 & p0=$!
-    sleep 0.03
+    sleep 0.3
     stdbuf -oL -eL ./frontend/main -party 1 -prot okvs -days $d >/dev/null 2>&1 & p1=$!
     wait "$p0" "$p1"
     echo "[DONE]"
@@ -61,9 +63,10 @@ for P in "${D[@]}"; do
 
   for C in "LAN:-LAN" "WAN_200:-WAN 200" "WAN_50:-WAN 50" "WAN_5:-WAN 5"; do
     IFS=: read -r L A <<<"$C"; ./../network_setup.sh off >/dev/null 2>&1 || true
+    sleep 0.3
     echo "$(ts) [RUN(tree deletion)] N=2^$Ne n=2^$ne $L"
     stdbuf -oL -eL ./frontend/main -party 0 -del -days $d $A >"$LOG/tree-del/${Ne}_${ne}_${L}.log" 2>&1 & p0=$!
-    sleep 0.03
+    sleep 0.3
     stdbuf -oL -eL ./frontend/main -party 1 -del -days $d >/dev/null 2>&1 & p1=$!
     wait "$p0" "$p1"
     echo "[DONE]"
@@ -82,16 +85,17 @@ for P in "${G[@]}"; do
 
   for C in "LAN:-LAN" "WAN_200:-WAN 200" "WAN_50:-WAN 50" "WAN_5:-WAN 5"; do
     IFS=: read -r L A <<<"$C"; ./../network_setup.sh off >/dev/null 2>&1 || true
-    echo "$(ts) [RUN(hash addition)] N=2^$Ne n=2^$ne $L"
-    stdbuf -oL -eL ./frontend/main -party 0 -prot hash -days $d $A >"$LOG/hash/${Ne}_${ne}_${L}.log" 2>&1 & p0=$!
-    sleep 0.03
-    stdbuf -oL -eL ./frontend/main -party 1 -prot hash -days $d >"$LOG/hash/${Ne}_${ne}_${L}_p1.log" 2>&1 & p1=$!
+    sleep 0.3
+    echo "$(ts) [RUN(cuckoo addition)] N=2^$Ne n=2^$ne $L"
+    stdbuf -oL -eL ./frontend/main -party 0 -prot cuckoo -days $d $A >"$LOG/cuckoo/${Ne}_${ne}_${L}.log" 2>&1 & p0=$!
+    sleep 0.3
+    stdbuf -oL -eL ./frontend/main -party 1 -prot cuckoo -days $d >"$LOG/cuckoo/${Ne}_${ne}_${L}_p1.log" 2>&1 & p1=$!
     wait "$p0" "$p1"
     echo "[DONE]"
   done
 done
 
-echo "hash addition done"
+echo "cuckoo addition done"
 echo ""
 
 
@@ -106,15 +110,16 @@ for P in "${D[@]}"; do
 
   for C in "LAN:-LAN" "WAN_200:-WAN 200" "WAN_50:-WAN 50" "WAN_5:-WAN 5"; do
     IFS=: read -r L A <<<"$C"; ./../network_setup.sh off >/dev/null 2>&1 || true
-    echo "$(ts) [RUN(hash deletion)] N=2^$Ne n=2^$ne $L"
-    stdbuf -oL -eL ./frontend/main -party 0 -prot hash -del -days $d $A >"$LOG/hash-del/${Ne}_${ne}_${L}.log" 2>&1 & p0=$!
-    sleep 0.03
-    stdbuf -oL -eL ./frontend/main -party 1 -prot hash -del -days $d >/dev/null 2>&1 & p1=$!
+    sleep 0.3
+    echo "$(ts) [RUN(cuckoo deletion)] N=2^$Ne n=2^$ne $L"
+    stdbuf -oL -eL ./frontend/main -party 0 -prot cuckoo -del -days $d $A >"$LOG/cuckoo-del/${Ne}_${ne}_${L}.log" 2>&1 & p0=$!
+    sleep 0.3
+    stdbuf -oL -eL ./frontend/main -party 1 -prot cuckoo -del -days $d >/dev/null 2>&1 & p1=$!
     wait "$p0" "$p1"
     echo "[DONE]"
   done
 done
 
-echo "hash deletion done"
+echo "cuckoo deletion done"
 echo ""
 
