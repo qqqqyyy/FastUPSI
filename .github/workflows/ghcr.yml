@@ -1,8 +1,6 @@
 name: Build and push Docker image to GHCR
 
 on:
-  push:
-    branches: ["main"]
   workflow_dispatch:
 
 permissions:

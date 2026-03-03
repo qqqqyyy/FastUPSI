@@ -40,7 +40,28 @@ We implement three UPSI protocols, each using different Affine Set Encoding (ASE
 
 The project is built on top of [libOTe](https://github.com/osu-crypto/libOTe/), which provides efficient vector oblivious linear evaluation (VOLE) and Puncturable Pseudorandom Function (PPRF) primitives.
 
+### Container Setup with Docker
+
+The repository has been containerized using Docker. To pull the appropriate container:
+```bash
+docker pull --platform=linux/amd64 ghcr.io/qqqqyyy/fastupsi:latest
+```
+
+To run the container:
+```bash
+docker run --rm -it --platform=linux/amd64 ghcr.io/qqqqyyy/fastupsi:latest
+```
+
+Inside the container, go to the build directory:
+```bash
+cd build
+```
+
 ### Building Locally
+
+> [!WARNING]
+> This project can be built locally on Ubuntu 24.04 (x86_64/amd64).
+> Other environments (e.g., macOS / Apple Silicon) may work, but are **not guaranteed**.
 
 Clone the repository and run the build script:
 
@@ -51,28 +72,20 @@ chmod +x build.sh
 ./build.sh
 ```
 
-### Building with Docker
-
-Build and run the Docker container:
-
-```bash
-docker build -t fastupsi .
-docker run -it fastupsi
-```
-
 ## Running the Experiments
 
 Run the experiments by using `setup` and `main` under `frontend` folder.
 
 ### Generate Datasets
 
-Before running experiments, use the `setup` binary to generate two parties' private sets:
+Before running experiments, use the `setup` binary to generate both parties' private sets:
 
 ```bash
+# Make sure you are in the build directory
 ./frontend/setup -start_size <initial_set_size> -add_size <additions_per_day> -del_size <deletions_per_day> -days <num_days>
 ```
 
-**Parameters:**
+**Options:**
 - `-start_size`: Initial set size
 - `-add_size`: Number of elements added per day
 - `-del_size`: Number of elements deleted per day (set to `0` if no deletions)
@@ -86,12 +99,17 @@ Before running experiments, use the `setup` binary to generate two parties' priv
 
 ### Run UPSI
 
-Run each party using `main` binary under `frontend` folder.
+Run each party using `main` binary under `frontend` folder:
 
-#### Options
+```bash
+# Make sure you are in the build directory
+./frontend/main -party <0|1> -prot <tree|okvs|cuckoo> -days <num> [-del]
+```
+
+**Options:**
 
 - `-party <0|1>`: Party ID (must run both party 0 and party 1)
-- `-prot <tree|okvs|hash>`: Protocol to be used in the experiment.
+- `-prot <tree|okvs|cuckoo>`: Protocol to be used in the experiment.
 - `-days <num>`: Number of update days (default: 8)
 - `-del`: Enable deletion
 
@@ -109,9 +127,30 @@ The paper explains the network conditions used for experiments, which follow the
   - **Bandwidth Options:** 200 Mbps, 50 Mbps, and 5 Mbps
   - Run `main` with `-WAN <200|50|5>` to use WAN network settings with specified bandwidth (200, 50, or 5 Mbps)
 
+To set up a specific network setting that is not used in the paper, use [network_setup.sh](network_setup.sh) script:
+- **Enable a Specific Network Setting:** 
+```bash
+./network_setup.sh on <latency> <bandwidth>
+```
+Examples: 
+  - 0.2ms RTT (latency = 0.1ms), 1Gbps
+  ```bash
+  ./network_setup.sh on 0.1 1000
+  ```
+  - 80ms RTT (latency = 40ms), 200Mbps
+  ```bash
+  ./network_setup.sh on 40 200
+  ```
+
+- **Disable Network Emulation: ** After completing the experiments under the specified network condition, disable the network emulation by running:
+  ```bash
+  ./network_setup.sh off
+  ```
+
 #### Examples
 
 ```bash
+# Make sure you are in the build directory
 # tree, 8 days, deletion
 ./frontend/main -party 1 -prot tree -del & ./frontend/main -party 0 -prot tree -del
 # okvs(adaptive), 128 days, LAN
