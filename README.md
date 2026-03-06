@@ -16,16 +16,20 @@
 
 ## Overview
 
-**Fast UPSI** implements *Updatable Private Set Intersection (UPSI)* protocols of ``Updatable Private Set Intersection from Symmetric-Key Techniques'' paper. Private Set Intersection (PSI) enables two mutually distrusting parties, each holding a private set of elements, to compute the intersection of their sets without disclosing any additional information. 
+**Fast UPSI** implements *Updatable Private Set Intersection (UPSI)* protocols as detailed in our [Eurocrypt 2026 paper](https://eprint.iacr.org/2026/438). Private Set Intersection (PSI) enables two mutually distrusting parties, each holding a private set of elements, to compute the intersection of their sets without disclosing any additional information. Our UPSI project addresses several key limitations of existing UPSI protocols:
 
-**Practical Performance:** We have implemented our UPSI protocols and benchmarked them against state-of-the-art PSI and UPSI protocols. By leveraging symmetric-key primitives, our implementation achieves orders-of-magnitude improvements over prior work, particularly when operating within high-bandwidth network environments.
+- **Symmetric-Key UPSI:** In existing UPSI protocols, the number of public-key
+operations scales with the number of items. Our UPSI project largely avoids public-key operations to achieve orders-of-magnitude improvements over prior work.
+
+- **Security Against Adaptive Inputs:** UPSI is a reactive functionality where inputs and outputs happen over many rounds of interaction. In the standard MPC security model, an adversary may choose inputs to subsequent rounds *adaptively*, based on its view of the protocol from previous rounds. Prior UPSI protocols use a strictly weaker security definition, and we identify several existing protocols
+which were proven secure in the selective setting, but are insecure against a semi-honest adversary that adaptively chooses inputs (see attacks in Section 2 of the [paper](https://eprint.iacr.org/2026/438)). Our UPSI project contains several protocols that are secure in the presence of adaptive inputs.
 
 > [!WARNING]
 > This repository is a research prototype written to demonstrate our UPSI protocol's performance and to showcase its capabilities. It is **NOT** intended to be considered as "production ready" and should only be used for experimental or research & development purposes.
 
 ### Protocol Descriptions
 
-We implement three UPSI protocols, each using different Affine Set Encoding (ASE) constructions with distinct trade-offs in efficiency, security, and functionality. See Section 6.1 of the paper for details.
+We implement three UPSI protocols, each using a different *Affine Set Encoding (ASE)* construction with different trade-offs in functionality, security, and efficiency. See Section 6.1 of the [paper](https://eprint.iacr.org/2026/438) for details.
 
 | Protocol | ASE Construction | Addition | Deletion | Security Against Adaptive Inputs |
 |:--------:|:----------------:|:--------:|:--------:|:--------------------------------:|
@@ -34,11 +38,11 @@ We implement three UPSI protocols, each using different Affine Set Encoding (ASE
 | `cuckoo` | Adaptive + Cuckoo Hashing | ✓ | ✓ | ✓ |
 
 
-**Security Against Adaptive Inputs:** UPSI is a reactive functionality where inputs and outputs occur over many rounds of interaction. In the standard MPC security model, an adversary may choose inputs to subsequent rounds *adaptively*, based on its view of the protocol from previous rounds. In the paper, we propose an adaptive construction that converts non-updatable ASEs into updatable, unbounded size, adaptively correct/secure ASEs. Our `okvs` and `cuckoo` protocols apply the adaptive construction to achieve security against such adaptive inputs, while the `tree` protocol is secure against non-adaptive (statically chosen) inputs.
+**Achieve Security Against Adaptive Inputs:** We propose an adaptive construction that converts non-updatable ASEs into updatable, unbounded size, adaptively correct/secure ASEs (see Section 3.5 of the [paper](https://eprint.iacr.org/2026/438)). Our `okvs` and `cuckoo` protocols apply the adaptive construction to achieve security against such adaptive inputs, while the `tree` protocol is secure against non-adaptive (statically chosen) inputs.
 
 ## Building the Project
 
-The project is built on top of [libOTe](https://github.com/osu-crypto/libOTe/), which provides efficient vector oblivious linear evaluation (VOLE) and Puncturable Pseudorandom Function (PPRF) primitives.
+The project is built on top of [libOTe](https://github.com/osu-crypto/libOTe/).
 
 ### Container Setup with Docker
 
@@ -108,14 +112,14 @@ Before running experiments, use the `setup` binary to generate both parties' pri
 
 ### Run UPSI
 
-Make sure you are in the `build` directory, and then run each party using `main` binary:
+Run each party using `main` binary:
 
 ```bash
+# Make sure you are in the build directory
 ./frontend/main -party <0|1> -prot <tree|okvs|cuckoo> -days <num> [-del]
 ```
 
 **Options:**
-
 - `-party <0|1>`: Party ID (must run both party 0 and party 1)
 - `-prot <tree|okvs|cuckoo>`: Protocol to be used in the experiment.
 - `-days <num>`: Number of update days (default: 8)
@@ -124,7 +128,7 @@ Make sure you are in the `build` directory, and then run each party using `main`
 > [!WARNING]
 > The `okvs` protocol does not support deletion; therefore, it can only be evaluated on addition-only datasets.
 
-#### Network Settings
+**Network Settings:**
 
 To simplify the setup of network conditions for experiments, the [network_setup.sh](network_setup.sh) script is provided in the base directory. This script automates the configuration of network bandwidth and latency, simulating both LAN and WAN environments.
 
@@ -159,14 +163,36 @@ Examples:
 
 #### Example Commands
 
+Make sure you are in the `build` directory, and have generated the dateset using the `setup` binary.
+- tree protocol, 8 days, deletion
 ```bash
-# Make sure you are in the build directory, and have generated the dateset using the setup binary
-# tree protocol, 8 days, deletion
-./frontend/main -party 1 -prot tree -del & ./frontend/main -party 0 -prot tree -del
-# okvs(adaptive) protocol, 128 days, LAN
-./frontend/main -party 1 -prot okvs -days 128 -LAN & ./frontend/main -party 0 -prot okvs -days 128 -LAN
+./frontend/main -party 0 -prot tree -del
+```
+```bash
+./frontend/main -party 1 -prot tree -del
+```
+- okvs(adaptive) protocol, 128 days, LAN
+```bash
+./frontend/main -party 0 -prot okvs -days 128 -LAN 
+```
+```bash
+./frontend/main -party 1 -prot okvs -days 128 -LAN
+```
+- cuckoo hashing(adaptive) protocol, 8 days, deletion, WAN 200Mbps
+```bash
+./frontend/main -party 0 -prot cuckoo -del -WAN 200
+```
+```bash
+./frontend/main -party 1 -prot cuckoo -del -WAN 200
+```
+
+### Example Workflow for Experiments
+
+```bash
+# Make sure you are in the build directory
+./frontend/setup -start_size 1024 -add_size 128 -del_size 16 -days 8
 # cuckoo hashing(adaptive) protocol, 8 days, deletion, WAN 200Mbps
-./frontend/main -party 1 -prot cuckoo -del -WAN 200 & ./frontend/main -party 0 -prot cuckoo -del -WAN 200
+./frontend/main -party 0 -prot cuckoo -del -WAN 200 & ./frontend/main -party 1 -prot cuckoo -del -WAN 200
 ```
 
 
