@@ -15,7 +15,12 @@ Party::Party(int _party, oc::Socket* _chl, int _total_days, std::string fn, bool
     if(dataset.start_size <= 64 && dataset.days <= 8 && dataset.add_size <= 8) dataset.print();
     
     if(total_days > dataset.days) throw std::runtime_error("dataset days error");
-    if(support_deletion != (dataset.del_size > 0)) throw std::runtime_error("dataset number of deletions error");
+    if(support_deletion && dataset.del_size == 0)
+        throw std::runtime_error("'-del' flag is set but the dataset has del_size=0. "
+            "Regenerate the dataset with '-del_size > 0', or remove the '-del' flag.");
+    if(!support_deletion && dataset.del_size > 0)
+        throw std::runtime_error("The dataset has del_size=" + std::to_string(dataset.del_size) +
+            " but '-del' flag is not set. Add '-del' to the command, or regenerate the dataset with '-del_size 0'.");
     this->max_data_size = dataset.start_size + dataset.add_size * total_days;
     
     my_prng.SetSeed(oc::sysRandomSeed());

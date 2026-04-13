@@ -40,9 +40,24 @@ We implement three UPSI protocols, each using a different *Affine Set Encoding (
 
 **Achieve Security Against Adaptive Inputs:** We propose an adaptive construction that converts non-updatable ASEs into updatable, unbounded size, adaptively correct/secure ASEs (see Section 3.5 of the [paper](https://eprint.iacr.org/2026/438)). Our `okvs` and `cuckoo` protocols apply the adaptive construction to achieve security against such adaptive inputs, while the `tree` protocol is secure against non-adaptive (statically chosen) inputs.
 
+## Dependencies
+
+| Dependency | Version / Commit |
+|:----------:|:----------------:|
+| CMake | ≥ 3.15 |
+| GCC / G++ | ≥ 11 |
+| [libOTe](https://github.com/osu-crypto/libOTe/) | commit [`d0e4992`](https://github.com/osu-crypto/libOTe/tree/d0e499206d1d4d16c6b4ca6c0e712490e0632f80) |
+| libsodium | installed via libOTe (`--sodium`) |
+| Boost | installed via libOTe (`--boost`) |
+| Python 3 | required by libOTe build script |
+| OS | Ubuntu 24.04 (x86_64/amd64) recommended |
+
+> [!NOTE]
+> The exact libOTe commit is pinned in both `build.sh` and `Dockerfile` to ensure reproducibility. If libOTe introduces breaking changes in the future, use the commit listed above.
+
 ## Building the Project
 
-The project is built on top of [libOTe](https://github.com/osu-crypto/libOTe/).
+The project is built on top of [libOTe](https://github.com/osu-crypto/libOTe/) (commit `d0e4992`).
 
 ### Container Setup with Docker
 
@@ -99,8 +114,13 @@ Before running experiments, use the `setup` binary to generate both parties' pri
 - `-del_size`: Number of elements deleted per day (for each party)
 - `-days`: Number of update days to simulate (default: 8)
 
+The total set size after all updates is `start_size + add_size × days`. **Both parties receive datasets with the same parameters**, as the experiments in our paper evaluate the balanced setting. The parameters N and n used in Tables 3 and 4 of the paper refer to the per-party total set size and per-party daily update size, respectively. See [Reproducing Paper Results](#reproducing-paper-results) for the exact parameter configurations.
+
 > [!WARNING]
 > To run experiments with addition-only updates, disable deletions by setting `-del_size` to `0`.
+
+> [!IMPORTANT]
+> The `-days` parameter and deletion settings used in `setup` must be consistent with those passed to `main`. For example, if you generate datasets with `-days 128`, you should also run `main` with `-days 128`. Similarly, if the dataset contains deletions (`-del_size > 0`), you must pass `-del` to `main`.
 
 #### Examples
 ```bash
@@ -120,17 +140,15 @@ Run each party using `main` binary:
 ```
 
 **Options:**
-- `-party <0|1>`: Party ID (must run both party 0 and party 1)
+- `-party <0|1>`: Party ID. **Both party 0 and party 1 must be run simultaneously** (e.g., in separate terminals or connected with `&`).
 - `-prot <tree|okvs|cuckoo>`: Protocol to be used in the experiment.
-- `-days <num>`: Number of update days (default: 8)
-- `-del`: Enable deletion. If deletions are not needed, omit the `-del` flag.
+- `-days <num>`: Number of update days (default: 8). Must match the value used in `setup`.
+- `-del`: Enable deletion. Must be set if and only if the dataset was generated with `-del_size > 0`.
 
 > [!WARNING]
 > The `okvs` protocol does not support deletion; therefore, it can only be evaluated on addition-only datasets.
 
 **Network Settings:**
-
-To simplify the setup of network conditions for experiments, the [network_setup.sh](network_setup.sh) script is provided in the base directory. This script automates the configuration of network bandwidth and latency, simulating both LAN and WAN environments.
 
 The paper explains the network conditions used for experiments, which follow the same settings as previous works:
 - **LAN Connection:**
@@ -142,7 +160,13 @@ The paper explains the network conditions used for experiments, which follow the
   - **Bandwidth Options:** 200 Mbps, 50 Mbps, and 5 Mbps
   - Run `main` with `-WAN <200|50|5>` to use WAN network settings with specified bandwidth (200, 50, or 5 Mbps)
 
-To set up a specific network setting that is not used in the paper, use [network_setup.sh](network_setup.sh) script:
+> [!NOTE]
+> When using `-LAN` or `-WAN` flags, `network_setup.sh` is **automatically invoked** by party 0 before the protocol begins and cleaned up after it finishes. Users do **not** need to run `network_setup.sh` manually for these settings. The `network_setup.sh` script requires `NET_ADMIN` capability (already available in the Docker container with `--cap-add=NET_ADMIN`).
+
+> [!NOTE]
+> You may see the warning `sch_htb: quantum of class 10001 is big. Consider r2q change.` when network emulation is configured. This is a benign warning from `tc` and does not affect the accuracy of the network emulation.
+
+To set up a **custom** network setting that is not covered by the `-LAN`/`-WAN` flags, use [network_setup.sh](network_setup.sh) script manually:
 1. **Enable a Specific Network Setting:** 
 ```bash
 ./network_setup.sh on <latency> <bandwidth>
@@ -163,38 +187,49 @@ Examples:
 
 #### Example Commands
 
-Make sure you are in the `build` directory, and have generated the dateset using the `setup` binary.
+Make sure you are in the `build` directory, and have generated the dataset using the `setup` binary with matching parameters. Both parties must be run **simultaneously**. You can use `&` to run them in a single shell, or use two separate terminals.
+
 - tree protocol, 8 days, deletion
 ```bash
-./frontend/main -party 0 -prot tree -del
-```
-```bash
-./frontend/main -party 1 -prot tree -del
+./frontend/setup -start_size 1024 -add_size 128 -del_size 16 -days 8
+./frontend/main -party 0 -prot tree -del & ./frontend/main -party 1 -prot tree -del
 ```
 - okvs(adaptive) protocol, 128 days, LAN
 ```bash
-./frontend/main -party 0 -prot okvs -days 128 -LAN 
-```
-```bash
-./frontend/main -party 1 -prot okvs -days 128 -LAN
+./frontend/setup -start_size 0 -add_size 1024 -del_size 0 -days 128
+./frontend/main -party 0 -prot okvs -days 128 -LAN & ./frontend/main -party 1 -prot okvs -days 128 -LAN
 ```
 - cuckoo hashing(adaptive) protocol, 8 days, deletion, WAN 200Mbps
 ```bash
-./frontend/main -party 0 -prot cuckoo -del -WAN 200
-```
-```bash
-./frontend/main -party 1 -prot cuckoo -del -WAN 200
-```
-
-### Example Workflow for Experiments
-
-```bash
-# Make sure you are in the build directory
 ./frontend/setup -start_size 1024 -add_size 128 -del_size 16 -days 8
-# cuckoo hashing(adaptive) protocol, 8 days, deletion, WAN 200Mbps
 ./frontend/main -party 0 -prot cuckoo -del -WAN 200 & ./frontend/main -party 1 -prot cuckoo -del -WAN 200
 ```
 
+
+### Reproducing Paper Results
+
+The script `script.sh` (run from the `build` directory) automates all experiments reported in Tables 3 and 4. 
+
+
+## Code Structure
+
+| Path | Description |
+|------|-------------|
+| `frontend/main.cpp` | Entry point for running UPSI protocols |
+| `frontend/setup.cpp` | Dataset generation entry point |
+| `upsi/party.{h,cpp}` | Base party class: VOLE setup, PSI, addition/deletion logic |
+| `upsi/tree_party.{h,cpp}` | Tree (Path-ORAM-based) protocol |
+| `upsi/adaptive_party.{h,cpp}` | Adaptive protocol (used by both `okvs` and `cuckoo`) |
+| `upsi/tree.{h,cpp}` | Path-ORAM tree structure |
+| `upsi/adaptive.{h,cpp}` | Adaptive ASE construction |
+| `upsi/ASE/` | ASE implementations: `plain_ASE`, `poly`, `HashTable` |
+| `upsi/rbokvs/` | RB-OKVS implementation |
+| `upsi/vole.{h,cpp}` | VOLE sender/receiver |
+| `upsi/oprf.{h,cpp}` | OPRF construction |
+| `upsi/data_util.{h,cpp}` | Dataset generation and I/O |
+| `upsi/network.h` | Network utility (send/recv helpers) |
+| `network_setup.sh` | Network emulation (tc) script |
+| `script.sh` | Automated experiment runner |
 
 ## Author Contact Information
 
