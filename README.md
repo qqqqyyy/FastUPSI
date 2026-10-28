@@ -16,7 +16,7 @@
 
 ## Overview
 
-**Fast UPSI** implements *Updatable Private Set Intersection (UPSI)* protocols as detailed in our [Eurocrypt 2026 paper]([https://eprint.iacr.org/2026/438](https://artifacts.iacr.org/eurocrypt/2026/a10/)). Private Set Intersection (PSI) enables two mutually distrusting parties, each holding a private set of elements, to compute the intersection of their sets without disclosing any additional information. Our UPSI project addresses several key limitations of existing UPSI protocols:
+**Fast UPSI** implements *Updatable Private Set Intersection (UPSI)* protocols as detailed in our [Eurocrypt 2026 paper](https://artifacts.iacr.org/eurocrypt/2026/a10/). Private Set Intersection (PSI) enables two mutually distrusting parties, each holding a private set of elements, to compute the intersection of their sets without disclosing any additional information. Our UPSI project addresses several key limitations of existing UPSI protocols:
 
 - **Symmetric-Key UPSI:** In existing UPSI protocols, the number of public-key
 operations scales with the number of items. Our UPSI project largely avoids public-key operations to achieve orders-of-magnitude improvements over prior work.
